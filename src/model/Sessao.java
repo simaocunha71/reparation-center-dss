@@ -1,12 +1,16 @@
 package model;
 
+import model.interfaces.ISessao;
+import model.interfaces.IUtilizador;
+
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 
-public class Sessao {
+public class Sessao implements ISessao {
 
     private String id;//id do utilizador
     private int permissao;//nivel de permissao
@@ -14,10 +18,24 @@ public class Sessao {
     private LocalDateTime fim;//registo fim de sessao
 
 
-    public Sessao(String id, int permissao){
+    public Sessao(){
         this.inicio = LocalDateTime.now();
-        this.id = id;
-        this.permissao = permissao;
+    }
+
+    /**
+     * Iniciar sessao
+     * @param id id
+     * @param password pass
+     * @return boolean
+     */
+    public Boolean login(String id, String password, HashMap<String,IUtilizador> utilizadores){
+        IUtilizador us = utilizadores.get(id);
+        if(us.getPassword().equals(password)){
+            this.id = id;
+            this.permissao = us.getPermissao();
+            return true;
+        }
+        return false;
     }
 
     /**

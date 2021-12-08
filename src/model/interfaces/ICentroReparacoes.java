@@ -14,9 +14,7 @@ public interface ICentroReparacoes {
 
      void carregar_utilizadores(String filename) throws IOException, JaExistenteExcecao;
 
-     void carregar_clientes(String filename) throws IOException, JaExistenteExcecao;
-
-     Boolean login(String id,String password);
+     void carregar_cp(String utilizadoresFN,String clientesFN,String pedidosFN) throws IOException, JaExistenteExcecao;
 
 
 

@@ -22,10 +22,9 @@ import java.util.Map;
 
 public class CentroReparacoesFacade implements ICentroReparacoes {
 
-    private Sessao sessaoAtual;
     private Map<String, IUtilizador> utilizadores; //map com utilizadores do sistema
     private Map<String, ICliente> clientes;//map com clientes do sistema
-    private List<IPedido> pedidos; //queque fifo de pedidos
+    private List<IPedido> pedidos; //queue fifo de pedidos
 
 
     public CentroReparacoesFacade(){
@@ -137,20 +136,11 @@ public class CentroReparacoesFacade implements ICentroReparacoes {
 
     //carregar pedidos
 
-    /**
-     * Iniciar sessao
-     * @param id id
-     * @param password pass
-     * @return boolean
-     */
-    public Boolean login(String id,String password){
-        IUtilizador us = getUtilizadorByID(id);
-        if(us.getPassword().equals(password)){
-            this.sessaoAtual = new Sessao(id,us.getPermissao());
-            return true;
-        }
-
-        return false;
+    public void carregar_cp(String utilizadoresFN,String clientesFN,String pedidosFN) throws IOException, JaExistenteExcecao {
+        carregar_utilizadores(utilizadoresFN);
+        carregar_clientes(clientesFN);
 
     }
+
+
 }
