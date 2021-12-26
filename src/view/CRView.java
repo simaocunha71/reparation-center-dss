@@ -1,5 +1,7 @@
 package view;
 
+import model.excecoes.JaExistenteExcecao;
+
 import java.io.IOException;
 import java.util.*;
 
@@ -10,7 +12,7 @@ public class CRView implements ANSIICores{
      * Interface para execucao de opcoes
      */
     public interface Handler {
-        public void execute() throws IOException, ClassNotFoundException;
+        public void execute() throws IOException, ClassNotFoundException, JaExistenteExcecao;
     }
 
     /**

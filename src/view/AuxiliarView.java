@@ -21,12 +21,20 @@ public class AuxiliarView implements ANSIICores {
         System.out.println("Nome do cliente: ");
     }
 
+    public void perguntaNIFCliente(){
+        System.out.println("NIF do cliente: ");
+    }
+
     public void perguntaTelemovel(){
-        System.out.println("Numero de telemovel: ");
+        System.out.println("Número de telemóvel: ");
+    }
+
+    public void perguntaEquipamento(){
+        System.out.println("Equipamento: ");
     }
 
     public void perguntaEmail(){
-        System.out.println("Email: ");
+        System.out.println("Email do cliente: ");
     }
 
 }
