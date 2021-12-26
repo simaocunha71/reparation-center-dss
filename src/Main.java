@@ -12,7 +12,7 @@ public class Main {
     public static void main(String[] args) throws IOException, JaExistenteExcecao {
 
         CentroReparacoesFacade centro = new CentroReparacoesFacade();
-        centro.carregar_utilizadores("../cp/utilizadores.csv");
+        centro.carregar_utilizadores("cp/utilizadores.csv");
         System.out.println(centro.getUtilizadorByID("u004").getName());
     }
 
