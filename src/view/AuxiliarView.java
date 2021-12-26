@@ -17,4 +17,16 @@ public class AuxiliarView implements ANSIICores {
         System.out.println("Password: ");
     }
 
+    public void perguntaNomeCliente(){
+        System.out.println("Nome do cliente: ");
+    }
+
+    public void perguntaTelemovel(){
+        System.out.println("Numero de telemovel: ");
+    }
+
+    public void perguntaEmail(){
+        System.out.println("Email: ");
+    }
+
 }

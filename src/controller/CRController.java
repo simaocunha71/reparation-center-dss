@@ -71,13 +71,12 @@ public class CRController {
             "Voltar"
     };
 
-    private final String[] menuPedidoExpress = new String[]{
-    };
-
-    private final String[] menuPedidoOrcamento = new String[]{
-            "Cliente",
+    private final String[] menuPedido = new String[]{
+            "Nome Cliente",
+            "Telemovel Cliente",
+            "Email Cliente",
             "Equipamento",
-            ""
+            "Salvar",
     };
 
     private final String[] menuEquipamentoInfo = new String[]{
@@ -189,8 +188,63 @@ public class CRController {
         login();
     }
 
+    public void registarPedido1() throws IOException, ClassNotFoundException {
+        CRView menu = new CRView("Registo Pedido", menuRegistoPedido);
 
-    private void menuRegistoPedido() {
+        menu.setHandler(1,()->{
+            menu.returnMenu();
+            registarPedido2(true);
+        });
+        menu.setHandler(2,()->{
+            menu.returnMenu();
+            registarPedido2(false);
+        });
+
+
+        menu.simpleRun();
+    }
+
+
+    private void registarPedido2(boolean pedidoExpress) throws IOException, ClassNotFoundException {
+        CRView menu = new CRView("Pedido Express", menuPedido);
+        AtomicReference<String> nomeCliente = new AtomicReference<>();
+        AtomicReference<String> telemovelCliente = new AtomicReference<>();
+        AtomicReference<String> emailCliente = new AtomicReference<>();
+        AtomicInteger condicao = new AtomicInteger(0);
+
+        menu.setPreCondition(5,()->condicao.get() == 4);
+
+        menu.setHandler(1,()->{
+            auxView.perguntaNomeCliente();
+            nomeCliente.set(scanner.nextLine());
+            condicao.getAndIncrement();
+        });
+        menu.setHandler(2,()->{
+            auxView.perguntaTelemovel();
+            telemovelCliente.set(scanner.nextLine());
+            condicao.getAndIncrement();
+        });
+        menu.setHandler(3,()->{
+            auxView.perguntaNomeCliente();
+            emailCliente.set(scanner.nextLine());
+            condicao.getAndIncrement();
+        });
+        menu.setHandler(4, ()->{
+            if(registarEquipamento()) condicao.getAndIncrement();
+        });
+
+        menu.setHandler(5,()->{
+            //gravar equipamento
+            //gravar cliente
+            menu.returnMenu();
+        });
+
+        menu.simpleRun();
+    }
+
+
+    private boolean registarEquipamento(){
+        AtomicBoolean registoValido
     }
 
     private void mostraPlanos() {
