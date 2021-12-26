@@ -8,4 +8,8 @@ public class AuxiliarView {
         System.out.println("Nome de Utilizador: ");
     }
 
+    public void perguntaPasseDeUtilizador(){
+        System.out.println("Password: ");
+    }
+
 }

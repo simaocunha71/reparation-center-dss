@@ -17,5 +17,7 @@ public interface ICentroReparacoes {
      void carregar_cp(String utilizadoresFN,String clientesFN,String pedidosFN) throws IOException, JaExistenteExcecao;
 
 
+    boolean existsUser(String nomeDeUtilizador, String password);
 
+    boolean existsPlans();
 }

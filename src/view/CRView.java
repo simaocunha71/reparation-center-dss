@@ -1,10 +1,7 @@
 package view;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 public class CRView {
 
@@ -52,7 +49,7 @@ public class CRView {
      */
     public CRView(String title, String[] options){
         this.title = title;
-        this.options = Arrays.asList(options);
+        this.options = new LinkedList<String>(Arrays.asList(options));
         this.available = new ArrayList<>();
         this.handlers = new ArrayList<>();
         this.options.forEach(s-> {
@@ -62,9 +59,9 @@ public class CRView {
     }
 
     public void changeOption(int opt, String option){
-        if(options.size() >= opt){
-            this.options.remove(opt);
-            this.options.add(opt,option);
+        if(options.size() > opt){
+            this.options.remove(opt-1);
+            this.options.add(opt-1,option);
         }
     }
 
@@ -83,11 +80,11 @@ public class CRView {
             simpleShow();
             op = readOption();
             // testar pré-condição
-            if (op>0 && !this.available.get(op).validate()) {
+            if (op>0 && !this.available.get(op-1).validate()) {
                 System.out.println(RED +"Option not available"+ RESET);
             } else if (op>0) {
                 // executar handler
-                this.handlers.get(op).execute();
+                this.handlers.get(op-1).execute();
             }
         } while (op != 0 && !exit);
     }
@@ -99,7 +96,7 @@ public class CRView {
      * @param b pré-condição a registar para a opcao
      */
     public void setPreCondition(int i, PreCondition b) {
-        this.available.set(i,b);
+        this.available.set(i-1,b);
     }
 
     /**
@@ -109,7 +106,7 @@ public class CRView {
      * @param b pre-condicao a registar nas opcoes
      */
     public void setSamePreCondition(int[] list, PreCondition b) {
-        for(int i:list) this.available.set(i,b);
+        for(int i:list) this.available.set(i-1,b);
 
     }
 
@@ -120,7 +117,7 @@ public class CRView {
      * @param h handlers a registar
      */
     public void setHandler(int i, Handler h) {
-        this.handlers.set(i, h);
+        this.handlers.set(i-1, h);
     }
 
 
@@ -130,7 +127,7 @@ public class CRView {
     private void simpleShow() {
         System.out.println(YELLOW + this.title + RESET);
         for (int i=0; i<this.options.size(); i++) {
-            System.out.print(i);
+            System.out.print(i+1);
             System.out.print(" - ");
             System.out.println(this.available.get(i).validate() ? this.options.get(i) : "---");
         }
@@ -153,8 +150,8 @@ public class CRView {
         catch (NumberFormatException e) { // Não foi inscrito um int
             op = -1;
         }
-        if (op<0 || op>=this.options.size()) {
-            System.out.println(RED +"Invalid Option"+RESET);
+        if (op<0 || op>this.options.size()) {
+            System.out.println(RED +"Invalid Option" + options+RESET);
             op = -1;
         }
         return op;

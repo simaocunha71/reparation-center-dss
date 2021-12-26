@@ -20,14 +20,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-public class CentroReparacoesFacade implements ICentroReparacoes {
+public class CRFacade implements ICentroReparacoes {
 
     private Map<String, IUtilizador> utilizadores; //map com utilizadores do sistema
     private Map<String, ICliente> clientes;//map com clientes do sistema
     private List<IPedido> pedidos; //queue fifo de pedidos
 
 
-    public CentroReparacoesFacade(){
+    public CRFacade(){
         utilizadores = new HashMap<>();
         clientes = new HashMap<>();
         pedidos = new LinkedList<>();
@@ -140,6 +140,17 @@ public class CentroReparacoesFacade implements ICentroReparacoes {
         carregar_utilizadores(utilizadoresFN);
         carregar_clientes(clientesFN);
 
+    }
+
+    @Override
+    public boolean existsUser(String nomeDeUtilizador, String password) {
+        if (utilizadores.containsKey(nomeDeUtilizador))
+            return utilizadores.get(nomeDeUtilizador).getPassword().equals(password);
+        return false;
+    }
+
+    public boolean existsPlans(){
+        return false;
     }
 
 
