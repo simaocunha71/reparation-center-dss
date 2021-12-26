@@ -1,8 +1,13 @@
 package view;
 
-public class AuxiliarView {
+public class AuxiliarView implements ANSIICores {
     public AuxiliarView(){};
 
+
+    public void errorMessage(String error){
+
+        System.out.println(RED + error + RESET);
+    }
 
     public void perguntaNomeDeUtilizador(){
         System.out.println("Nome de Utilizador: ");

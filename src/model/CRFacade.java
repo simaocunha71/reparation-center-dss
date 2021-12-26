@@ -2,10 +2,7 @@ package model;
 
 import model.excecoes.JaExistenteExcecao;
 import model.excecoes.NaoExisteExcecao;
-import model.interfaces.ICentroReparacoes;
-import model.interfaces.ICliente;
-import model.interfaces.IPedido;
-import model.interfaces.IUtilizador;
+import model.interfaces.*;
 import model.utilizadores.Funcionario;
 import model.utilizadores.Gestor;
 import model.utilizadores.Tecnico;
@@ -25,6 +22,7 @@ public class CRFacade implements ICentroReparacoes {
     private Map<String, IUtilizador> utilizadores; //map com utilizadores do sistema
     private Map<String, ICliente> clientes;//map com clientes do sistema
     private List<IPedido> pedidos; //queue fifo de pedidos
+    private IUtilizador logado;
 
 
     public CRFacade(){
@@ -61,9 +59,9 @@ public class CRFacade implements ICentroReparacoes {
     public void adicionar_utilizador(String id,String nome,String password,int permissao) throws JaExistenteExcecao {
         if(!utilizadores.containsKey(id)){
             switch (permissao) {
-                case 0 -> utilizadores.put(id, new Funcionario(id, nome,password, permissao));
-                case 1 -> utilizadores.put(id, new Tecnico(id, nome,password, permissao));
-                case 2 -> utilizadores.put(id, new Gestor(id, nome,password, permissao));
+                case 1 -> utilizadores.put(id, new Gestor(id, nome,password));
+                case 2 -> utilizadores.put(id, new Funcionario(id, nome,password));
+                case 3 -> utilizadores.put(id, new Tecnico(id, nome,password));
             }
         }else{throw new JaExistenteExcecao("Utilizador já existe no sistema");}
     }
@@ -142,11 +140,30 @@ public class CRFacade implements ICentroReparacoes {
 
     }
 
-    @Override
-    public boolean existsUser(String nomeDeUtilizador, String password) {
-        if (utilizadores.containsKey(nomeDeUtilizador))
-            return utilizadores.get(nomeDeUtilizador).getPassword().equals(password);
+    public boolean login(String nomeDeUtilizador, String password) {
+        if (utilizadores.containsKey(nomeDeUtilizador)){
+            if(utilizadores.get(nomeDeUtilizador).getPassword().equals(password)) {
+                this.logado = utilizadores.get(nomeDeUtilizador);
+                return true;
+            }
+        }
         return false;
+    }
+
+    public void logout(){
+        this.logado = null;
+    }
+
+    public boolean loggedTecnico(){
+        return this.logado.getClass().equals(Tecnico.class);
+    }
+
+    public boolean loggedFuncionario(){
+        return this.logado.getClass().equals(Funcionario.class);
+    }
+
+    public boolean loggedGestor(){
+        return this.logado.getClass().equals(Gestor.class);
     }
 
     public boolean existsPlans(){

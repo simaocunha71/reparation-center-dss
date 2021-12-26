@@ -3,7 +3,7 @@ package view;
 import java.io.IOException;
 import java.util.*;
 
-public class CRView {
+public class CRView implements ANSIICores{
 
 
     /**
@@ -23,18 +23,6 @@ public class CRView {
 
 
     private static Scanner is = new Scanner(System.in);
-
-
-
-    public static final String RESET = "\u001B[0m";
-    public static final String BLACK = "\u001B[30m";
-    public static final String RED = "\u001B[31m";
-    public static final String GREEN = "\u001B[32m";
-    public static final String YELLOW = "\u001B[33m";
-    public static final String BLUE = "\u001B[34m";
-    public static final String PURPLE = "\u001B[35m";
-    public static final String CYAN = "\u001B[36m";
-    public static final String WHITE = "\u001B[37m";
 
 
     private List<String> options;            // Lista de opções
@@ -131,7 +119,7 @@ public class CRView {
             System.out.print(" - ");
             System.out.println(this.available.get(i).validate() ? this.options.get(i) : "---");
         }
-        System.out.println("0 - Return");
+        System.out.println("0 - Sair");
     }
 
     /**
@@ -243,9 +231,7 @@ public class CRView {
      * Imprime mensagem a vermelho
      * @param error mensagem a imprimir
      */
-    public void errorMessage(String error){
-        System.out.println(RED + error + RESET);
-    }
+
 
     /**
      * Metodo que limpa o terminal

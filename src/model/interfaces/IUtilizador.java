@@ -8,6 +8,4 @@ public interface IUtilizador {
 
     String getPassword();
 
-    int getPermissao();
-
 }

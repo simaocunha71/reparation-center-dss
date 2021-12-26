@@ -16,25 +16,37 @@ import java.util.concurrent.atomic.AtomicReference;
 public class CRController {
 
     private ICentroReparacoes centro = new CRFacade();
-    private ISessao sessaoAtual;
     private AuxiliarView auxView = new AuxiliarView();
     private Scanner scanner = new Scanner(System.in);
     private final String[] menuInicial = new String[]{
-            "Login"
+            "Autenticação"
     };
 
     private final String[] menuLogin = new String[]{
             "User id",
             "Password",
-            "Login",
+            "Entrar",
     };
 
-    private final String[] menuPrincipal = new String[]{
-            "Registar Utilizador",
-            "Registar Pedido",
-            "Ver planos",
+    private final String[] menuPrincipalGestor = new String[]{
+            "Registar pedido",
+            "Lista de pedidos de orçamento",
+            "Lista de equipamentos para reparação",
+            "Lista de funcionários",
+            "Lista de técnicos",
+            "Registar utilizador",
             "Logout",
-            "Sair"
+    };
+
+    private final String[] menuPrincipalTecnico = new String[]{
+            "Lista de pedidos de orçamento",
+            "Lista de equipamentos para reparação",
+            "Logout",
+    };
+
+    private final String[] menuPrincipalFuncionario = new String[]{
+            "Registar pedido",
+            "Logout",
     };
 
 
@@ -91,18 +103,15 @@ public class CRController {
 
     private void login() throws IOException, ClassNotFoundException {
         CRView menu = new CRView("Autenticação", menuLogin);
-        AtomicBoolean option1 = new AtomicBoolean(false);
-        AtomicBoolean option2 = new AtomicBoolean(false);
+        AtomicBoolean credenciais = new AtomicBoolean(false);
         AtomicReference<String> nomeDeUtilizador = new AtomicReference<>();
         AtomicReference<String> password = new AtomicReference<>();
-        menu.setPreCondition(2, option1::get);
-        menu.setPreCondition(3, option2::get);
+        menu.setPreCondition(3, credenciais::get);
 
         menu.setHandler(1, ()->{
             auxView.perguntaNomeDeUtilizador();
             nomeDeUtilizador.set(scanner.nextLine());
             menu.changeOption(1,"User id: ["+nomeDeUtilizador+"]");
-            option1.set(true);
         });
         menu.setHandler(2, ()->{
             auxView.perguntaPasseDeUtilizador();
@@ -110,10 +119,10 @@ public class CRController {
             StringBuilder credentials = new StringBuilder();
             for(int i = 0; i<password.get().length();i++) credentials.append("*");
             menu.changeOption(2,"Password: "+ credentials.toString());
-            option2.set(true);
+            credenciais.set(true);
         });
         menu.setHandler(3, ()->{
-            if(centro.existsUser(nomeDeUtilizador.get(),password.get())){
+            if(centro.login(nomeDeUtilizador.get(),password.get())){
                 logged = true;
                 menu.confirmationMessage("Logged in");
                 menu.returnMenu();
@@ -123,6 +132,8 @@ public class CRController {
                 password.set(null);
                 menu.changeOption(1,"User id");
                 menu.changeOption(2,"Password");
+                auxView.errorMessage("Credenciais inválidas!");
+                credenciais.set(false);
             }
         });
         menu.simpleRun();
@@ -131,19 +142,19 @@ public class CRController {
 
 
     private void menuInicial() throws IOException, ClassNotFoundException {
-        CRView menu = new CRView("Menu", menuPrincipal);
+        if(centro.loggedGestor())
+            menuInicialGestor();
+        else if (centro.loggedTecnico())
+            menuInicialTecnico();
+        else if (centro.loggedFuncionario())
+            menuInicialFuncionario();
+    }
 
+    public void menuInicialGestor() throws IOException, ClassNotFoundException {
+        CRView menu = new CRView("Menu Inicial", menuPrincipalGestor);
 
-        menu.setHandler(3,()->centro.existsPlans());
+        menu.setHandler(1, ()->);
 
-        menu.setHandler(1,this::menuRegistoUtilizador);
-        menu.setHandler(2,this::menuRegistoPedido);
-        menu.setHandler(3,this::mostraPlanos);
-        menu.setHandler(4,()->{
-            logged = false;
-            menu.returnMenu();
-            login();
-        });
         menu.simpleRun();
     }
 
@@ -157,12 +168,27 @@ public class CRController {
         AtomicInteger tipoUtilizador = new AtomicInteger();
         
 
-        menu.setHandler(1,()->{
+        menu.setHandler(1,this::registarPedido);
 
-        });
+        menu.setHandler(2,this::listaDePedidosOrcamento);
+
+        menu.setHandler(3,this::listaDeEquipamentosReparacao);
+
+        menu.setHandler(4,this::listaDeFuncionarios);
+        menu.setHandler(5,this::listaDeTecnicos);
+
+        menu.setHandler(6,this::registarUtilizador);
+        menu.setHandler(7,()->{menu.returnMenu();logout();});
 
         menu.simpleRun();
     }
+
+    private void logout() throws IOException, ClassNotFoundException {
+        this.logged = false;
+        centro.logout();
+        login();
+    }
+
 
     private void menuRegistoPedido() {
     }
