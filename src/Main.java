@@ -6,6 +6,7 @@ import model.utilizadores.Funcionario;
 import model.utilizadores.Tecnico;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,12 +16,6 @@ public class Main {
 
         CRController controller = new CRController();
         controller.run();
-
-        IUtilizador user = new Funcionario("ola","ola","oal");
-
-        System.out.print(user.getClass() == Tecnico.class);
-
-
     }
 
 }

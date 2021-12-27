@@ -43,8 +43,8 @@ public class Cliente implements ICliente {
         if(split.length == 4) {
             this.nif = split[0];
             this.nome = split[1];
-            this.email = split[2];
-            this.numTelemovel = split[3];
+            this.numTelemovel = split[2];
+            this.email = split[3];
         }
     }
 

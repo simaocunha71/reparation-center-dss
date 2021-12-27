@@ -1,10 +1,8 @@
 package controller;
 
 import model.CRFacade;
-import model.Equipamento;
 import model.excecoes.JaExistenteExcecao;
 import model.interfaces.ICentroReparacoes;
-import model.pedidos.PedidoOrcamento;
 import view.CRView;
 import view.AuxiliarView;
 
@@ -31,6 +29,7 @@ public class CRController {
             "Entrar",
     };
 
+    //TODO: confirmar orçamento
     private final String[] menuPrincipalGestor = new String[]{
             "Registar cliente",
             "Registar pedido",
@@ -48,6 +47,7 @@ public class CRController {
             "Logout",
     };
 
+    //TODO: confirmar orçamento
     private final String[] menuPrincipalFuncionario = new String[]{
             "Registar pedido",
             "Logout",
@@ -64,7 +64,7 @@ public class CRController {
 
 
     private final String[] menuRegistoUtilizador = new String[]{
-            "Id (uXXX)",
+            "User id",
             "Nome",
             "Password",
             "Tipo de Utilizador", //Funcionar ou Técnico ou Gestor
@@ -161,14 +161,14 @@ public class CRController {
             menuInicialFuncionario();
     }
 
-    public void menuInicialGestor() throws IOException, ClassNotFoundException {
+    private void menuInicialGestor() throws IOException, ClassNotFoundException {
         CRView menu = new CRView("Menu Inicial", menuPrincipalGestor);
 
         menu.setHandler(1,this::registarCliente);
 
         menu.setHandler(2,this::registarPedido);
 
-        //menu.setHandler(3,this::listaDePedidosOrcamento);
+        menu.setHandler(3,this::listaDePedidosOrcamento);
 //
         //menu.setHandler(4,this::listaDeEquipamentosReparacao);
 //
@@ -181,8 +181,26 @@ public class CRController {
         menu.simpleRun();
     }
 
-    public void menuInicialTecnico() throws IOException, ClassNotFoundException {
-        CRView menu = new CRView("Menu Inicial", menuPrincipalGestor);
+    private void listaDePedidosOrcamento() throws IOException, ClassNotFoundException {
+        List<String> pedidos = centro.get_pedidos_orcamento();
+        CRView menu = new CRView("Pedidos de orçamento",pedidos.toArray(new String[0]));
+        AtomicInteger i = new AtomicInteger(0);
+        for(; i.get() < pedidos.size();i.incrementAndGet()){
+            menu.setHandler(i.get(),()->fazerPlano(i.get()));
+        }
+        menu.simpleRun();
+    }
+
+    //TODO: FAZER MENU DE FAZER PLANO
+    private void fazerPlano(int i) {
+        //TODO:Adicionar passo (vai ter um menu) [preço estimado/tempo estimado/descricao e sub-passos (com as mesmas merdas)]
+        //TODO:Apresentar plano
+        //TODO:Gravar
+    }
+
+
+    private void menuInicialTecnico() throws IOException, ClassNotFoundException {
+        CRView menu = new CRView("Menu Inicial", menuPrincipalTecnico);
 
         //menu.setHandler(1,this::listaDePedidosOrcamento);
 
@@ -192,8 +210,8 @@ public class CRController {
         menu.simpleRun();
     }
 
-    public void menuInicialFuncionario() throws IOException, ClassNotFoundException {
-        CRView menu = new CRView("Menu Inicial", menuPrincipalGestor);
+    private void menuInicialFuncionario() throws IOException, ClassNotFoundException {
+        CRView menu = new CRView("Menu Inicial", menuPrincipalFuncionario);
 
         menu.setHandler(1,this::registarPedido);
 
@@ -203,7 +221,7 @@ public class CRController {
     }
 
 
-    public void registarCliente() throws IOException, ClassNotFoundException {
+    private void registarCliente() throws IOException, ClassNotFoundException {
         CRView menu = new CRView("Registar Cliente", menuRegistoCliente);
         AtomicReference<String> nome = new AtomicReference<>();
         AtomicReference<String> nif = new AtomicReference<>();
@@ -269,7 +287,7 @@ public class CRController {
     }
 
 
-    public void registarUtilizador() throws IOException, ClassNotFoundException {
+    private void registarUtilizador() throws IOException, ClassNotFoundException {
         CRView menu = new CRView("Registar Utilizador", menuRegistoUtilizador);
         AtomicReference<String> id = new AtomicReference<>();
         AtomicReference<String> nome = new AtomicReference<>();
@@ -339,11 +357,12 @@ public class CRController {
         login();
     }
 
-    public void registarPedido() throws IOException, ClassNotFoundException {
+    private void registarPedido() throws IOException, ClassNotFoundException {
         CRView menu = new CRView("Registo Pedido", menuRegistoPedido);
 
-        //menu.setHandler(1,this::pedidoExpress);
-        menu.setHandler(2,this::registarPedidoOrcamento);
+        //menu.setHandler(1,()->{pedidoExpress();menu.returnMenu();});
+        menu.setHandler(2,()->{registarPedidoOrcamento();menu.returnMenu();});
+        menu.setHandler(3,menu::returnMenu);
 
 
         menu.simpleRun();

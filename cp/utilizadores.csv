@@ -1,7 +1,7 @@
-id;nome;password;nivelPermissao
-u001;Joaquim Pereira;coelhinhoGordo3;3
-u002;Manuel;coxinha123;3
-u003;Goncas;analfabetoCunha;3
-u004;José manel;brazGaymer7;2
-u005;Maria;ruiPereiraCC;1
-u;u;u;1
+nivelPermissao@id;nome;password
+1@u;u;u
+1@surumkata;Tiago Silva;arrozdoce
+2@cunhamore;Simão Cunha;croquetessalgados
+3@gba;Braz Afonso;gba2001
+3@runlo;Rui Pereira;ccfornextyear
+

@@ -1,5 +1,6 @@
 package model;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,18 +18,18 @@ public class Armazem {
         prontosAEntregar = new HashMap<>();
     }
 
-    public void regista_para_orcamento(Equipamento equipamento){
+    private void regista_para_orcamento(Equipamento equipamento){
         Equipamento clone = new Equipamento(equipamento.getNifCliente(), equipamento.getNumeroRegisto(), equipamento.getModelo(), equipamento.getDescricao());
         paraOrcamento.put(clone.getNumeroRegisto(),clone);
         this.ultimoNumeroDeRegisto++;
     }
 
-    public void regista_para_reparacao(Equipamento equipamento){
+    private void regista_para_reparacao(Equipamento equipamento){
         Equipamento clone = new Equipamento(equipamento.getNifCliente(), equipamento.getNumeroRegisto(), equipamento.getModelo(), equipamento.getDescricao());
         paraReparacao.put(clone.getNumeroRegisto(),clone);
     }
 
-    public void regista_prontos_entregar(Equipamento equipamento){
+    private void regista_prontos_entregar(Equipamento equipamento){
         Equipamento clone = new Equipamento(equipamento.getNifCliente(), equipamento.getNumeroRegisto(), equipamento.getModelo(), equipamento.getDescricao());
         prontosAEntregar.put(clone.getNumeroRegisto(),clone);
     }
@@ -37,21 +38,55 @@ public class Armazem {
         return this.ultimoNumeroDeRegisto;
     }
 
-    public boolean contem_para_orcamento(int numeroRegisto){
+
+
+    private void adicionar_equipamento_para_orcamento(Equipamento equipamento){
+        if(!paraOrcamento.containsKey(equipamento.getNumeroRegisto())){
+            regista_para_orcamento(equipamento);
+        }
+    }
+
+    private void adicionar_equipamento_para_reparacao(Equipamento equipamento){
+        if(!paraReparacao.containsKey(equipamento.getNumeroRegisto())){
+            regista_para_reparacao(equipamento);
+        }
+    }
+
+    private void adicionar_equipamento_pronto_a_entregar(Equipamento equipamento){
+        if(!prontosAEntregar.containsKey(equipamento.getNumeroRegisto())){
+            regista_prontos_entregar(equipamento);
+        }
+    }
+
+    public void adicionar_equipamento(Equipamento equipamento,int local) throws IOException {
+        switch (local){
+            case 1: adicionar_equipamento_para_orcamento(equipamento);
+            case 2: adicionar_equipamento_para_reparacao(equipamento);
+            case 3: adicionar_equipamento_pronto_a_entregar(equipamento);
+
+        }
+    }
+
+
+    public void regista_equipamento(Equipamento e, int local) {
+        switch (local){
+            case 1: regista_para_orcamento(e);
+            case 2: regista_para_reparacao(e);
+            case 3: regista_prontos_entregar(e);
+        }
+    }
+
+    public boolean contem_equipamento_para_orcamento(int numeroRegisto){
         return paraOrcamento.containsKey(numeroRegisto);
     }
 
-    public boolean contem_para_reparacao(int numeroRegisto){
-        return paraReparacao.containsKey(numeroRegisto);
+    public String toString(){
+        StringBuilder sb = new StringBuilder();
+        paraOrcamento.forEach((k,v)->sb.append(v.toString()).append("@1\n"));
+        paraReparacao.forEach((k,v)->sb.append(v.toString()).append("@2\n"));
+        prontosAEntregar.forEach((k,v)->sb.append(v.toString()).append("@3\n"));
+        return sb.toString();
     }
-
-    public boolean contem_pronto_entregar(int numeroRegisto){
-        return prontosAEntregar.containsKey(numeroRegisto);
-    }
-
-
-
-
 }
 
 //TODO: busca por cada map com o numRegisto do Equipamento

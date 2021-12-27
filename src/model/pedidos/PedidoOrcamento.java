@@ -4,6 +4,7 @@ import model.interfaces.ICliente;
 import model.interfaces.IPedido;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 
 public class PedidoOrcamento implements IPedido {
     private String nifCliente;
@@ -18,11 +19,57 @@ public class PedidoOrcamento implements IPedido {
         this.dataRegisto = LocalDateTime.now();
     }
 
+    public PedidoOrcamento(){
+        this.nifCliente = "";
+        this.numeroRegistoEquipamento = -1;
+        this.descricaoPedido = "";
+        this.dataRegisto = null;
+    }
+
+    //TODO: valida_pedido
+    public boolean valida_pedido(){
+        return true;
+    }
+
+    public String getNifCliente() {
+        return nifCliente;
+    }
+
+
+    public void load_pedido(String string) {
+        String[]split = string.split(";");
+        if(split.length == 4) {
+            this.nifCliente = split[0];
+            try{
+                this.dataRegisto = LocalDateTime.parse(split[1]);
+                this.numeroRegistoEquipamento = Integer.parseInt(split[2]);
+            }
+            catch(DateTimeParseException e){
+                this.dataRegisto = null;
+            }
+            catch(NumberFormatException e){
+                this.numeroRegistoEquipamento = -1;
+            }
+            this.descricaoPedido = split[3];
+
+        }
+    }
+
+
     public LocalDateTime getTempoRegisto(){
         return dataRegisto;
     }
 
     public int getNumeroRegistoEquipamento() {
         return this.numeroRegistoEquipamento;
+    }
+
+    //tipoPedido@nifCliente;dataRegisto;numeroRegistoEquipamento;descricaoPedido
+
+    public String toString(){
+        StringBuilder sb = new StringBuilder();
+        sb.append("1@").append(nifCliente).append(";").append(dataRegisto.toString()).append(";");
+        sb.append(numeroRegistoEquipamento).append(";").append(descricaoPedido);
+        return sb.toString();
     }
 }

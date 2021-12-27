@@ -40,7 +40,7 @@ public class Tecnico implements IUtilizador {
 
     public String toString(){
         StringBuilder sb = new StringBuilder();
-        sb.append(id).append(";").append(nome).append(";").append(password);
+        sb.append("3@").append(id).append(";").append(nome).append(";").append(password);
         return sb.toString();
     }
 }

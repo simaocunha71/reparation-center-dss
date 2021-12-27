@@ -40,7 +40,7 @@ public class Gestor implements IUtilizador {
 
     public String toString(){
         StringBuilder sb = new StringBuilder();
-        sb.append(id).append(";").append(nome).append(";").append(password);
+        sb.append("1@").append(id).append(";").append(nome).append(";").append(password);
         return sb.toString();
     }
 }
