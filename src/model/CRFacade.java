@@ -170,5 +170,9 @@ public class CRFacade implements ICentroReparacoes {
         return false;
     }
 
+    public boolean existsUser(String id){
+        return utilizadores.containsKey(id);
+    }
+
 
 }

@@ -17,6 +17,11 @@ public class AuxiliarView implements ANSIICores {
         System.out.println("Password: ");
     }
 
+
+    public void perguntaId(){
+        System.out.println("Id : ");
+    }
+
     public void perguntaNomeCliente(){
         System.out.println("Nome do cliente: ");
     }
@@ -35,6 +40,14 @@ public class AuxiliarView implements ANSIICores {
 
     public void perguntaEmail(){
         System.out.println("Email do cliente: ");
+    }
+
+    /**
+     * Imprime mensagens na cor natural do terminal
+     * @param message mensagem a imprimir
+     */
+    public void normalMessage(String message){
+        System.out.println(message);
     }
 
 }

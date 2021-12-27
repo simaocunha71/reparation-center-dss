@@ -4,6 +4,9 @@ import model.CRFacade;
 import model.excecoes.JaExistenteExcecao;
 import model.interfaces.ICentroReparacoes;
 import model.interfaces.ISessao;
+import model.utilizadores.Funcionario;
+import model.utilizadores.Gestor;
+import model.utilizadores.Tecnico;
 import view.CRView;
 import view.AuxiliarView;
 
@@ -58,14 +61,14 @@ public class CRController {
             "Nome",
             "Password",
             "Tipo de Utilizador", //Funcionar ou Técnico ou Gestor
-            "Voltar",
-            "Guardar e sair"
+            "Guardar e sair",
+            "Voltar"
     };
 
     private final String[] escolheTipoUtilizador = new String[]{
+            "Gestor",
             "Funcionário",
-            "Técnico",
-            "Gestor"
+            "Técnico"
     };
 
     private final String[] menuRegistoPedido = new String[]{
@@ -166,7 +169,7 @@ public class CRController {
         //menu.setHandler(4,this::listaDeFuncionarios);
         //menu.setHandler(5,this::listaDeTecnicos);
 //
-        //menu.setHandler(6,this::registarUtilizador);
+        menu.setHandler(6,this::registarUtilizador);
         menu.setHandler(7,()->{menu.returnMenu();logout();});
 
         menu.simpleRun();
@@ -179,11 +182,64 @@ public class CRController {
         AtomicReference<String> id = new AtomicReference<>();
         AtomicReference<String> nome = new AtomicReference<>();
         AtomicReference<String> password = new AtomicReference<>();
-        AtomicInteger tipoUtilizador = new AtomicInteger();
+        AtomicInteger tipoUtilizador = new AtomicInteger(-1);
 
+        List<AtomicInteger> condicao = new ArrayList<>(4);
+        for(int i = 0; i < 4; i++){
+            condicao.add(i,new AtomicInteger(0));
+        }
 
+        menu.setPreCondition(5,()-> condicao.stream().noneMatch(k -> k.get() == 0));
+
+        menu.setHandler(1,()->{
+            auxView.perguntaId();
+            String old = id.get();
+            id.set(scanner.nextLine());
+            if(!centro.existsUser(id.get())){
+                menu.changeOption(1,"Id: " + id.get());
+                condicao.get(0).set(1);
+            }else {
+                id.set(old);
+                auxView.errorMessage("Id invalido");
+            }
+        });
+
+        menu.setHandler(2,()->{
+            auxView.normalMessage("Nome: ");
+            nome.set(scanner.nextLine());
+            menu.changeOption(2,"Nome: " + nome.get());
+            condicao.get(1).set(1);
+        });
+
+        menu.setHandler(3,()->{
+            auxView.normalMessage("Password: ");
+            password.set(scanner.nextLine());
+            StringBuilder credentials = new StringBuilder();
+            for(int i = 0; i<password.get().length();i++) credentials.append("*");
+            menu.changeOption(3,"Password: "+ credentials.toString());
+            condicao.get(2).set(1);
+        });
+
+        menu.setHandler(4, ()-> {
+            tipoUtilizador.set(menu.readOptionBetween(1,3,escolheTipoUtilizador));
+            if(tipoUtilizador.get()!=-1){
+                switch (tipoUtilizador.get()) {
+                    case 1 -> menu.changeOption(4,"Gestor");
+                    case 2 -> menu.changeOption(4,"Funcionario");
+                    case 3 -> menu.changeOption(4,"Tecnico");
+                }
+                condicao.get(3).set(1);
+            }
+            else condicao.get(3).set(0);
+        });
+
+        menu.setHandler(5, ()-> {
+            centro.adicionar_utilizador(id.get(),nome.get(),password.get(),tipoUtilizador.get());
+            menu.returnMenu();
+        });
         menu.simpleRun();
     }
+
 
     private void logout() throws IOException, ClassNotFoundException {
         this.logged = false;
@@ -272,8 +328,8 @@ public class CRController {
             condicao.get(5).set(1);
         });
         menu.setHandler(7, ()->{
-            //adicionar pedido ao centro
-            //adicionar equipamento ao centro
+            //TODO:
+            //  centro.adicionar_pedido();
             centro.adicionar_cliente(nif.get(),nome.get(),telemovel.get(),email.get());
             menu.returnMenu();
         });

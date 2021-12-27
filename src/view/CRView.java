@@ -74,7 +74,11 @@ public class CRView implements ANSIICores{
                 System.out.println(RED +"Option not available"+ RESET);
             } else if (op>0) {
                 // executar handler
-                this.handlers.get(op-1).execute();
+                try {
+                    this.handlers.get(op-1).execute();
+                } catch (JaExistenteExcecao jaExistenteExcecao) {
+                    jaExistenteExcecao.printStackTrace();
+                }
             }
         } while (op != 0 && !exit);
     }
@@ -160,7 +164,7 @@ public class CRView implements ANSIICores{
         int i = 0;
         if(options != null) {
             while (i < options.length) {
-                System.out.println(i + " - " + options[i]);
+                System.out.println(i+lower + " - " + options[i]);
                 i++;
             }
         }
@@ -221,13 +225,7 @@ public class CRView implements ANSIICores{
         System.out.println(PURPLE + message + RESET);
     }
 
-    /**
-     * Imprime mensagens na cor natural do terminal
-     * @param message mensagem a imprimir
-     */
-    public void normalMessage(String message){
-        System.out.println(message);
-    }
+
 
     /**
      * Imprime mensagem a vermelho

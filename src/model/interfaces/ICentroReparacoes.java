@@ -25,4 +25,6 @@ public interface ICentroReparacoes {
     boolean loggedFuncionario();
     boolean loggedTecnico();
     boolean loggedGestor();
+
+    boolean existsUser(String id);
 }
