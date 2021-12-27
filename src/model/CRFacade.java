@@ -10,10 +10,7 @@ import model.utilizadores.Gestor;
 import model.utilizadores.Tecnico;
 import model.clientes.Cliente;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 
 public class CRFacade implements ICentroReparacoes {
@@ -27,9 +24,11 @@ public class CRFacade implements ICentroReparacoes {
 
 
     public CRFacade(){
-        utilizadores = new HashMap<>();
-        clientes = new HashMap<>();
-        pedidosOrcamentos = new TreeSet<IPedido>(new IPedidoComparator());
+        this.utilizadores = new HashMap<>();
+        this.clientes = new HashMap<>();
+        this.pedidosOrcamentos = new TreeSet<IPedido>(new IPedidoComparator());
+        this.armazem = new Armazem();
+        this.planos = new HashMap<>();
     }
 
     /**
@@ -67,6 +66,13 @@ public class CRFacade implements ICentroReparacoes {
         }else{throw new JaExistenteExcecao("Utilizador já existe no sistema");}
     }
 
+
+    public void adicionar_cliente(ICliente cliente) throws JaExistenteExcecao {
+        if(!clientes.containsKey(cliente.getNif())){
+            clientes.put(cliente.getNif(),cliente.clone());
+        }else{throw  new JaExistenteExcecao("Cliente já existe no sistema");}
+    }
+
     /**
      * Adiciona um cliente ao map de clientes
      * @param nif nif do cliente que representa o seu id
@@ -75,10 +81,18 @@ public class CRFacade implements ICentroReparacoes {
      * @param email email
      * @throws JaExistenteExcecao exceção
      */
-    public void adicionar_cliente(String nif,String nome,String numTelemovel,String email) throws JaExistenteExcecao {
+
+    public void adicionar_cliente(String nif,String nome,String numTelemovel,String email) throws JaExistenteExcecao, IOException {
         if(!clientes.containsKey(nif)){
             clientes.put(nif,new Cliente(nif,nome,numTelemovel,email));
-        }else{throw  new JaExistenteExcecao("Cliente já existe no sistema");}
+            gravar_cliente(clientes.get(nif));
+        }else {
+            //TODO: comparar os argumentos dados com o existente para ver se comepensa overwrite
+            clientes.remove(nif);
+            clientes.put(nif,new Cliente(nif,nome,numTelemovel,email));
+            gravar_todos_clientes();
+            throw new JaExistenteExcecao("cliente já existe no sistema, overwrited");
+        }
     }
 
     public void fazer_pedido(String idCLiente){
@@ -103,13 +117,14 @@ public class CRFacade implements ICentroReparacoes {
      * @param filename path para  ficheiro
      * @throws FileNotFoundException execão
      */
+
+    //TODO: carregar como os clientes
     public void carregar_utilizadores(String filename) throws IOException, JaExistenteExcecao {
         BufferedReader br = new BufferedReader(new FileReader(filename));
         String linha;
         String[] split;
         while((linha = br.readLine()) != null){
             split = linha.split(";");
-            //fazer validação da informação
             adicionar_utilizador(split[0],split[1], split[2],Integer.parseInt(split[3]));
         }
         br.close();
@@ -123,11 +138,11 @@ public class CRFacade implements ICentroReparacoes {
     public void carregar_clientes(String filename) throws IOException, JaExistenteExcecao {
         BufferedReader br = new BufferedReader(new FileReader(filename));
         String linha;
-        String[] split;
         while((linha = br.readLine()) != null){
-            split = linha.split(";");
-            //fazer validação da informação
-            adicionar_cliente(split[0],split[1],split[2],split[3]);
+
+            ICliente cliente = new Cliente();
+            cliente.load_cliente(linha);
+            if(cliente.valida_cliente()) adicionar_cliente(cliente);
         }
         br.close();
 
@@ -141,10 +156,11 @@ public class CRFacade implements ICentroReparacoes {
     }
 
 
-    public void adicionar_pedido_orcamento(String nifCliente, Equipamento equipamento, String descricao) {
+    public void adicionar_pedido_orcamento(String nifCliente, String modelo, String descricaoEquipamento, String descricaoPedido) {
         if(clientes.containsKey(nifCliente)){
-            armazem.adiciona_para_orcamento(equipamento);
-            IPedido pedido = new PedidoOrcamento(nifCliente, equipamento.getNumeroRegisto(), descricao);
+            Equipamento e = new Equipamento(nifCliente, armazem.get_ultimo_numero_de_registo_equipamento()+1,modelo,descricaoEquipamento );
+            armazem.regista_para_orcamento(e);
+            IPedido pedido = new PedidoOrcamento(nifCliente, e.getNumeroRegisto(), descricaoPedido);
             pedidosOrcamentos.add(pedido);
         }
     }
@@ -187,15 +203,23 @@ public class CRFacade implements ICentroReparacoes {
         return clientes.containsKey(nif);
     }
 
-    public String novo_numero_registo(){
-        int i = 0;
-        boolean valido = pedidosOrcamentos.size() == 0;
-        Iterator<IPedido> iterator = pedidosOrcamentos.iterator();
-        while(!valido && iterator.hasNext()){
-            if(iterator.next().getNumeroRegistoEquipamento().equals(String.valueOf(i))) i++;
-            else valido = true;
-        }
-        return String.valueOf(i);
+    public int get_ultimo_numero_de_registo_equipamento() {
+        return armazem.get_ultimo_numero_de_registo_equipamento();
     }
 
+    public void gravar_cliente (ICliente cliente) throws IOException {
+        FileWriter w = new FileWriter("cp/clientes.csv",true);
+        w.write(cliente.toString());
+    }
+
+    public void gravar_todos_clientes () throws IOException {
+        FileWriter w = new FileWriter("cp/clientes.csv");
+        clientes.forEach((k,v)-> {
+            try {
+                w.write(v.toString()+"\n");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+    }
 }

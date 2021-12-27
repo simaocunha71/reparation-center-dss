@@ -10,15 +10,15 @@ public class PedidoExpresso implements IPedido {
     private String tipo; //espeficiação do serviço expresso
     private float valorFixo;
     private LocalDateTime dataRegisto;
+    private int numeroRegistoEquipamento;
 
 
     public LocalDateTime getTempoRegisto(){
         return dataRegisto;
     }
 
-    @Override
-    public String getNumeroRegistoEquipamento() {
-        return null;
+    public int getNumeroRegistoEquipamento() {
+        return this.numeroRegistoEquipamento;
     }
 
 }

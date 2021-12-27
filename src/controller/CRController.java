@@ -55,8 +55,8 @@ public class CRController {
     };
 
     private final String[] menuRegistoCliente = new String[]{
-            "NIF",
             "Nome",
+            "NIF",
             "Telemovel",
             "Email", //Funcionar ou Técnico ou Gestor
             "Guardar e sair",
@@ -88,7 +88,7 @@ public class CRController {
     private final String[] menuPedido = new String[]{
             "NIF de cliente",
             "Equipamento",
-            "Descricao",
+            "Descrição",
             "Guardar e sair",
     };
 
@@ -228,11 +228,12 @@ public class CRController {
             auxView.perguntaNIFCliente();
             String auxNif = nif.get();
             nif.set(scanner.nextLine());
-            if(verifNif(nif.get())) {
+            if(verifInt(nif.get()) && verifLength(nif.get(),9)) {
                 menu.changeOption(2, "NIF do cliente: " + nif.get());
                 condicao.get(1).set(1);
             }
             else{
+                auxView.errorMessage("NIF inválido!");
                 nif.set(auxNif);
             }
         });
@@ -240,11 +241,12 @@ public class CRController {
             auxView.perguntaTelemovel();
             String auxTelemovel = telemovel.get();
             telemovel.set(scanner.nextLine());
-            if(verifTelemovel(telemovel.get())) {
+            if(verifInt(telemovel.get()) && verifLength(telemovel.get(),9)) {
                 menu.changeOption(3, "Telemóvel do cliente: " + telemovel.get());
                 condicao.get(2).set(1);
             }
             else{
+                auxView.errorMessage("Telemóvel inválido!");
                 telemovel.set(auxTelemovel);
             }
         });
@@ -352,8 +354,9 @@ public class CRController {
     private void registarPedidoOrcamento() throws IOException, ClassNotFoundException {
         CRView menu = new CRView("Pedido Express", menuPedido);
         AtomicReference<String> nif = new AtomicReference<>();
-        AtomicReference<String> descricao = new AtomicReference<>();
-        AtomicReference<Equipamento> equipamento = new AtomicReference<>(null);
+        AtomicReference<String> descricaoPedido = new AtomicReference<>();
+        AtomicReference<String> modelo = new AtomicReference<>();
+        AtomicReference<String> descricaoEquipamento = new AtomicReference<>();
         List<AtomicInteger> condicao = new ArrayList<>(3);
         for(int i = 0; i < 3; i++){
             condicao.add(i,new AtomicInteger(0));
@@ -365,46 +368,56 @@ public class CRController {
             auxView.perguntaNIFCliente();
             String auxNif = nif.get();
             nif.set(scanner.nextLine());
-            if(verifNif(nif.get())) {
+            if(verifInt(nif.get()) && verifLength(nif.get(),9)) {
                 if(centro.exists_cliente(nif.get())) {
                     menu.changeOption(1, "NIF do cliente: " + nif.get());
                     condicao.get(0).set(1);
                 }
+                else{
+                    auxView.errorMessage("Cliente não registado!");
+                }
             }
             else{
+                auxView.errorMessage("Nif inválido!");
                 nif.set(auxNif);
             }
         });
         menu.setHandler(2, ()->{
-            if(equipamento.get() != null) menu.changeOption(2,"Equipamento: " + equipamento.get().getNumeroRegisto());
-            equipamentoInfo(equipamento);
-            if(equipamento.get() != null) condicao.get(1).set(1);
-            else condicao.get(1).set(0);
+            equipamentoInfo(modelo,descricaoEquipamento);
+
+            if(modelo.get() == null){
+                menu.changeOption(2,"Equipamento");
+                condicao.get(1).set(0);
+            }
+            else {
+                condicao.get(1).set(1);
+                menu.changeOption(2,"Equipamento [Registado #"+centro.get_ultimo_numero_de_registo_equipamento()+1+"]");
+            }
         });
         menu.setHandler(3, ()->{
-            auxView.normalMessage("Descricao: ");
-            descricao.set(scanner.nextLine());
-            condicao.get(2).set(1);
+            auxView.normalMessage("Descrição do Pedido: ");;
+            String auxDescricao = descricaoPedido.get();
+            descricaoPedido.set(scanner.nextLine());
+            if(verifLength(descricaoPedido.get(),25)) {
+                menu.changeOption(3,"Descrição: "+descricaoPedido.get());
+                condicao.get(2).set(1);
+            }
+            else {
+                descricaoPedido.set(auxDescricao);
+            }
         });
         menu.setHandler(4, ()->{
-            centro.adicionar_pedido_orcamento(nif.get(),equipamento.get(),descricao.get());
+            centro.adicionar_pedido_orcamento(nif.get(),modelo.get(),descricaoEquipamento.get(),descricaoPedido.get());
             menu.returnMenu();
         });
 
         menu.simpleRun();
     }
 
-    private void equipamentoInfo(AtomicReference<Equipamento> equipamento) throws IOException, ClassNotFoundException {
+    private void equipamentoInfo(AtomicReference<String> modelo, AtomicReference<String> descricao) throws IOException, ClassNotFoundException {
         CRView menu = new CRView("Equipamento Info", menuEquipamentoInfo);
-        AtomicReference<String> modelo = new AtomicReference<>();
-        AtomicReference<String> descricao = new AtomicReference<>("");
-        String numeroRegisto;
-        if(equipamento.get()==null){
-            numeroRegisto = centro.novo_numero_registo();
-        }else{
-            numeroRegisto = equipamento.get().getNumeroRegisto();
-        }
-        auxView.normalMessage("Numero de registo: " + numeroRegisto);
+
+        auxView.normalMessage("#"+centro.get_ultimo_numero_de_registo_equipamento()+1+" equipamento a registar.");
 
         List<AtomicInteger> condicao = new ArrayList<>(2);
         for(int i = 0; i < 2; i++){
@@ -414,46 +427,48 @@ public class CRController {
         menu.setPreCondition(3,()-> condicao.stream().noneMatch(k -> k.get() == 0));
 
         menu.setHandler(1, ()->{
-            auxView.perguntaEquipamento();
+            auxView.normalMessage("Modelo do Equipamento: ");;
+            String auxModelo = modelo.get();
             modelo.set(scanner.nextLine());
-            menu.changeOption(2,"Equipamento: "+equipamento.get());
-            condicao.get(0).set(1);
+            if(verifLength(modelo.get(),25)){
+                menu.changeOption(1,"Modelo: "+modelo.get());
+                condicao.get(0).set(1);
+            }
+            else {
+                modelo.set(auxModelo);
+            }
         });
         menu.setHandler(2, ()->{
-            auxView.perguntaEquipamento();
+            auxView.normalMessage("Descrição do Equipamento: ");
+            String auxDescricao = descricao.get();
             descricao.set(scanner.nextLine());
-            condicao.get(1).set(1);
+            if(verifLength(descricao.get(),25)) {
+                menu.changeOption(1,"Descrição: "+descricao.get());
+                condicao.get(1).set(1);
+                }
+            else {
+                descricao.set(auxDescricao);
+            }
         });
 
-        menu.setHandler(3, ()->{
-            equipamento.set(new Equipamento(numeroRegisto,modelo.get(),descricao.get()));
-            menu.returnMenu();
-        });
+        menu.setHandler(3, menu::returnMenu);
 
         menu.simpleRun();
     }
 
 
-    private boolean verifNif(String nif){
+    private boolean verifInt(String string){
         try{
-            Integer.parseInt(nif);
+            Integer.parseInt(string);
         }
         catch (NumberFormatException e){
-            auxView.errorMessage("Nif inválido!");
             return false;
         }
-        return nif.length() == 9;
+        return true;
     }
 
-    private boolean verifTelemovel(String telemovel){
-        try{
-            Integer.parseInt(telemovel);
-        }
-        catch (NumberFormatException e){
-            auxView.errorMessage("Telemóvel inválido!");
-            return false;
-        }
-        return telemovel.length() == 9;
+    private boolean verifLength(String string,int limit){
+        return string.length() <= limit;
     }
 
     private boolean verifEmail(String email){

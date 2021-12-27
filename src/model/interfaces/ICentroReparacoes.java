@@ -11,13 +11,13 @@ public interface ICentroReparacoes {
 
     void adicionar_utilizador(String id,String nome,String password,int permissao) throws JaExistenteExcecao;
 
-    void adicionar_cliente(String nif,String nome,String numTelemovel,String email) throws JaExistenteExcecao;
+    void adicionar_cliente(String nif,String nome,String numTelemovel,String email) throws JaExistenteExcecao, IOException;
 
     void carregar_utilizadores(String filename) throws IOException, JaExistenteExcecao;
 
     void carregar_cp(String utilizadoresFN,String clientesFN,String pedidosFN) throws IOException, JaExistenteExcecao;
 
-    public void adicionar_pedido_orcamento(String nifCliente, Equipamento equipamento, String descricao);
+    void adicionar_pedido_orcamento(String nifCliente, String modelo, String descricaoEquipamento, String descricaoPedido);
 
     boolean exists_plan();
 
@@ -33,5 +33,5 @@ public interface ICentroReparacoes {
 
     boolean exists_cliente(String nif);
 
-    public String novo_numero_registo();
+    int get_ultimo_numero_de_registo_equipamento();
 }

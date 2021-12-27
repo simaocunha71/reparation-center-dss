@@ -8,10 +8,10 @@ import java.time.LocalDateTime;
 public class PedidoOrcamento implements IPedido {
     private String nifCliente;
     private LocalDateTime dataRegisto;
-    private String numeroRegistoEquipamento;
+    private int numeroRegistoEquipamento;
     private String descricaoPedido;
 
-    public PedidoOrcamento(String nifCliente, String numeroRegistoEquipamento, String descricaoPedido){
+    public PedidoOrcamento(String nifCliente, int numeroRegistoEquipamento, String descricaoPedido){
         this.nifCliente = nifCliente;
         this.numeroRegistoEquipamento = numeroRegistoEquipamento;
         this.descricaoPedido = descricaoPedido;
@@ -22,7 +22,7 @@ public class PedidoOrcamento implements IPedido {
         return dataRegisto;
     }
 
-    public String getNumeroRegistoEquipamento() {
-        return numeroRegistoEquipamento;
+    public int getNumeroRegistoEquipamento() {
+        return this.numeroRegistoEquipamento;
     }
 }
