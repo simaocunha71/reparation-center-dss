@@ -9,13 +9,13 @@ public interface ICentroReparacoes {
 
     IUtilizador get_utilizador_by_ID(String id);
 
-    void adicionar_utilizador(String id,String nome,String password,int permissao) throws JaExistenteExcecao;
+    void adicionar_utilizador(String id,String nome,String password,int permissao) throws JaExistenteExcecao, IOException;
 
     void adicionar_cliente(String nif,String nome,String numTelemovel,String email) throws JaExistenteExcecao, IOException;
 
     void carregar_utilizadores(String filename) throws IOException, JaExistenteExcecao;
 
-    void carregar_cp(String utilizadoresFN,String clientesFN,String pedidosFN) throws IOException, JaExistenteExcecao;
+    void carregar_cp(String utilizadoresFN,String clientesFN,String armazemFN,String pedidosFN) throws IOException, JaExistenteExcecao;
 
     void adicionar_pedido_orcamento(String nifCliente, String modelo, String descricaoEquipamento, String descricaoPedido);
 

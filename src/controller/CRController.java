@@ -32,7 +32,6 @@ public class CRController {
     };
 
     private final String[] menuPrincipalGestor = new String[]{
-            //TODO: "Registar cliente"
             "Registar cliente",
             "Registar pedido",
             "Lista de pedidos de orçamento",
@@ -104,7 +103,7 @@ public class CRController {
 
     public void run() throws IOException, ClassNotFoundException {
         try {
-            centro.carregar_cp("cp/utilizadores.csv", "cp/clientes.csv", "cp/pedidos.csv");
+            centro.carregar_cp("cp/utilizadores.csv", "cp/clientes.csv","cp/armazem.csv", "cp/pedidos.csv");
         }
         catch (JaExistenteExcecao e){
         }

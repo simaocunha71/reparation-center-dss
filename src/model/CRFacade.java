@@ -49,21 +49,35 @@ public class CRFacade implements ICentroReparacoes {
         return clientes.get(id);
     }
 
-    /**
-     *Adiciona um utilizado ao map de utilizadores
-     * @param id id
-     * @param nome nome
-     * @param permissao nivel de permissao
-     * @throws JaExistenteExcecao exceção
-     */
-    public void adicionar_utilizador(String id,String nome,String password,int permissao) throws JaExistenteExcecao {
-        if(!utilizadores.containsKey(id)){
-            switch (permissao) {
-                case 1 -> utilizadores.put(id, new Gestor(id, nome,password));
-                case 2 -> utilizadores.put(id, new Funcionario(id, nome,password));
-                case 3 -> utilizadores.put(id, new Tecnico(id, nome,password));
+
+    public void adicionar_utilizador(String id,String nome,String password,int permissao) throws JaExistenteExcecao, IOException {
+        String linha = new StringBuilder().append(id).append(";").append(nome).append(";").append(password).toString();
+        IUtilizador utilizador = null;
+        switch (permissao) {
+            case 1 -> {
+                utilizador = new Gestor();
             }
-        }else{throw new JaExistenteExcecao("Utilizador já existe no sistema");}
+            case 2 -> {
+                utilizador = new Funcionario();
+            }
+            case 3 -> {
+                utilizador = new Tecnico();
+            }
+        }
+        utilizador.load_utilizador(linha);
+        if (utilizador.valida_utilizador()) {
+            if (!utilizadores.containsKey(id)) {
+                utilizadores.put(id, utilizador);
+                gravar_utilizador(utilizador);
+            } else {
+                if (!(nome.equals(utilizador.getName()) && password.equals(utilizador.getPassword()))) {
+                    utilizadores.remove(id);
+                    utilizadores.put(id,utilizador);
+                    gravar_todos_utilizadores();
+                }
+                throw new JaExistenteExcecao("Utilizador já existe no sistema");
+            }
+        }
     }
 
 
@@ -87,13 +101,44 @@ public class CRFacade implements ICentroReparacoes {
             clientes.put(nif,new Cliente(nif,nome,numTelemovel,email));
             gravar_cliente(clientes.get(nif));
         }else {
-            //TODO: comparar os argumentos dados com o existente para ver se comepensa overwrite
-            clientes.remove(nif);
-            clientes.put(nif,new Cliente(nif,nome,numTelemovel,email));
-            gravar_todos_clientes();
+            ICliente cliente = clientes.get(nif);
+            if(!(nome.equals(cliente.getNome()) && numTelemovel.equals(cliente.getNumTelemovel()) && email.equals(cliente.getEmail()))){
+                clientes.remove(nif);
+                clientes.put(nif, new Cliente(nif, nome, numTelemovel, email));
+                gravar_todos_clientes();
+            }
             throw new JaExistenteExcecao("cliente já existe no sistema, overwrited");
         }
     }
+
+    private void adicionar_equipamento(Equipamento equipamento,int local) throws IOException {
+        switch (local){
+            case 1:
+            {
+                if(!armazem.contem_para_orcamento(equipamento.getNumeroRegisto())){
+                    armazem.regista_para_orcamento(equipamento);
+                    gravar_equipamento(equipamento,1);
+                }
+
+            }
+            case 2:
+            {
+                if(!armazem.contem_para_reparacao(equipamento.getNumeroRegisto())) {
+                    armazem.regista_para_reparacao(equipamento);
+                    gravar_equipamento(equipamento,2);
+                }
+            }
+            case 3:
+            {
+                if(!armazem.contem_pronto_entregar(equipamento.getNumeroRegisto())) {
+                    armazem.regista_prontos_entregar(equipamento);
+                    gravar_equipamento(equipamento,3);
+                }
+            }
+        }
+    }
+
+
 
     public void fazer_pedido(String idCLiente){
 
@@ -118,14 +163,19 @@ public class CRFacade implements ICentroReparacoes {
      * @throws FileNotFoundException execão
      */
 
-    //TODO: carregar como os clientes
     public void carregar_utilizadores(String filename) throws IOException, JaExistenteExcecao {
         BufferedReader br = new BufferedReader(new FileReader(filename));
         String linha;
         String[] split;
         while((linha = br.readLine()) != null){
             split = linha.split(";");
-            adicionar_utilizador(split[0],split[1], split[2],Integer.parseInt(split[3]));
+            if(split.length == 4){
+                try {
+                    int permissao = Integer.parseInt(split[3]);
+                    adicionar_utilizador(split[0], split[1], split[2], permissao);
+                }catch (NumberFormatException ignored){
+                }
+            }
         }
         br.close();
     }
@@ -139,21 +189,44 @@ public class CRFacade implements ICentroReparacoes {
         BufferedReader br = new BufferedReader(new FileReader(filename));
         String linha;
         while((linha = br.readLine()) != null){
-
             ICliente cliente = new Cliente();
             cliente.load_cliente(linha);
             if(cliente.valida_cliente()) adicionar_cliente(cliente);
         }
         br.close();
-
     }
+
+    private void carregar_armazem(String filename) throws IOException {
+        BufferedReader br = new BufferedReader(new FileReader(filename));
+        String linha;
+        while((linha = br.readLine()) != null){
+            if(linha.split(";").length ==4){
+                Equipamento equipamento = new Equipamento();
+                StringBuilder sb = new StringBuilder();
+                sb.append(linha.split(";")[0]).append(";")
+                        .append(linha.split(";")[1]).append(";")
+                        .append(linha.split(";")[2]).append(";");
+                equipamento.load_equipamento(sb.toString());
+                try {
+                    int local = Integer.parseInt(linha.split(";")[3]);
+                    if (equipamento.valida_equipamento()) adicionar_equipamento(equipamento,local);
+                }catch (NumberFormatException ignored){}
+            }
+        }
+        br.close();
+    }
+
+
 
     //carregar pedidos
 
-    public void carregar_cp(String utilizadoresFN,String clientesFN,String pedidosFN) throws IOException, JaExistenteExcecao {
+    public void carregar_cp(String utilizadoresFN,String clientesFN,String armazemFN,String pedidosFN) throws IOException, JaExistenteExcecao {
         carregar_utilizadores(utilizadoresFN);
         carregar_clientes(clientesFN);
+        carregar_armazem(armazemFN);
     }
+
+
 
 
     public void adicionar_pedido_orcamento(String nifCliente, String modelo, String descricaoEquipamento, String descricaoPedido) {
@@ -209,7 +282,7 @@ public class CRFacade implements ICentroReparacoes {
 
     public void gravar_cliente (ICliente cliente) throws IOException {
         FileWriter w = new FileWriter("cp/clientes.csv",true);
-        w.write(cliente.toString());
+        w.write(cliente.toString()+"\n");
     }
 
     public void gravar_todos_clientes () throws IOException {
@@ -221,5 +294,26 @@ public class CRFacade implements ICentroReparacoes {
                 e.printStackTrace();
             }
         });
+    }
+
+    public void gravar_utilizador (IUtilizador utilizador) throws IOException {
+        FileWriter w = new FileWriter("cp/utilizadores.csv",true);
+        w.write(utilizador.toString()+"\n");
+    }
+
+    public void gravar_todos_utilizadores () throws IOException {
+        FileWriter w = new FileWriter("cp/utilizadores.csv");
+        utilizadores.forEach((k,v)-> {
+            try {
+                w.write(v.toString()+"\n");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    private void gravar_equipamento(Equipamento equipamento, int local) throws IOException {
+        FileWriter w = new FileWriter("cp/armazem.csv",true);
+        w.write(equipamento.toString()+";"+local+"\n");
     }
 }

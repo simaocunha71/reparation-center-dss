@@ -8,4 +8,8 @@ public interface IUtilizador {
 
     String getPassword();
 
+    void load_utilizador(String linha);
+    boolean valida_utilizador();
+
+    String toString();
 }

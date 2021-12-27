@@ -23,9 +23,32 @@ public class Armazem {
         this.ultimoNumeroDeRegisto++;
     }
 
+    public void regista_para_reparacao(Equipamento equipamento){
+        Equipamento clone = new Equipamento(equipamento.getNifCliente(), equipamento.getNumeroRegisto(), equipamento.getModelo(), equipamento.getDescricao());
+        paraReparacao.put(clone.getNumeroRegisto(),clone);
+    }
+
+    public void regista_prontos_entregar(Equipamento equipamento){
+        Equipamento clone = new Equipamento(equipamento.getNifCliente(), equipamento.getNumeroRegisto(), equipamento.getModelo(), equipamento.getDescricao());
+        prontosAEntregar.put(clone.getNumeroRegisto(),clone);
+    }
+
     public int get_ultimo_numero_de_registo_equipamento(){
         return this.ultimoNumeroDeRegisto;
     }
+
+    public boolean contem_para_orcamento(int numeroRegisto){
+        return paraOrcamento.containsKey(numeroRegisto);
+    }
+
+    public boolean contem_para_reparacao(int numeroRegisto){
+        return paraReparacao.containsKey(numeroRegisto);
+    }
+
+    public boolean contem_pronto_entregar(int numeroRegisto){
+        return prontosAEntregar.containsKey(numeroRegisto);
+    }
+
 
 
 
