@@ -25,6 +25,11 @@ public class PedidoExpresso implements IPedido {
         return nifCliente;
     }
 
+    @Override
+    public IPedido clone() {
+        return null;
+    }
+
     //TODO: valida_pedido
     public boolean valida(){
         return true;
