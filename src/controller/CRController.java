@@ -151,10 +151,10 @@ public class CRController {
     private void menuInicial() throws IOException, ClassNotFoundException {
         if(centro.loggedGestor())
             menuInicialGestor();
-        //else if (centro.loggedTecnico())
-            //menuInicialTecnico();
-        //else if (centro.loggedFuncionario())
-            //menuInicialFuncionario();
+        else if (centro.loggedTecnico())
+            menuInicialTecnico();
+        else if (centro.loggedFuncionario())
+            menuInicialFuncionario();
     }
 
     public void menuInicialGestor() throws IOException, ClassNotFoundException {
@@ -171,6 +171,27 @@ public class CRController {
 //
         menu.setHandler(6,this::registarUtilizador);
         menu.setHandler(7,()->{menu.returnMenu();logout();});
+
+        menu.simpleRun();
+    }
+
+    public void menuInicialTecnico() throws IOException, ClassNotFoundException {
+        CRView menu = new CRView("Menu Inicial", menuPrincipalGestor);
+
+        //menu.setHandler(1,this::listaDePedidosOrcamento);
+
+        //menu.setHandler(2,this::listaDeEquipamentosReparacao);
+        menu.setHandler(3,()->{menu.returnMenu();logout();});
+
+        menu.simpleRun();
+    }
+
+    public void menuInicialFuncionario() throws IOException, ClassNotFoundException {
+        CRView menu = new CRView("Menu Inicial", menuPrincipalGestor);
+
+        menu.setHandler(1,this::registarPedido);
+
+        menu.setHandler(2,()->{menu.returnMenu();logout();});
 
         menu.simpleRun();
     }
