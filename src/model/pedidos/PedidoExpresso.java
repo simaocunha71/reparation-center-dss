@@ -15,4 +15,10 @@ public class PedidoExpresso implements IPedido {
     public LocalDateTime getTempoRegisto(){
         return dataRegisto;
     }
+
+    @Override
+    public String getNumeroRegistoEquipamento() {
+        return null;
+    }
+
 }
