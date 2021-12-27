@@ -1,7 +1,6 @@
 package model.interfaces;
 
-public interface ICliente {
-    public void load_cliente(String string);
+public interface ICliente extends Loadable {
 
 
     public String getNif();
@@ -14,5 +13,5 @@ public interface ICliente {
 
     public ICliente clone();
 
-    public boolean valida_cliente();
 }
+

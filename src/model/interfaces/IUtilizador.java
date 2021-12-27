@@ -1,6 +1,6 @@
 package model.interfaces;
 
-public interface IUtilizador {
+public interface IUtilizador extends Loadable{
 
     String getName();
 
@@ -8,8 +8,6 @@ public interface IUtilizador {
 
     String getPassword();
 
-    void load_utilizador(String linha);
-    boolean valida_utilizador();
-
     String toString();
+
 }
