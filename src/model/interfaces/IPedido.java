@@ -2,7 +2,7 @@ package model.interfaces;
 
 import java.time.LocalDateTime;
 
-public interface IPedido extends Loadable{
+public interface IPedido extends Carregavel {
 
     LocalDateTime getTempoRegisto();
     int getNumeroRegistoEquipamento();

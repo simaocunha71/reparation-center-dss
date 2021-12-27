@@ -1,6 +1,6 @@
 package model.interfaces;
 
-public interface ICliente extends Loadable {
+public interface ICliente extends Carregavel {
 
 
     public String getNif();

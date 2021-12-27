@@ -1,12 +1,12 @@
 package model;
 
 import model.interfaces.IPedido;
-import model.interfaces.Loadable;
+import model.interfaces.Carregavel;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class PlanoDeTrabalho implements Loadable {
+public class PlanoDeTrabalho implements Carregavel {
     IPedido pedidoAssociado;
     List<Passo> passos;
     float custoEstimado;
@@ -28,7 +28,21 @@ public class PlanoDeTrabalho implements Loadable {
         this.realizado = false;
     }
 
-    public void concluido(){
+    public void concluir(){
+        boolean passosConcluidos = true;
+        for(Passo p : passos){
+            if(!p.concluido()) passosConcluidos = false;
+        }
+        if(passosConcluidos) {
+            this.custoReal = 0;
+            this.duracaoReal = 0;
+            for (Passo p : passos) {
+                this.custoReal += p.getCustoReal();
+                this.duracaoReal += p.getDuracaoReal();
+            }
+            realizado = true;
+        }
+
         this.realizado = true;
     }
 
@@ -37,7 +51,7 @@ public class PlanoDeTrabalho implements Loadable {
 
     //Passos: Passo1->Passo2->Passo3...
 
-    public void load(String string){
+    public void carregar(String string){
         String[] split = string.split("@");
         if(split.length == 2){
             String[] infos = split[0].split(";");
@@ -62,7 +76,7 @@ public class PlanoDeTrabalho implements Loadable {
                 if(passos.length == nP) {
                     for (int i = 0; i < nP; i++) {
                         Passo p = new Passo();
-                        p.load(passos[i]);
+                        p.carregar(passos[i]);
                         adicionar_passo(p);
                     }
                 }
@@ -70,7 +84,7 @@ public class PlanoDeTrabalho implements Loadable {
         }
     }
 
-    public boolean validate() {
+    public boolean valida() {
         return true;
     }
 

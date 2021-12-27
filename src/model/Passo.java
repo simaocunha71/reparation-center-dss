@@ -1,12 +1,12 @@
 package model;
 
-import model.interfaces.Loadable;
+import model.interfaces.Carregavel;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Passo implements Loadable {
-    List<SubPasso> passos;
+public class Passo implements Carregavel {
+    List<SubPasso> subpassos;
     String descricao;
     float custoEstimado;
     float custoReal;
@@ -21,7 +21,7 @@ public class Passo implements Loadable {
         this.duracaoEstimada = duracaoEstimada;
         this.custoReal = 0;
         this.duracaoReal = 0;
-        this.passos = new ArrayList<>();
+        this.subpassos = new ArrayList<>();
         this.realizado = false;
         this.idTecnicoRealizou = null;
     }
@@ -32,10 +32,39 @@ public class Passo implements Loadable {
         this.duracaoEstimada = -1;
         this.custoReal = 0;
         this.duracaoReal = 0;
-        this.passos = new ArrayList<>();
+        this.subpassos = new ArrayList<>();
     }
 
-    public void concluirPasso(String idTecnico){
+    //se tiver subpassos
+    public void concluir(){
+        boolean subpassosConcluidos = true;
+        for(SubPasso sp : subpassos){
+            if(!sp.concluido()) subpassosConcluidos = false;
+        }
+        if(subpassosConcluidos) {
+            this.idTecnicoRealizou = "vários";
+            this.custoReal = 0;
+            this.duracaoReal = 0;
+            for (SubPasso sp : subpassos) {
+                this.custoReal += sp.getCustoReal();
+                this.duracaoReal += sp.getDuracaoReal();
+            }
+            realizado = true;
+        }
+    }
+
+    public float getCustoReal() {
+        return custoReal;
+    }
+
+    public float getDuracaoReal() {
+        return duracaoReal;
+    }
+
+    //se nao tem subpassos
+    public void concluir(String idTecnico, float custoReal, float duracaoReal){
+        this.custoReal = custoReal;
+        this.duracaoReal = duracaoReal;
         this.idTecnicoRealizou = idTecnico;
         realizado = true;
     }
@@ -43,18 +72,18 @@ public class Passo implements Loadable {
 
     public void adicionar_subpasso(String descricao, float custoEstimado, float duracaoEstimada){
         SubPasso novoPasso = new SubPasso(descricao,custoEstimado,duracaoEstimada);
-        passos.add(novoPasso);
+        subpassos.add(novoPasso);
     }
 
     public void adicionar_subpasso(SubPasso sp){
-        passos.add(sp);
+        subpassos.add(sp);
     }
 
 
     //descriçao;custoEstimado;custoReal;duracaoEstimada;duracaoReal;booleanoRealizado;idTecnico;numeroSP%subPassos
 
     //subPassos: subpasso1/subpasso2/subpass3...
-    public void load(String string) {
+    public void carregar(String string) {
         String[] split = string.split("%");
         if(split.length == 2){
             String[] infos = split[0].split(";");
@@ -84,7 +113,7 @@ public class Passo implements Loadable {
                 if(subpassos.length == nSP){
                     for(int i = 0; i < nSP; i++){
                         SubPasso sp = new SubPasso();
-                        sp.load(subpassos[i]);
+                        sp.carregar(subpassos[i]);
                         adicionar_subpasso(sp);
                     }
                 }
@@ -92,7 +121,11 @@ public class Passo implements Loadable {
         }
     }
 
-    public boolean validate() {
+    public boolean valida() {
         return true;
+    }
+
+    public boolean concluido() {
+        return realizado;
     }
 }

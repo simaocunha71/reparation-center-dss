@@ -61,7 +61,7 @@ public class CRFacade implements ICentroReparacoes {
             case 2 -> utilizador = new Funcionario(id,nome,password);
             case 3 -> utilizador = new Tecnico(id,nome,password);
         }
-        if (utilizador != null && utilizador.validate()) {
+        if (utilizador != null && utilizador.valida()) {
             if (!utilizadores.containsKey(id)) {
                 utilizadores.put(id, utilizador);
                 gravar_utilizador(utilizador);
@@ -155,8 +155,8 @@ public class CRFacade implements ICentroReparacoes {
 
     private void carregar_funcionario(String s) {
         IUtilizador utilizador = new Funcionario();
-        utilizador.load(s);
-        if (utilizador.validate()) {
+        utilizador.carregar(s);
+        if (utilizador.valida()) {
             if (!utilizadores.containsKey(utilizador.getId())) {
                 utilizadores.put(utilizador.getId(), utilizador);
             } else {
@@ -168,8 +168,8 @@ public class CRFacade implements ICentroReparacoes {
 
     private void carregar_gestor(String s) {
         IUtilizador utilizador = new Gestor();
-        utilizador.load(s);
-        if (utilizador.validate()) {
+        utilizador.carregar(s);
+        if (utilizador.valida()) {
             if (!utilizadores.containsKey(utilizador.getId())) {
                 utilizadores.put(utilizador.getId(), utilizador);
             } else {
@@ -181,8 +181,8 @@ public class CRFacade implements ICentroReparacoes {
 
     private void carregar_tecnico(String s) {
         IUtilizador utilizador = new Tecnico();
-        utilizador.load(s);
-        if (utilizador.validate()) {
+        utilizador.carregar(s);
+        if (utilizador.valida()) {
             if (!utilizadores.containsKey(utilizador.getId())) {
                 utilizadores.put(utilizador.getId(), utilizador);
             } else {
@@ -202,8 +202,8 @@ public class CRFacade implements ICentroReparacoes {
         String linha;
         while((linha = br.readLine()) != null){
             ICliente cliente = new Cliente();
-            cliente.load(linha);
-            if(cliente.validate()) carregar_cliente(cliente);
+            cliente.carregar(linha);
+            if(cliente.valida()) carregar_cliente(cliente);
         }
         br.close();
     }
@@ -240,8 +240,8 @@ public class CRFacade implements ICentroReparacoes {
                         case 1 -> pedido = new PedidoOrcamento();
                         case 2 -> pedido = new PedidoExpresso();
                     }
-                    if(pedido != null) pedido.load(split[1]);
-                    if(pedido != null && pedido.validate() && valida_pedido(pedido))
+                    if(pedido != null) pedido.carregar(split[1]);
+                    if(pedido != null && pedido.valida() && valida_pedido(pedido))
                         carregar_pedido(pedido,tipo);
                 }
                 catch (NumberFormatException ignored){}

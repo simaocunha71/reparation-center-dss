@@ -1,8 +1,8 @@
 package model;
 
-import model.interfaces.Loadable;
+import model.interfaces.Carregavel;
 
-public class SubPasso implements Loadable {
+public class SubPasso implements Carregavel {
     String descricao;
     float custoEstimado;
     float custoReal;
@@ -31,13 +31,25 @@ public class SubPasso implements Loadable {
         this.idTecnico = null;
     }
 
-    public void concluir(String idTecnico){
+    public void concluir(String idTecnico, float custoReal, float duracaoReal){
+        this.custoReal = custoReal;
+        this.duracaoReal = duracaoReal;
         this.idTecnico = idTecnico;
         this.realizado = true;
     }
 
+    public boolean concluido(){return this.realizado;}
+
+    public float getCustoReal() {
+        return custoReal;
+    }
+
+    public float getDuracaoReal() {
+        return duracaoReal;
+    }
+
     //descriçao;custoEstimado;custoReal;duracaoEstimada;duracaoReal;booleanRealizado;idTecnico
-    public void load(String string) {
+    public void carregar(String string) {
        String[] infos = string.split(";");
        if (infos.length == 7){
            try {
@@ -62,7 +74,7 @@ public class SubPasso implements Loadable {
        }
     }
 
-    public boolean validate() {
+    public boolean valida() {
         return true;
     }
 }

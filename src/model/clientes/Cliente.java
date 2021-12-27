@@ -38,7 +38,7 @@ public class Cliente implements ICliente {
         return numTelemovel;
     }
 
-    public void load(String string){
+    public void carregar(String string){
         String[]split = string.split(";");
         if(split.length == 4) {
             this.nif = split[0];
@@ -83,7 +83,7 @@ public class Cliente implements ICliente {
     }
 
 
-    public boolean validate(){
+    public boolean valida(){
         return valida_nif() && valida_telemovel() && valida_email() && valida_nome();
     }
 

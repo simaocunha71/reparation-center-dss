@@ -27,7 +27,7 @@ public class PedidoOrcamento implements IPedido {
     }
 
     //TODO: valida_pedido
-    public boolean validate(){
+    public boolean valida(){
         return true;
     }
 
@@ -36,7 +36,7 @@ public class PedidoOrcamento implements IPedido {
     }
 
 
-    public void load(String string) {
+    public void carregar(String string) {
         String[]split = string.split(";");
         if(split.length == 4) {
             this.nifCliente = split[0];

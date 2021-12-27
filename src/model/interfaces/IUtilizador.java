@@ -1,6 +1,6 @@
 package model.interfaces;
 
-public interface IUtilizador extends Loadable{
+public interface IUtilizador extends Carregavel {
 
     String getName();
 

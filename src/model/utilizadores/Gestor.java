@@ -24,7 +24,7 @@ public class Gestor implements IUtilizador {
     public String getPassword(){return this.password;}
 
     @Override
-    public void load(String string) {
+    public void carregar(String string) {
         String[]split = string.split(";");
         if(split.length == 3) {
             this.id = split[0];

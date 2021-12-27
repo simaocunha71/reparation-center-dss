@@ -26,13 +26,13 @@ public class PedidoExpresso implements IPedido {
     }
 
     //TODO: valida_pedido
-    public boolean validate(){
+    public boolean valida(){
         return true;
     }
 
 
     //TODO:
-    public void load(String linha) {
+    public void carregar(String linha) {
     }
 
     public LocalDateTime getTempoRegisto(){
