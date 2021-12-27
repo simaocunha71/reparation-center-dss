@@ -1,6 +1,7 @@
 package model.interfaces;
 
 import model.Equipamento;
+import model.PlanoDeTrabalho;
 import model.excecoes.JaExistenteExcecao;
 
 import java.io.IOException;
@@ -16,7 +17,7 @@ public interface ICentroReparacoes {
 
     void carregar_utilizadores(String filename) throws IOException, JaExistenteExcecao;
 
-    void carregar_cp(String utilizadoresFN,String clientesFN,String armazemFN,String pedidosFN) throws IOException, JaExistenteExcecao;
+    void carregar_cp(String utilizadoresFN,String clientesFN,String armazemFN,String pedidosFN, String planosFN) throws IOException, JaExistenteExcecao;
 
     void adicionar_pedido_orcamento(String nifCliente, String modelo, String descricaoEquipamento, String descricaoPedido) throws IOException;
 
@@ -37,4 +38,8 @@ public interface ICentroReparacoes {
     int get_ultimo_numero_de_registo_equipamento();
 
     List<String> get_pedidos_orcamento();
+
+    IPedido get_pedido(int posicao);
+
+    void adicionar_plano(PlanoDeTrabalho plano) throws IOException;
 }

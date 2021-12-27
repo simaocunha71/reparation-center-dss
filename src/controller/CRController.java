@@ -1,8 +1,10 @@
 package controller;
 
 import model.CRFacade;
+import model.PlanoDeTrabalho;
 import model.excecoes.JaExistenteExcecao;
 import model.interfaces.ICentroReparacoes;
+import model.interfaces.IPedido;
 import view.CRView;
 import view.AuxiliarView;
 
@@ -94,7 +96,19 @@ public class CRController {
     private final String[] menuEquipamentoInfo = new String[]{
             "Modelo",
             "Descricao",
-            "Guardar e sair",
+            "Guardar e sair"
+    };
+
+    private final String[] menuPlano = new String[]{
+            "Adicionar Passo",
+            "Guardar e sair"
+    };
+
+    private final String[] menuPasso = new String[]{
+            "Preco estimado",
+            "Duracao estimada",
+            "Adicionar subpasso",
+            "Guardar e sair"
     };
 
     private boolean logged = false;
@@ -103,7 +117,7 @@ public class CRController {
 
     public void run() throws IOException, ClassNotFoundException {
         try {
-            centro.carregar_cp("cp/utilizadores.csv", "cp/clientes.csv","cp/armazem.csv", "cp/pedidos.csv");
+            centro.carregar_cp("cp/utilizadores.csv", "cp/clientes.csv","cp/armazem.csv", "cp/pedidos.csv","cp/planos.csv");
         }
         catch (JaExistenteExcecao e){
         }
@@ -192,10 +206,24 @@ public class CRController {
     }
 
     //TODO: FAZER MENU DE FAZER PLANO
-    private void fazerPlano(int i) {
+    private void fazerPlano(int i) throws IOException, ClassNotFoundException {
         //TODO:Adicionar passo (vai ter um menu) [preço estimado/tempo estimado/descricao e sub-passos (com as mesmas merdas)]
         //TODO:Apresentar plano
         //TODO:Gravar
+        IPedido pedido = centro.get_pedido(i);
+        AtomicReference<PlanoDeTrabalho> plano = new AtomicReference<>(new PlanoDeTrabalho(pedido));
+        CRView menu = new CRView("Registar Plano",menuPlano);
+        auxView.normalMessage("Equipamento #" + pedido.getNumeroRegistoEquipamento());
+
+        menu.setHandler(1,()->adicionarPasso(plano));
+        menu.setHandler(2,()->{
+            if(plano.get()!=null) centro.adicionar_plano(plano.get());
+            menu.returnMenu();
+        });
+        menu.simpleRun();
+    }
+
+    private void adicionarPasso(AtomicReference<PlanoDeTrabalho> plano) {
     }
 
 

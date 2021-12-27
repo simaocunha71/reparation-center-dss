@@ -20,7 +20,7 @@ public class CRFacade implements ICentroReparacoes {
     private Map<String, IUtilizador> utilizadores; //map com utilizadores do sistema
     private Map<String, ICliente> clientes;//map com clientes do sistema
     private Set<IPedido> pedidosOrcamentos;
-    private Map<String,PlanoDeTrabalho> planos; //numero de registo do equipamento é a key
+    private Map<Integer,PlanoDeTrabalho> planos; //numero de registo do equipamento é a key
     private Armazem armazem;
     private IUtilizador logado;
 
@@ -104,6 +104,15 @@ public class CRFacade implements ICentroReparacoes {
                 gravar_todos_clientes();
             }
             throw new JaExistenteExcecao("cliente já existe no sistema, overwrited");
+        }
+    }
+
+
+    public void adicionar_plano(PlanoDeTrabalho plano) throws IOException {
+        int num_referencia = plano.get_num_referencia();
+        if(!planos.containsKey(num_referencia)){
+            planos.put(num_referencia,plano);
+            gravar_plano(plano);
         }
     }
 
@@ -192,6 +201,13 @@ public class CRFacade implements ICentroReparacoes {
         }
     }
 
+    private void carregar_plano(PlanoDeTrabalho plano) throws JaExistenteExcecao {
+        int num_referencia = plano.get_num_referencia();
+        if(!planos.containsKey(num_referencia)){
+            planos.put(num_referencia,plano);
+        }else throw new JaExistenteExcecao("Plano ja existe");
+    }
+
     /**
      * Carrega clientes para o estado do sistema
      * @param filename path para o ficheiro
@@ -258,17 +274,44 @@ public class CRFacade implements ICentroReparacoes {
         }
     }
 
+    private void carregar_planos(String filename) throws IOException {
+        BufferedReader br = new BufferedReader(new FileReader(filename));
+        String linha;
+        String[] split;
+        while((linha = br.readLine()) != null){
+            split = linha.split("#");
+            if(split.length == 2){
+                try{
+                    int numRegisto = Integer.parseInt(split[0]);
+                    IPedido pedido = new PedidoExpresso();
+                    if(pedidosOrcamentos.stream().anyMatch(k->k.getNumeroRegistoEquipamento()==numRegisto)){
+                        pedido = pedidosOrcamentos.stream().filter(k->k.getNumeroRegistoEquipamento()==numRegisto).findFirst().get();
+                    }
+                    PlanoDeTrabalho plano = new PlanoDeTrabalho(pedido);
+                    plano.carregar(split[1]);
+                    if(plano.valida()) carregar_plano(plano);
+                }
+                catch (NumberFormatException | JaExistenteExcecao ignored){}
+            }
+        }
+
+        br.close();
+    }
+
+
+
     private boolean valida_pedido(IPedido pedido) {
         //return true;
         return clientes.containsKey(pedido.getNifCliente()) && armazem.contem_equipamento_para_orcamento(pedido.getNumeroRegistoEquipamento());
     }
 
 
-    public void carregar_cp(String utilizadoresFN,String clientesFN,String armazemFN,String pedidosFN) throws IOException, JaExistenteExcecao {
+    public void carregar_cp(String utilizadoresFN,String clientesFN,String armazemFN,String pedidosFN,String planosFN) throws IOException, JaExistenteExcecao {
         carregar_utilizadores(utilizadoresFN);
         carregar_clientes(clientesFN);
         carregar_armazem(armazemFN);
         carregar_pedidos(pedidosFN);
+        carregar_planos(planosFN);
     }
 
 
@@ -374,6 +417,12 @@ public class CRFacade implements ICentroReparacoes {
         w.close();
     }
 
+    private void gravar_plano(PlanoDeTrabalho plano) throws IOException {
+        FileWriter w = new FileWriter("cp/planos.csv",true);
+        w.write(plano.toString()+"\n");
+        w.close();
+    }
+
     //TODO: pra ja so guarda os de orçamento
     private void gravar_todos_pedidos(IPedido pedido) throws IOException {
         FileWriter w = new FileWriter("cp/pedidos.csv",true);
@@ -393,6 +442,18 @@ public class CRFacade implements ICentroReparacoes {
         w.close();
     }
 
+    private void gravar_todos_planos() throws IOException {
+        FileWriter w = new FileWriter("cp/armazem.csv");
+        planos.forEach((k,v)-> {
+            try {
+                w.write(v.toString()+"\n");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+        w.close();
+    }
+
     public List<String> get_pedidos_orcamento(){
         List<String> lista = new ArrayList<String>(pedidosOrcamentos.size());
 
@@ -403,6 +464,14 @@ public class CRFacade implements ICentroReparacoes {
             lista.add("DATA:["+p.getTempoRegisto().format(formatter) + "] CLIENTE:["+p.getNifCliente()+ "] EQUIPAMENTO:[#"+p.getNumeroRegistoEquipamento()+"]");
         }
         return lista;
+    }
+
+    public IPedido get_pedido(int posicao){
+        Iterator<IPedido> iterator = pedidosOrcamentos.iterator();
+        for(int i = 0; i < posicao-1 && iterator.hasNext(); i++){
+            iterator.next();
+        }
+        return iterator.next().clone();
     }
 
 }

@@ -28,6 +28,10 @@ public class PlanoDeTrabalho implements Carregavel {
         this.realizado = false;
     }
 
+    public int get_num_referencia(){
+        return pedidoAssociado.getNumeroRegistoEquipamento();
+    }
+
     public void concluir(){
         boolean passosConcluidos = true;
         for(Passo p : passos){
@@ -103,7 +107,11 @@ public class PlanoDeTrabalho implements Carregavel {
     //Passos: Passo1->Passo2->Passo3...
     public String toString(){
         StringBuilder sb = new StringBuilder();
-        sb.append(custoEstimado).append(";").append(custoReal).append(";").append(duracaoEstimada).append(";").append(duracaoReal).append(";");
+        sb.append(pedidoAssociado.getNumeroRegistoEquipamento()).append("#")
+                .append(custoEstimado).append(";")
+                .append(custoReal).append(";")
+                .append(duracaoEstimada).append(";")
+                .append(duracaoReal).append(";");
         if(realizado) sb.append("1;");
         else sb.append("0;");
         sb.append(passos.size()).append("@");

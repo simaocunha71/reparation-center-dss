@@ -1,5 +1,6 @@
 package model.pedidos;
 
+import model.PlanoDeTrabalho;
 import model.interfaces.ICliente;
 import model.interfaces.IPedido;
 
@@ -71,5 +72,11 @@ public class PedidoOrcamento implements IPedido {
         sb.append("1@").append(nifCliente).append(";").append(dataRegisto.toString()).append(";");
         sb.append(numeroRegistoEquipamento).append(";").append(descricaoPedido);
         return sb.toString();
+    }
+
+    public IPedido clone(){
+        PedidoOrcamento clone = new PedidoOrcamento(this.nifCliente,this.numeroRegistoEquipamento,this.descricaoPedido);
+        clone.dataRegisto = this.dataRegisto;
+        return clone;
     }
 }
