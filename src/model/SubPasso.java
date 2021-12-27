@@ -77,5 +77,15 @@ public class SubPasso implements Carregavel {
     public boolean valida() {
         return true;
     }
+
+    public String toString(){
+        StringBuilder sb = new StringBuilder();
+        sb.append(descricao).append(";").append(custoEstimado).append(";").append(custoReal).append(";");
+        sb.append(duracaoEstimada).append(";").append(duracaoReal).append(";");
+        if(realizado) sb.append("1;");
+        else sb.append("0;");
+        sb.append(idTecnico);
+        return sb.toString();
+    }
 }
 

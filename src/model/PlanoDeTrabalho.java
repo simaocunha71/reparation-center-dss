@@ -98,4 +98,20 @@ public class PlanoDeTrabalho implements Carregavel {
         passos.add(new Passo(p.descricao,p.custoEstimado,p.duracaoEstimada)); //secalhar nao é preciso
     }
 
+    //custoEstimado;custoReal;tempoEstimado;tempoReal;booleanoRealizado;numeroPassos@Passos
+
+    //Passos: Passo1->Passo2->Passo3...
+    public String toString(){
+        StringBuilder sb = new StringBuilder();
+        sb.append(custoEstimado).append(";").append(custoReal).append(";").append(duracaoEstimada).append(";").append(duracaoReal).append(";");
+        if(realizado) sb.append("1;");
+        else sb.append("0;");
+        sb.append(passos.size()).append("@");
+        for(int i = 0; i < passos.size()-1; i++){
+            sb.append(passos.get(i).toString()).append("->");
+        }
+        sb.append(passos.get(passos.size()-1).toString());
+        return sb.toString();
+    }
+
 }
