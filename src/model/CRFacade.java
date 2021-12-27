@@ -1,8 +1,10 @@
 package model;
 
+import model.comparators.IPedidoComparator;
 import model.excecoes.JaExistenteExcecao;
 import model.excecoes.NaoExisteExcecao;
 import model.interfaces.*;
+import model.pedidos.PedidoOrcamento;
 import model.utilizadores.Funcionario;
 import model.utilizadores.Gestor;
 import model.utilizadores.Tecnico;
@@ -12,23 +14,22 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class CRFacade implements ICentroReparacoes {
 
     private Map<String, IUtilizador> utilizadores; //map com utilizadores do sistema
     private Map<String, ICliente> clientes;//map com clientes do sistema
-    private List<IPedido> pedidos; //queue fifo de pedidos
+    private Set<IPedido> pedidosOrcamentos;
+    private Map<String,PlanoDeTrabalho> planos; //numero de registo do equipamento é a key
+    private Armazem armazem;
     private IUtilizador logado;
 
 
     public CRFacade(){
         utilizadores = new HashMap<>();
         clientes = new HashMap<>();
-        pedidos = new LinkedList<>();
+        pedidosOrcamentos = new TreeSet<IPedido>(new IPedidoComparator());
     }
 
     /**
@@ -36,7 +37,7 @@ public class CRFacade implements ICentroReparacoes {
      * @param id id
      * @return  IUtilizador
      */
-    public IUtilizador getUtilizadorByID(String id){
+    public IUtilizador get_utilizador_by_ID(String id){
         return utilizadores.get(id);
     }
 
@@ -137,7 +138,14 @@ public class CRFacade implements ICentroReparacoes {
     public void carregar_cp(String utilizadoresFN,String clientesFN,String pedidosFN) throws IOException, JaExistenteExcecao {
         carregar_utilizadores(utilizadoresFN);
         carregar_clientes(clientesFN);
+    }
 
+
+    public void adicionar_pedido_orcamento(String nifCliente, String numeroRegistoEquipamento, String descricao) {
+        if(clientes.containsKey(nifCliente)){
+            IPedido pedido = new PedidoOrcamento(nifCliente,numeroRegistoEquipamento,descricao);
+            pedidosOrcamentos.add(pedido);
+        }
     }
 
     public boolean login(String nomeDeUtilizador, String password) {
@@ -154,23 +162,23 @@ public class CRFacade implements ICentroReparacoes {
         this.logado = null;
     }
 
-    public boolean loggedTecnico(){
+    public boolean logged_tecnico(){
         return this.logado.getClass().equals(Tecnico.class);
     }
 
-    public boolean loggedFuncionario(){
+    public boolean logged_funcionario(){
         return this.logado.getClass().equals(Funcionario.class);
     }
 
-    public boolean loggedGestor(){
+    public boolean logged_gestor(){
         return this.logado.getClass().equals(Gestor.class);
     }
 
-    public boolean existsPlans(){
+    public boolean exists_plan(){
         return false;
     }
 
-    public boolean existsUser(String id){
+    public boolean exists_user(String id){
         return utilizadores.containsKey(id);
     }
 

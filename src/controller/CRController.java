@@ -3,10 +3,6 @@ package controller;
 import model.CRFacade;
 import model.excecoes.JaExistenteExcecao;
 import model.interfaces.ICentroReparacoes;
-import model.interfaces.ISessao;
-import model.utilizadores.Funcionario;
-import model.utilizadores.Gestor;
-import model.utilizadores.Tecnico;
 import view.CRView;
 import view.AuxiliarView;
 
@@ -17,7 +13,6 @@ import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 public class CRController {
 
@@ -35,6 +30,7 @@ public class CRController {
     };
 
     private final String[] menuPrincipalGestor = new String[]{
+            //TODO: "Registar cliente"
             "Registar pedido",
             "Lista de pedidos de orçamento",
             "Lista de equipamentos para reparação",
@@ -78,16 +74,19 @@ public class CRController {
     };
 
     private final String[] menuPedido = new String[]{
+            //TODO: "realocar nome/nif/telemovel/email para Registar cliente" e meter só nif
             "Nome do cliente",
             "NIF do cliente",
             "Telemóvel do cliente",
             "Email do cliente",
+            //TODO: "Equipamento como opçao para menuEquipamentoInfo
             "Equipamento",
             "Descrição",
             "Guardar e sair",
     };
 
     private final String[] menuEquipamentoInfo = new String[]{
+            //TODO: Associar depois, o registo do número associado ao equipamento, ao pedido e, registar equipamento no armazem
             "Modelo",
             "Descricao",
             "Voltar"
@@ -149,11 +148,11 @@ public class CRController {
 
 
     private void menuInicial() throws IOException, ClassNotFoundException {
-        if(centro.loggedGestor())
+        if(centro.logged_gestor())
             menuInicialGestor();
-        else if (centro.loggedTecnico())
+        else if (centro.logged_tecnico())
             menuInicialTecnico();
-        else if (centro.loggedFuncionario())
+        else if (centro.logged_funcionario())
             menuInicialFuncionario();
     }
 
@@ -216,7 +215,7 @@ public class CRController {
             auxView.perguntaId();
             String old = id.get();
             id.set(scanner.nextLine());
-            if(!centro.existsUser(id.get())){
+            if(!centro.exists_user(id.get())){
                 menu.changeOption(1,"Id: " + id.get());
                 condicao.get(0).set(1);
             }else {
@@ -349,9 +348,8 @@ public class CRController {
             condicao.get(5).set(1);
         });
         menu.setHandler(7, ()->{
-            //TODO:
-            //  centro.adicionar_pedido();
             centro.adicionar_cliente(nif.get(),nome.get(),telemovel.get(),email.get());
+            centro.adicionar_pedido_orcamento(nif.get(),equipamento.get(),descricao.get());
             menu.returnMenu();
         });
 
