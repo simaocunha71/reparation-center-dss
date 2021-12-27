@@ -1,5 +1,6 @@
 package model.interfaces;
 
+import model.Equipamento;
 import model.excecoes.JaExistenteExcecao;
 
 import java.io.IOException;
@@ -16,7 +17,7 @@ public interface ICentroReparacoes {
 
     void carregar_cp(String utilizadoresFN,String clientesFN,String pedidosFN) throws IOException, JaExistenteExcecao;
 
-    void adicionar_pedido_orcamento(String idCliente, String equipamento, String descricao);
+    public void adicionar_pedido_orcamento(String nifCliente, Equipamento equipamento, String descricao);
 
     boolean exists_plan();
 
@@ -29,4 +30,8 @@ public interface ICentroReparacoes {
     boolean logged_gestor();
 
     boolean exists_user(String id);
+
+    boolean exists_cliente(String nif);
+
+    public String novo_numero_registo();
 }

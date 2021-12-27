@@ -141,9 +141,10 @@ public class CRFacade implements ICentroReparacoes {
     }
 
 
-    public void adicionar_pedido_orcamento(String nifCliente, String numeroRegistoEquipamento, String descricao) {
+    public void adicionar_pedido_orcamento(String nifCliente, Equipamento equipamento, String descricao) {
         if(clientes.containsKey(nifCliente)){
-            IPedido pedido = new PedidoOrcamento(nifCliente,numeroRegistoEquipamento,descricao);
+            armazem.adiciona_para_orcamento(equipamento);
+            IPedido pedido = new PedidoOrcamento(nifCliente, equipamento.getNumeroRegisto(), descricao);
             pedidosOrcamentos.add(pedido);
         }
     }
@@ -182,5 +183,19 @@ public class CRFacade implements ICentroReparacoes {
         return utilizadores.containsKey(id);
     }
 
+    public boolean exists_cliente(String nif){
+        return clientes.containsKey(nif);
+    }
+
+    public String novo_numero_registo(){
+        int i = 0;
+        boolean valido = pedidosOrcamentos.size() == 0;
+        Iterator<IPedido> iterator = pedidosOrcamentos.iterator();
+        while(!valido && iterator.hasNext()){
+            if(iterator.next().getNumeroRegistoEquipamento().equals(String.valueOf(i))) i++;
+            else valido = true;
+        }
+        return String.valueOf(i);
+    }
 
 }

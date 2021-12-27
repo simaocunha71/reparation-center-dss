@@ -21,4 +21,8 @@ public class PedidoOrcamento implements IPedido {
     public LocalDateTime getTempoRegisto(){
         return dataRegisto;
     }
+
+    public String getNumeroRegistoEquipamento() {
+        return numeroRegistoEquipamento;
+    }
 }

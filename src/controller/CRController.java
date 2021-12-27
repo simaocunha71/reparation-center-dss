@@ -1,8 +1,10 @@
 package controller;
 
 import model.CRFacade;
+import model.Equipamento;
 import model.excecoes.JaExistenteExcecao;
 import model.interfaces.ICentroReparacoes;
+import model.pedidos.PedidoOrcamento;
 import view.CRView;
 import view.AuxiliarView;
 
@@ -31,6 +33,7 @@ public class CRController {
 
     private final String[] menuPrincipalGestor = new String[]{
             //TODO: "Registar cliente"
+            "Registar cliente",
             "Registar pedido",
             "Lista de pedidos de orçamento",
             "Lista de equipamentos para reparação",
@@ -49,6 +52,15 @@ public class CRController {
     private final String[] menuPrincipalFuncionario = new String[]{
             "Registar pedido",
             "Logout",
+    };
+
+    private final String[] menuRegistoCliente = new String[]{
+            "NIF",
+            "Nome",
+            "Telemovel",
+            "Email", //Funcionar ou Técnico ou Gestor
+            "Guardar e sair",
+            "Voltar"
     };
 
 
@@ -74,22 +86,16 @@ public class CRController {
     };
 
     private final String[] menuPedido = new String[]{
-            //TODO: "realocar nome/nif/telemovel/email para Registar cliente" e meter só nif
-            "Nome do cliente",
-            "NIF do cliente",
-            "Telemóvel do cliente",
-            "Email do cliente",
-            //TODO: "Equipamento como opçao para menuEquipamentoInfo
+            "NIF de cliente",
             "Equipamento",
-            "Descrição",
+            "Descricao",
             "Guardar e sair",
     };
 
     private final String[] menuEquipamentoInfo = new String[]{
-            //TODO: Associar depois, o registo do número associado ao equipamento, ao pedido e, registar equipamento no armazem
             "Modelo",
             "Descricao",
-            "Voltar"
+            "Guardar e sair",
     };
 
     private boolean logged = false;
@@ -159,17 +165,19 @@ public class CRController {
     public void menuInicialGestor() throws IOException, ClassNotFoundException {
         CRView menu = new CRView("Menu Inicial", menuPrincipalGestor);
 
-        menu.setHandler(1,this::registarPedido);
+        menu.setHandler(1,this::registarCliente);
 
-        //menu.setHandler(2,this::listaDePedidosOrcamento);
+        menu.setHandler(2,this::registarPedido);
+
+        //menu.setHandler(3,this::listaDePedidosOrcamento);
 //
-        //menu.setHandler(3,this::listaDeEquipamentosReparacao);
+        //menu.setHandler(4,this::listaDeEquipamentosReparacao);
 //
-        //menu.setHandler(4,this::listaDeFuncionarios);
-        //menu.setHandler(5,this::listaDeTecnicos);
+        //menu.setHandler(5,this::listaDeFuncionarios);
+        //menu.setHandler(6,this::listaDeTecnicos);
 //
-        menu.setHandler(6,this::registarUtilizador);
-        menu.setHandler(7,()->{menu.returnMenu();logout();});
+        menu.setHandler(7,this::registarUtilizador);
+        menu.setHandler(8,()->{menu.returnMenu();logout();});
 
         menu.simpleRun();
     }
@@ -195,6 +203,69 @@ public class CRController {
         menu.simpleRun();
     }
 
+
+    public void registarCliente() throws IOException, ClassNotFoundException {
+        CRView menu = new CRView("Registar Cliente", menuRegistoCliente);
+        AtomicReference<String> nome = new AtomicReference<>();
+        AtomicReference<String> nif = new AtomicReference<>();
+        AtomicReference<String> telemovel = new AtomicReference<>();
+        AtomicReference<String> email = new AtomicReference<>();
+        List<AtomicInteger> condicao = new ArrayList<>(6);
+        for(int i = 0; i < 4; i++){
+            condicao.add(i,new AtomicInteger(0));
+        }
+
+        menu.setPreCondition(5,()-> condicao.stream().noneMatch(k -> k.get() == 0));
+
+
+        menu.setHandler(1,()->{
+            auxView.perguntaNomeCliente();
+            nome.set(scanner.nextLine());
+            menu.changeOption(1,"Nome do cliente: "+ nome.get());
+            condicao.get(0).set(1);
+        });
+        menu.setHandler(2,()->{
+            auxView.perguntaNIFCliente();
+            String auxNif = nif.get();
+            nif.set(scanner.nextLine());
+            if(verifNif(nif.get())) {
+                menu.changeOption(2, "NIF do cliente: " + nif.get());
+                condicao.get(1).set(1);
+            }
+            else{
+                nif.set(auxNif);
+            }
+        });
+        menu.setHandler(3,()->{
+            auxView.perguntaTelemovel();
+            String auxTelemovel = telemovel.get();
+            telemovel.set(scanner.nextLine());
+            if(verifTelemovel(telemovel.get())) {
+                menu.changeOption(3, "Telemóvel do cliente: " + telemovel.get());
+                condicao.get(2).set(1);
+            }
+            else{
+                telemovel.set(auxTelemovel);
+            }
+        });
+        menu.setHandler(4, ()->{
+            auxView.perguntaEmail();
+            String auxEmail = email.get();
+            email.set(scanner.nextLine());
+            if(verifEmail(email.get())){
+                menu.changeOption(4,"Email do cliente: "+email.get());
+                condicao.get(3).set(1);
+            }
+            else{
+                email.set(auxEmail);
+            }
+        });
+        menu.setHandler(5,()->{
+            centro.adicionar_cliente(nif.get(),nome.get(),telemovel.get(),email.get());
+            menu.returnMenu();
+        });
+        menu.simpleRun();
+    }
 
 
     public void registarUtilizador() throws IOException, ClassNotFoundException {
@@ -281,80 +352,87 @@ public class CRController {
     private void registarPedidoOrcamento() throws IOException, ClassNotFoundException {
         CRView menu = new CRView("Pedido Express", menuPedido);
         AtomicReference<String> nif = new AtomicReference<>();
-        AtomicReference<String> nome = new AtomicReference<>();
-        AtomicReference<String> telemovel = new AtomicReference<>();
-        AtomicReference<String> email = new AtomicReference<>();
-        AtomicReference<String> equipamento = new AtomicReference<>();
         AtomicReference<String> descricao = new AtomicReference<>();
-
-        List<AtomicInteger> condicao = new ArrayList<>(6);
-        for(int i = 0; i < 6; i++){
+        AtomicReference<Equipamento> equipamento = new AtomicReference<>(null);
+        List<AtomicInteger> condicao = new ArrayList<>(3);
+        for(int i = 0; i < 3; i++){
             condicao.add(i,new AtomicInteger(0));
         }
 
-        menu.setPreCondition(7,()-> condicao.stream().noneMatch(k -> k.get() == 0));
+        menu.setPreCondition(4,()-> condicao.stream().noneMatch(k -> k.get() == 0));
 
         menu.setHandler(1,()->{
-            auxView.perguntaNomeCliente();
-            nome.set(scanner.nextLine());
-            menu.changeOption(1,"Nome do cliente: "+ nome.get());
-            condicao.get(0).set(1);
-        });
-        menu.setHandler(2,()->{
             auxView.perguntaNIFCliente();
             String auxNif = nif.get();
             nif.set(scanner.nextLine());
             if(verifNif(nif.get())) {
-                menu.changeOption(2, "NIF do cliente: " + nif.get());
-                condicao.get(1).set(1);
+                if(centro.exists_cliente(nif.get())) {
+                    menu.changeOption(1, "NIF do cliente: " + nif.get());
+                    condicao.get(0).set(1);
+                }
             }
             else{
                 nif.set(auxNif);
             }
         });
-        menu.setHandler(3,()->{
-            auxView.perguntaTelemovel();
-            String auxTelemovel = telemovel.get();
-            telemovel.set(scanner.nextLine());
-            if(verifTelemovel(telemovel.get())) {
-                menu.changeOption(3, "Telemóvel do cliente: " + telemovel.get());
-                condicao.get(2).set(1);
-            }
-            else{
-                telemovel.set(auxTelemovel);
-            }
+        menu.setHandler(2, ()->{
+            if(equipamento.get() != null) menu.changeOption(2,"Equipamento: " + equipamento.get().getNumeroRegisto());
+            equipamentoInfo(equipamento);
+            if(equipamento.get() != null) condicao.get(1).set(1);
+            else condicao.get(1).set(0);
+        });
+        menu.setHandler(3, ()->{
+            auxView.normalMessage("Descricao: ");
+            descricao.set(scanner.nextLine());
+            condicao.get(2).set(1);
         });
         menu.setHandler(4, ()->{
-            auxView.perguntaEmail();
-            String auxEmail = email.get();
-            email.set(scanner.nextLine());
-            if(verifEmail(email.get())){
-                menu.changeOption(4,"Email do cliente: "+email.get());
-                condicao.get(3).set(1);
-            }
-            else{
-                email.set(auxEmail);
-            }
-        });
-        menu.setHandler(5, ()->{
-            auxView.perguntaEquipamento();
-            equipamento.set(scanner.nextLine());
-            menu.changeOption(5,"Equipamento: "+equipamento.get());
-            condicao.get(4).set(1);
-        });
-        menu.setHandler(6, ()->{
-            auxView.perguntaEquipamento();
-            descricao.set(scanner.nextLine());
-            condicao.get(5).set(1);
-        });
-        menu.setHandler(7, ()->{
-            centro.adicionar_cliente(nif.get(),nome.get(),telemovel.get(),email.get());
             centro.adicionar_pedido_orcamento(nif.get(),equipamento.get(),descricao.get());
             menu.returnMenu();
         });
 
         menu.simpleRun();
     }
+
+    private void equipamentoInfo(AtomicReference<Equipamento> equipamento) throws IOException, ClassNotFoundException {
+        CRView menu = new CRView("Equipamento Info", menuEquipamentoInfo);
+        AtomicReference<String> modelo = new AtomicReference<>();
+        AtomicReference<String> descricao = new AtomicReference<>("");
+        String numeroRegisto;
+        if(equipamento.get()==null){
+            numeroRegisto = centro.novo_numero_registo();
+        }else{
+            numeroRegisto = equipamento.get().getNumeroRegisto();
+        }
+        auxView.normalMessage("Numero de registo: " + numeroRegisto);
+
+        List<AtomicInteger> condicao = new ArrayList<>(2);
+        for(int i = 0; i < 2; i++){
+            condicao.add(i,new AtomicInteger(0));
+        }
+
+        menu.setPreCondition(3,()-> condicao.stream().noneMatch(k -> k.get() == 0));
+
+        menu.setHandler(1, ()->{
+            auxView.perguntaEquipamento();
+            modelo.set(scanner.nextLine());
+            menu.changeOption(2,"Equipamento: "+equipamento.get());
+            condicao.get(0).set(1);
+        });
+        menu.setHandler(2, ()->{
+            auxView.perguntaEquipamento();
+            descricao.set(scanner.nextLine());
+            condicao.get(1).set(1);
+        });
+
+        menu.setHandler(3, ()->{
+            equipamento.set(new Equipamento(numeroRegisto,modelo.get(),descricao.get()));
+            menu.returnMenu();
+        });
+
+        menu.simpleRun();
+    }
+
 
     private boolean verifNif(String nif){
         try{
