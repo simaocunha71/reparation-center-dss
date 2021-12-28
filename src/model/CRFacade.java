@@ -1,5 +1,6 @@
 package model;
 
+import model.comparators.IOrcamentoComparator;
 import model.comparators.IPedidoComparator;
 import model.excecoes.JaExistenteExcecao;
 import model.excecoes.NaoExisteExcecao;
@@ -12,7 +13,9 @@ import model.utilizadores.Tecnico;
 import model.clientes.Cliente;
 
 import java.io.*;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -124,7 +127,17 @@ public class CRFacade implements ICentroReparacoes {
 
 
     public List<Orcamento> get_orcamentos_por_confirmar() {
-        return orcamentos.values().stream().filter(k->!k.getConfirmado()).collect(Collectors.toList());
+        return orcamentos.values().stream().filter(k->!k.getConfirmado()).map(Orcamento::clone).collect(Collectors.toList());
+    }
+
+    public List<Orcamento> get_orcamentos_confirmados() {
+        Set<Orcamento> set = new TreeSet<Orcamento>(new IOrcamentoComparator());
+        orcamentos.values().stream().filter(Orcamento::getConfirmado).map(Orcamento::clone).forEach(set::add);
+        return set.stream().toList();
+    }
+
+    public Equipamento getEquipamento(int num_ref) {
+        return armazem.getEquipamento(num_ref).clone();
     }
 
     private void transferencia_seccao(int num_referencia) throws IOException {
@@ -147,7 +160,9 @@ public class CRFacade implements ICentroReparacoes {
     }
 
     private void adicionar_pedido_ja_planeado(IPedido pedido) {
+        System.out.println("DEBUG A ADICIONAR PEDIDO PLANEADO");
         if(!pedidosJaPlaneados.containsKey(pedido.getNumeroRegistoEquipamento())){
+            System.out.println("DEBUG ADIONADO PEDIDO PLANEADO: "+pedido.getNumeroRegistoEquipamento());
             pedidosJaPlaneados.put(pedido.getNumeroRegistoEquipamento(),pedido);
         }
     }
@@ -286,14 +301,20 @@ public class CRFacade implements ICentroReparacoes {
             if(split.length == 2){
                 try{
                     int tipo = Integer.parseInt(split[0]);
+                    System.out.println("DEBUG TIPO: "+tipo);
                     IPedido pedido = null;
                     switch (tipo){
-                        case 1 -> pedido = new PedidoOrcamento();
+                        case 1, 3 -> pedido = new PedidoOrcamento();
                         case 2 -> pedido = new PedidoExpresso();
                     }
-                    if(pedido != null) pedido.carregar(split[1]);
-                    if(pedido != null && pedido.valida() && valida_pedido(pedido))
+                    if(pedido != null) {
+                        System.out.println("DEBUG CARREGANDO");
+                        pedido.carregar(split[1]);
+                    }
+                    if(pedido != null && pedido.valida() && valida_pedido(pedido,tipo)){
+                        System.out.println("DEBUG CARREGAR PEDIDO");
                         carregar_pedido(pedido,tipo);
+                    }
                 }
                 catch (NumberFormatException ignored){}
             }
@@ -306,6 +327,7 @@ public class CRFacade implements ICentroReparacoes {
         switch (tipo){
             case 1-> pedidosOrcamentos.add(pedido);
             //TODO: case 2 -> pedidos expresso;
+            case 3-> adicionar_pedido_ja_planeado(pedido);
         }
     }
 
@@ -318,29 +340,35 @@ public class CRFacade implements ICentroReparacoes {
             split = linha.split("#");
             if(split.length == 2) {
                 String[] infos = split[0].split(";");
-                if (infos.length == 2) {
+                if (infos.length == 3) {
                     try {
                         int numRegisto = Integer.parseInt(infos[0]);
                         boolean confirmacao = false;
-                        if(Integer.parseInt(infos[1]) == 0) valido = true;
+                        LocalDateTime dataRegisto = null;
+                        if(Integer.parseInt(infos[1]) == 0) {
+                            valido = true;
+                        }
                         else if(Integer.parseInt(infos[1]) == 1){
                             confirmacao = true;
                             valido = true;
+                            dataRegisto = LocalDateTime.parse(infos[2]);
                         }
                         IPedido pedido = new PedidoExpresso();
+                        System.out.println("DEBUG: "+numRegisto);
                         if (pedidosJaPlaneados.containsKey(numRegisto)) {
+                            System.out.println("DEBUG existe chave");
                             pedido = pedidosJaPlaneados.get(numRegisto);
                         }else valido = false;
                         if(valido) {
                             System.out.println("DEBUG: IF1");
-                            Orcamento orcamento = new Orcamento(numRegisto, pedido,confirmacao);
+                            Orcamento orcamento = new Orcamento(numRegisto, pedido,confirmacao,dataRegisto);
                             orcamento.carregar(split[1]);
                             if (orcamento.valida()) {
                                 System.out.println("DEBUG: IF2");
                                 carregar_orcamento(orcamento);
                             }
                         }
-                    } catch (NumberFormatException | JaExistenteExcecao ignored) {
+                    } catch (NumberFormatException | DateTimeParseException | JaExistenteExcecao ignored) {
                     }
                 }
             }
@@ -350,9 +378,18 @@ public class CRFacade implements ICentroReparacoes {
 
 
 
-    private boolean valida_pedido(IPedido pedido) {
-        //return true;
-        return clientes.containsKey(pedido.getNifCliente()) && armazem.contem_equipamento_para_orcamento(pedido.getNumeroRegistoEquipamento());
+    private boolean valida_pedido(IPedido pedido, int tipo) {
+        switch (tipo){
+            case 1 -> {
+                return clientes.containsKey(pedido.getNifCliente()) && armazem.contem_equipamento_para_orcamento(pedido.getNumeroRegistoEquipamento());}
+            case 3 -> {
+                return clientes.containsKey(pedido.getNifCliente()) && armazem.contem_equipamento_para_reparacao(pedido.getNumeroRegistoEquipamento());}
+            default -> {
+                return false;
+            }
+        }
+
+
     }
 
 
@@ -539,9 +576,10 @@ public class CRFacade implements ICentroReparacoes {
         return cliente;
     }
 
-    public void confirmar_orcamento(int num_ref){
+    public void confirmar_orcamento(int num_ref) throws IOException {
         if(orcamentos.containsKey(num_ref)){
             orcamentos.get(num_ref).confirma();
+            gravar_todos_orcamentos();
         }
     }
 

@@ -48,6 +48,9 @@ public interface ICentroReparacoes {
 
     ICliente get_cliente(String nif);
 
-    void confirmar_orcamento(int num_ref);
+    void confirmar_orcamento(int num_ref) throws IOException;
 
+    List<Orcamento> get_orcamentos_confirmados();
+
+    Equipamento getEquipamento(int num_ref);
 }

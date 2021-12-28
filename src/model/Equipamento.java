@@ -81,6 +81,10 @@ public class Equipamento {
         return sb.toString();
     }
 
+    //TODO:
+    public Equipamento clone(){
+        return this;
+    }
 
 
 }

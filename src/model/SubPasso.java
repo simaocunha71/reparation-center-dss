@@ -23,8 +23,8 @@ public class SubPasso implements Carregavel {
 
     public SubPasso() {
         this.descricao = "";
-        this.custoEstimado = -1;
-        this.duracaoEstimada = -1;
+        this.custoEstimado = 0;
+        this.duracaoEstimada = 0;
         this.custoReal = 0;
         this.duracaoReal = 0;
         this.realizado = false;
@@ -99,6 +99,34 @@ public class SubPasso implements Carregavel {
         else sb.append("0;");
         sb.append(idTecnico);
         return sb.toString();
+    }
+
+
+    public float getCustoEstimado() {
+        return custoEstimado;
+    }
+
+    public float getDuracaoEstimada() {
+        return duracaoEstimada;
+    }
+
+    public void recalcula_estimativas() {
+        if(realizado){
+            this.custoEstimado = custoReal;
+            this.duracaoEstimada = duracaoReal;
+        }
+    }
+
+    public float calcula_custo_gasto() {
+        float custo_gasto = 0;
+        if (realizado) custo_gasto = this.custoReal;
+        return  custo_gasto;
+    }
+
+    public float calcula_tempo_gasto() {
+        float tempo_gasto = 0;
+        if (realizado) tempo_gasto = this.duracaoReal;
+        return  tempo_gasto;
     }
 }
 

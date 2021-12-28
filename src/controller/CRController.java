@@ -9,6 +9,7 @@ import view.CRView;
 import view.AuxiliarView;
 
 import java.io.IOException;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -21,6 +22,8 @@ public class CRController {
     private ICentroReparacoes centro = new CRFacade();
     private AuxiliarView auxView = new AuxiliarView();
     private Scanner scanner = new Scanner(System.in);
+
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private final String[] menuInicial = new String[]{
             "Autenticação"
     };
@@ -123,6 +126,20 @@ public class CRController {
             "Duracao estimada",
             "Descrição",
             "Guardar e sair"
+    };
+
+    private final String[] menuProcessarReparacao = new String[]{
+            "Apresentar informações", //descriçao, custo estimado, duração estimada, custo gasto até ao momento, tempo gasto até ao momento, percentagem de orçamento gasto;
+            "Executar passo", //aberto até o orçamento passar 120% do valor estimado
+            "Notificar cliente", //fechado até o orçamento passar 120% do valor estimado.
+            "Guardar e sair"
+    };
+
+    private final String[] menuExecutarPasso = new String[]{
+            "Apresentar informações", //descriçao, custo estimado, duração estimada
+            "Custo real",
+            "Duração real",
+            "Guardar e sair",
     };
 
 
@@ -346,7 +363,31 @@ public class CRController {
     }
 
     //TODO:
-    private void listaDeEquipamentosReparacao() {
+    private void listaDeEquipamentosReparacao() throws IOException, ClassNotFoundException {
+        List<Orcamento> orcamentos = centro.get_orcamentos_confirmados();
+        String[] orcamentosString = new String[orcamentos.size()];
+        for(int i =0; i < orcamentos.size() && i < 10 ;i++){
+            Orcamento orcamento = orcamentos.get(i);
+            IPedido pedido = orcamento.get_pedido_plano();
+            StringBuilder sb = new StringBuilder();
+            sb.append("Equipamento [#" + orcamento.get_num_ref() + "]|")
+                    .append("Data de Registo [" + pedido.getTempoRegisto().format(formatter) + "]|")
+                    .append("Data de Confirmação [" + orcamento.getDataConfirmacao().format(formatter) + "]|")
+                    .append("Preco estimado [" + orcamento.getCustoEstimado() + "]|")
+                    .append("Tempo estimado [" + orcamento.getDuracaoEstimada() + "]");
+            orcamentosString[i] = sb.toString();
+        }
+        CRView menu = new CRView("Lista de Orcamentos por confirmar",orcamentosString);
+        AtomicInteger i = new AtomicInteger(1);
+        for(; i.get() <= orcamentosString.length;i.incrementAndGet()){
+            int posicao = i.get();
+            int num_ref = orcamentos.get(posicao-1).get_num_ref();
+            menu.setHandler(i.get(),()->{processar_reparaçao(num_ref);menu.returnMenu();});
+        }
+        menu.simpleRun();
+    }
+
+    private void processar_reparaçao(int num_ref) {
 
     }
 
@@ -366,7 +407,6 @@ public class CRController {
 
     private void confirmarOrcamento() throws IOException, ClassNotFoundException {
         List<Orcamento> orcamentos = centro.get_orcamentos_por_confirmar();
-
         String[] orcamentosString = new String[orcamentos.size()];
         for(int i =0; i<orcamentos.size();i++){
             Orcamento orcamento = orcamentos.get(i);
@@ -374,7 +414,7 @@ public class CRController {
             ICliente cliente = centro.get_cliente(pedido.getNifCliente());
             StringBuilder sb = new StringBuilder();
             sb.append("Equipamento [#" + orcamento.get_num_ref() + "]")
-                    .append("Data [" + pedido.getTempoRegisto() + "]")
+                    .append("Data [" + pedido.getTempoRegisto().format(formatter) + "]")
                     .append("Preco estimado [" + orcamento.getCustoEstimado() + "]")
                     .append("Tempo estimado [" + orcamento.getDuracaoEstimada() + "]")
                     .append("Cliente [" + cliente.getNif() + "]")
@@ -393,17 +433,6 @@ public class CRController {
 
     }
 
-/*
-* IPedido pedido = k.get_pedido_plano();
-                ICliente cliente = clientes.get(pedido.getNifCliente());
-                StringBuilder sb = new StringBuilder();
-                sb.append("Equipamento [#" + v + "]")
-                        .append("Data [" + pedido.getTempoRegisto() + "]")
-                        .append("Preco estimado [" + k.getCustoEstimado() + "]")
-                        .append("Tempo estimado [" + k.getDuracaoEstimada() + "]")
-                        .append("Cliente [" + cliente.getNif() + "]")
-                        .append("Email [" + cliente.getEmail() +"]");
-* */
     private void registarCliente() throws IOException, ClassNotFoundException {
         CRView menu = new CRView("Registar Cliente", menuRegistoCliente);
         AtomicReference<String> nome = new AtomicReference<>();

@@ -120,6 +120,20 @@ public class Armazem {
         }else return -1;
     }
 
+
+    public boolean contem_equipamento_para_reparacao(int numeroRegisto){
+        return paraReparacao.containsKey(numeroRegisto);
+    }
+
+    public Equipamento getEquipamento(int num_ref) {
+        if(contem_equipamento_para_orcamento(num_ref))
+            return paraOrcamento.get(num_ref).clone();
+        else if(contem_equipamento_para_reparacao(num_ref))
+            return paraReparacao.get(num_ref).clone();
+        else if(prontosAEntregar.containsKey(num_ref))
+            return prontosAEntregar.get(num_ref).clone();
+        return null;
+    }
 }
 
 //TODO: busca por cada map com o numRegisto do Equipamento

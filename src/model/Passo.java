@@ -28,8 +28,8 @@ public class Passo implements Carregavel {
 
     public Passo() {
         this.descricao = "";
-        this.custoEstimado = -1;
-        this.duracaoEstimada = -1;
+        this.custoEstimado = 0;
+        this.duracaoEstimada = 0;
         this.custoReal = 0;
         this.duracaoReal = 0;
         this.subpassos = new ArrayList<>();
@@ -77,6 +77,8 @@ public class Passo implements Carregavel {
 
     public void adicionar_subpasso(SubPasso sp){
         subpassos.add(sp);
+        this.custoEstimado += sp.getCustoEstimado();
+        this.duracaoEstimada += sp.getDuracaoEstimada();
     }
 
 
@@ -163,4 +165,57 @@ public class Passo implements Carregavel {
         if(subpassos.size() != 0)sb.append(subpassos.get(subpassos.size()-1).toString());
         return sb.toString();
     }
+
+    public void recalcula_estimativas() {
+        if(subpassos.size() > 0) {
+            this.custoEstimado = 0;
+            this.duracaoEstimada = 0;
+            for (SubPasso sp : subpassos) {
+                sp.recalcula_estimativas();
+
+                this.custoEstimado += sp.getCustoEstimado();
+                this.duracaoEstimada += sp.getDuracaoEstimada();
+            }
+        }
+        else if (realizado){
+            this.custoEstimado = custoReal;
+            this.duracaoEstimada = duracaoReal;
+        }
+    }
+
+    public float getCustoEstimado() {
+        return custoEstimado;
+    }
+
+    public float getDuracaoEstimada() {
+        return duracaoEstimada;
+    }
+
+    public float calcula_custo_gasto(){
+        float custo_gasto = 0;
+        if(realizado){
+            custo_gasto = this.custoReal;
+        }
+        else {
+            for(SubPasso sp : subpassos){
+                custo_gasto += sp.calcula_custo_gasto();
+            }
+        }
+        return custo_gasto;
+    }
+
+
+    public float calcula_tempo_gasto() {
+        float tempo_gasto = 0;
+        if(realizado){
+            tempo_gasto = this.duracaoReal;
+        }
+        else {
+            for(SubPasso sp : subpassos){
+                tempo_gasto += sp.calcula_tempo_gasto();
+            }
+        }
+        return tempo_gasto;
+    }
+
 }

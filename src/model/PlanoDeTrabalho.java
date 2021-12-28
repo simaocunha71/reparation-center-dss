@@ -20,8 +20,8 @@ public class PlanoDeTrabalho implements Carregavel {
     //TODO: ver o clone
     public PlanoDeTrabalho(IPedido pedidoAssociado){
         this.pedidoAssociado = pedidoAssociado; //Nao sei se tem de fazer clone. mby yes
-        this.custoEstimado = -1;
-        this.duracaoEstimada = -1;
+        this.custoEstimado = 0;
+        this.duracaoEstimada = 0;
         this.custoReal = 0;
         this.duracaoReal = 0;
         this.passos = new ArrayList<>();
@@ -109,10 +109,14 @@ public class PlanoDeTrabalho implements Carregavel {
     public void adicionar_passo(String descricao, float custoEstimado, float duracaoEstimada){
         Passo novoPasso = new Passo(descricao,custoEstimado,duracaoEstimada);
         passos.add(novoPasso);
+        this.custoEstimado += custoEstimado;
+        this.duracaoEstimada += duracaoEstimada;
     }
 
     public void adicionar_passo(Passo p){
         passos.add(p); //TODO:clone
+        this.custoEstimado += p.getCustoEstimado();
+        this.duracaoEstimada += p.getDuracaoEstimada();
     }
 
     //custoEstimado;custoReal;tempoEstimado;tempoReal;booleanoRealizado;numeroPassos@Passos
@@ -140,4 +144,54 @@ public class PlanoDeTrabalho implements Carregavel {
         return this;
     }
 
+    public void recalcula_estimativas() {
+        if(passos.size() > 0) {
+            this.custoEstimado = 0;
+            this.duracaoEstimada = 0;
+            for (Passo p : passos) {
+                p.recalcula_estimativas();
+
+                this.custoEstimado += p.getCustoEstimado();
+                this.duracaoEstimada += p.getDuracaoEstimada();
+            }
+        }
+        else if (realizado){
+            this.custoEstimado = custoReal;
+            this.duracaoEstimada = duracaoReal;
+        }
+    }
+
+    public float calcula_custo_gasto(){
+        float custo_gasto = 0;
+        if(realizado){
+            custo_gasto = this.custoReal;
+        }
+        else {
+            for(Passo p : passos){
+                custo_gasto += p.calcula_custo_gasto();
+            }
+        }
+        return custo_gasto;
+    }
+
+    public float calcula_tempo_gasto(){
+        float tempo_gasto = 0;
+        if(realizado){
+            tempo_gasto = this.duracaoReal;
+        }
+        else {
+            for(Passo p : passos){
+                tempo_gasto += p.calcula_tempo_gasto();
+            }
+        }
+        return tempo_gasto;
+    }
+
+    public boolean ultrapassou120PorCentoOrcamento(){
+        return this.custoEstimado*1.2 < calcula_custo_gasto();
+    }
+
+    public float orcamento_gasto(){
+        return calcula_custo_gasto()*100/this.custoEstimado;
+    }
 }
