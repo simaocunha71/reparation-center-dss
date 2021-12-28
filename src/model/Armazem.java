@@ -89,6 +89,7 @@ public class Armazem {
     }
 
 
+
     public void transferencia_seccao(int num_referencia) {
         if(paraOrcamento.containsKey(num_referencia)){
             Equipamento e = paraOrcamento.get(num_referencia);
@@ -107,6 +108,7 @@ public class Armazem {
             System.out.println("DEBUG: TIROU "+num_referencia+" DA SECÇÃO 3");
         }
     }
+
 
 }
 
