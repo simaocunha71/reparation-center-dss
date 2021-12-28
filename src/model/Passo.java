@@ -121,6 +121,23 @@ public class Passo implements Carregavel {
         }
     }
 
+    public void setDescricao(String descricao) {
+        this.descricao = descricao;
+    }
+
+    public boolean temSubPassos(){
+        return subpassos.size()>0;
+    }
+
+    public void setCustoEstimado(float custoEstimado) {
+        this.custoEstimado = custoEstimado;
+    }
+
+    public void setDuracaoEstimada(float duracaoEstimada) {
+        this.duracaoEstimada = duracaoEstimada;
+    }
+
+    //TODO: valida
     public boolean valida() {
         return true;
     }
@@ -139,10 +156,11 @@ public class Passo implements Carregavel {
         if(realizado) sb.append("1;");
         else sb.append("0;");
         sb.append(idTecnicoRealizou).append(";").append(subpassos.size()).append("%");
-        for(int i = 0; i < subpassos.size()-1; i++){
+        int i = 0;
+        for(; i < subpassos.size()-1; i++){
             sb.append(subpassos.get(i).toString()).append("/");
         }
-        sb.append(subpassos.get(subpassos.size()-1).toString());
+        if(subpassos.size() != 0)sb.append(subpassos.get(subpassos.size()-1).toString());
         return sb.toString();
     }
 }

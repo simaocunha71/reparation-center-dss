@@ -74,6 +74,19 @@ public class SubPasso implements Carregavel {
        }
     }
 
+    public void setDuracaoEstimada(float duracaoEstimada) {
+        this.duracaoEstimada = duracaoEstimada;
+    }
+
+    public void setCustoEstimado(float custoEstimado) {
+        this.custoEstimado = custoEstimado;
+    }
+
+    public void setDescricao(String descricao) {
+        this.descricao = descricao;
+    }
+
+    //TODO: valida
     public boolean valida() {
         return true;
     }
