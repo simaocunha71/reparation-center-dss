@@ -35,6 +35,20 @@ public class Passo implements Carregavel {
         this.subpassos = new ArrayList<>();
     }
 
+    public Passo(String descricao, float custoEstimado, float duracaoEstimada, float custoReal, float duracaoReal, boolean realizado, String idTecnico,List<SubPasso> subpassos) {
+        this.descricao = descricao;
+        this.custoEstimado = custoEstimado;
+        this.duracaoEstimada = duracaoEstimada;
+        this.custoReal = custoReal;
+        this.duracaoReal = duracaoReal;
+        this.realizado = realizado;
+        this.idTecnicoRealizou = idTecnico;
+        this.subpassos = new ArrayList<>();
+        for(SubPasso sp : subpassos){
+            this.subpassos.add(sp.clone());
+        }
+    }
+
     //se tiver subpassos
     public void concluir(){
         boolean subpassosConcluidos = true;
@@ -139,9 +153,21 @@ public class Passo implements Carregavel {
         this.duracaoEstimada = duracaoEstimada;
     }
 
-    //TODO: valida
     public boolean valida() {
-        return true;
+        boolean valido = true;
+        for(SubPasso sp : subpassos){
+            if(!sp.valida()) valido = false;
+        }
+
+        if(realizado){
+            if(idTecnicoRealizou==null && subpassos.size()==0) valido = false;
+            if(idTecnicoRealizou!=null && subpassos.size()>0) valido = false;
+        }
+        else{
+            if(idTecnicoRealizou!=null) valido = false;
+        }
+
+        return valido && descricao.length()>0 && custoEstimado >= 0 && duracaoEstimada >= 0;
     }
 
     public boolean concluido() {
@@ -216,6 +242,10 @@ public class Passo implements Carregavel {
             }
         }
         return tempo_gasto;
+    }
+
+    public Passo clone(){
+        return new Passo(this.descricao,this.custoEstimado,this.duracaoEstimada,this.custoReal,this.duracaoReal,this.realizado,this.idTecnicoRealizou,this.subpassos);
     }
 
 }

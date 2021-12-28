@@ -17,9 +17,8 @@ public class PlanoDeTrabalho implements Carregavel {
     private boolean realizado;
 
 
-    //TODO: ver o clone
     public PlanoDeTrabalho(IPedido pedidoAssociado){
-        this.pedidoAssociado = pedidoAssociado; //Nao sei se tem de fazer clone. mby yes
+        this.pedidoAssociado = pedidoAssociado.clone();
         this.custoEstimado = 0;
         this.duracaoEstimada = 0;
         this.custoReal = 0;
@@ -27,6 +26,21 @@ public class PlanoDeTrabalho implements Carregavel {
         this.passos = new ArrayList<>();
         this.realizado = false;
     }
+
+    public PlanoDeTrabalho(IPedido pedidoAssociado,float custoEstimado, float duracaoEstimada, float custoReal, float duracaoReal, boolean realizado,List<Passo> passos) {
+        this.pedidoAssociado = pedidoAssociado.clone();
+        this.custoEstimado = custoEstimado;
+        this.duracaoEstimada = duracaoEstimada;
+        this.custoReal = custoReal;
+        this.duracaoReal = duracaoReal;
+        this.realizado = realizado;
+        this.passos = new ArrayList<>();
+        for(Passo p : passos){
+            this.passos.add(p.clone());
+        }
+    }
+
+
 
     public int get_num_referencia(){
         return pedidoAssociado.getNumeroRegistoEquipamento();
@@ -100,12 +114,14 @@ public class PlanoDeTrabalho implements Carregavel {
         return duracaoEstimada;
     }
 
-    //TODO: valida
     public boolean valida() {
-        return true;
+        boolean valido = true;
+        for(Passo p : passos){
+            if(!p.valida()) valido = false;
+        }
+        return valido && duracaoEstimada >= 0 && custoEstimado >= 0;
     }
 
-    //TODO: adicionar passo();
     public void adicionar_passo(String descricao, float custoEstimado, float duracaoEstimada){
         Passo novoPasso = new Passo(descricao,custoEstimado,duracaoEstimada);
         passos.add(novoPasso);
@@ -114,7 +130,7 @@ public class PlanoDeTrabalho implements Carregavel {
     }
 
     public void adicionar_passo(Passo p){
-        passos.add(p); //TODO:clone
+        passos.add(p.clone());
         this.custoEstimado += p.getCustoEstimado();
         this.duracaoEstimada += p.getDuracaoEstimada();
     }
@@ -139,9 +155,8 @@ public class PlanoDeTrabalho implements Carregavel {
         return sb.toString();
     }
 
-    //TODO: meter um clone direito
     public PlanoDeTrabalho clone(){
-        return this;
+        return new PlanoDeTrabalho(this.pedidoAssociado,this.custoEstimado,this.duracaoEstimada,this.custoReal,this.duracaoReal,this.realizado,this.passos);
     }
 
     public void recalcula_estimativas() {

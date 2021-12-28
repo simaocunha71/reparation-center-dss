@@ -19,10 +19,16 @@ public class Orcamento implements Carregavel {
         this.dataConfirmacao = null;
     }
 
-    //TODO: ver clone do pedido
     public Orcamento(int num_ref, IPedido pedido, boolean confirmado, LocalDateTime dataConfirmacao){
         this.num_ref = num_ref;
-        this.planoDeTrabalho = new PlanoDeTrabalho(pedido);
+        this.planoDeTrabalho = new PlanoDeTrabalho(pedido.clone());
+        this.confirmado = confirmado;
+        this.dataConfirmacao = dataConfirmacao;
+    }
+
+    public Orcamento(int num_ref, PlanoDeTrabalho plano, boolean confirmado, LocalDateTime dataConfirmacao){
+        this.num_ref = num_ref;
+        this.planoDeTrabalho = plano.clone();
         this.confirmado = confirmado;
         this.dataConfirmacao = dataConfirmacao;
     }
@@ -101,8 +107,7 @@ public class Orcamento implements Carregavel {
         return dataConfirmacao;
     }
 
-    //TODO: clone orcamento
     public Orcamento clone(){
-        return this;
+        return new Orcamento(this.num_ref,this.planoDeTrabalho,this.confirmado,this.dataConfirmacao);
     }
 }
