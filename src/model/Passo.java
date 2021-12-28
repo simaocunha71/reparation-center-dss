@@ -249,14 +249,27 @@ public class Passo implements Carregavel {
     public SubPasso getProximoSubPasso(){
         boolean stop = false;
         SubPasso prox = null;
-        for(SubPasso sp : subpassos){
-            if(stop) break;
-            if(!sp.concluido()){
-                stop = true;
-                prox = sp;
+        if(existe_proximo_subpasso()){
+            for(SubPasso sp : subpassos){
+                if(stop) break;
+                if(!sp.concluido()){
+                    stop = true;
+                    prox = sp;
+                }
             }
         }
         return prox;
+    }
+
+    public boolean existe_proximo_subpasso(){
+        boolean existe = false;
+        for(SubPasso sp : subpassos){
+            if(existe) break;
+            if(!sp.concluido()){
+                existe = true;
+            }
+        }
+        return existe;
     }
 
     public Passo clone(){

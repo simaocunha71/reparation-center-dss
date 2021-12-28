@@ -138,7 +138,6 @@ public class SubPasso implements Carregavel {
         return  tempo_gasto;
     }
 
-
     public SubPasso clone(){
         return new SubPasso(this.descricao,this.custoEstimado,this.duracaoEstimada,this.custoReal,this.duracaoReal,this.realizado,this.idTecnico);
     }

@@ -215,14 +215,26 @@ public class PlanoDeTrabalho implements Carregavel {
     public Passo getProximoPasso(){
         boolean stop = false;
         Passo prox = null;
-        for(Passo p : passos){
-            if(stop) break;
-            if(!p.concluido()){
-                stop = true;
-                prox = p;
+        if(existe_proximo_passo()) {
+            for (Passo p : passos) {
+                if (stop) break;
+                if (!p.concluido()) {
+                    stop = true;
+                    prox = p;
+                }
             }
         }
         return prox;
     }
 
+    public boolean existe_proximo_passo(){
+        boolean existe = false;
+        for(Passo p : passos){
+            if(existe) break;
+            if(!p.concluido()){
+                existe = true;
+            }
+        }
+        return existe;
+    }
 }
