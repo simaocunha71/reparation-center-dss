@@ -212,4 +212,17 @@ public class PlanoDeTrabalho implements Carregavel {
         return calcula_custo_gasto()*100/this.custoEstimado;
     }
 
+    public Passo getProximoPasso(){
+        boolean stop = false;
+        Passo prox = null;
+        for(Passo p : passos){
+            if(stop) break;
+            if(!p.concluido()){
+                stop = true;
+                prox = p;
+            }
+        }
+        return prox;
+    }
+
 }

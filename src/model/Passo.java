@@ -6,14 +6,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Passo implements Carregavel {
-    List<SubPasso> subpassos;
-    String descricao;
-    float custoEstimado;
-    float custoReal;
-    float duracaoEstimada; //em minutos
-    float duracaoReal; //em minutos
-    boolean realizado;
-    String idTecnicoRealizou; //"idTecnico", caso não tenha sub-passos ou "vários", caso tenha sub-passos
+    private List<SubPasso> subpassos;
+    private String descricao;
+    private float custoEstimado;
+    private float custoReal;
+    private float duracaoEstimada; //em minutos
+    private float duracaoReal; //em minutos
+    private boolean realizado;
+    private String idTecnicoRealizou; //"idTecnico", caso não tenha sub-passos ou "vários", caso tenha sub-passos
 
     public Passo(String descricao, float custoEstimado, float duracaoEstimada){
         this.descricao = descricao;
@@ -242,6 +242,21 @@ public class Passo implements Carregavel {
             }
         }
         return tempo_gasto;
+    }
+
+
+
+    public SubPasso getProximoSubPasso(){
+        boolean stop = false;
+        SubPasso prox = null;
+        for(SubPasso sp : subpassos){
+            if(stop) break;
+            if(!sp.concluido()){
+                stop = true;
+                prox = sp;
+            }
+        }
+        return prox;
     }
 
     public Passo clone(){

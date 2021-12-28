@@ -3,13 +3,13 @@ package model;
 import model.interfaces.Carregavel;
 
 public class SubPasso implements Carregavel {
-    String descricao;
-    float custoEstimado;
-    float custoReal;
-    float duracaoEstimada; //em minutos
-    float duracaoReal; //em minutos
-    boolean realizado;
-    String idTecnico;
+    private String descricao;
+    private float custoEstimado;
+    private float custoReal;
+    private float duracaoEstimada; //em minutos
+    private float duracaoReal; //em minutos
+    private boolean realizado;
+    private String idTecnico;
 
     public SubPasso(String descricao, float custoEstimado, float duracaoEstimada){
         this.descricao = descricao;
@@ -137,6 +137,7 @@ public class SubPasso implements Carregavel {
         if (realizado) tempo_gasto = this.duracaoReal;
         return  tempo_gasto;
     }
+
 
     public SubPasso clone(){
         return new SubPasso(this.descricao,this.custoEstimado,this.duracaoEstimada,this.custoReal,this.duracaoReal,this.realizado,this.idTecnico);
