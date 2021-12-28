@@ -21,6 +21,7 @@ public class CRFacade implements ICentroReparacoes {
     private Map<String, IUtilizador> utilizadores; //map com utilizadores do sistema
     private Map<String, ICliente> clientes;//map com clientes do sistema
     private Set<IPedido> pedidosOrcamentos;
+    private Map<Integer, IPedido> pedidosJaPlaneados;
     private Map<Integer,Orcamento> orcamentos; //numero de registo do equipamento é a key
     private Armazem armazem;
     private IUtilizador logado;
@@ -134,12 +135,20 @@ public class CRFacade implements ICentroReparacoes {
         Iterator<IPedido> iterator = pedidosOrcamentos.iterator();
         boolean encontrado = false;
         while(iterator.hasNext() && !encontrado){
-            if(iterator.next().getNumeroRegistoEquipamento() == num_referencia){
+            IPedido pedido = iterator.next();
+            if(pedido.getNumeroRegistoEquipamento() == num_referencia){
+                adicionar_pedido_ja_planeado(pedido);
                 iterator.remove();
                 encontrado = true;
             }
         }
         gravar_todos_pedidos();
+    }
+
+    private void adicionar_pedido_ja_planeado(IPedido pedido) {
+        if(!pedidosJaPlaneados.containsKey(pedido.getNumeroRegistoEquipamento())){
+            pedidosJaPlaneados.put(pedido.getNumeroRegistoEquipamento(),pedido);
+        }
     }
 
 
@@ -322,9 +331,13 @@ public class CRFacade implements ICentroReparacoes {
                             pedido = pedidosOrcamentos.stream().filter(k -> k.getNumeroRegistoEquipamento() == numRegisto).findFirst().get();
                         }else valido = false;
                         if(valido) {
-                            Orcamento orcamento = new Orcamento(numRegisto, pedido);
+                            System.out.println("DEBUG: IF1");
+                            Orcamento orcamento = new Orcamento(numRegisto, pedido,confirmacao);
                             orcamento.carregar(split[1]);
-                            if (orcamento.valida()) carregar_orcamento(orcamento);
+                            if (orcamento.valida()) {
+                                System.out.println("DEBUG: IF2");
+                                carregar_orcamento(orcamento);
+                            }
                         }
                     } catch (NumberFormatException | JaExistenteExcecao ignored) {
                     }
@@ -460,12 +473,12 @@ public class CRFacade implements ICentroReparacoes {
         w.close();
     }
 
-    //TODO: pra ja so guarda os de orçamento
+    //TODO: falta os express
     private void gravar_todos_pedidos() throws IOException {
         FileWriter w = new FileWriter("cp/pedidos.csv");
         pedidosOrcamentos.forEach(k-> {
             try {
-                w.write(k.toString()+"\n");
+                w.write("1@"+k.toString()+"\n");
             } catch (IOException e) {
                 e.printStackTrace();
             }

@@ -66,7 +66,7 @@ public class PedidoOrcamento implements IPedido {
     //tipoPedido@nifCliente;dataRegisto;numeroRegistoEquipamento;descricaoPedido
     public String toString(){
         StringBuilder sb = new StringBuilder();
-        sb.append("1@").append(nifCliente).append(";").append(dataRegisto.toString()).append(";");
+        sb.append(nifCliente).append(";").append(dataRegisto.toString()).append(";");
         sb.append(numeroRegistoEquipamento).append(";").append(descricaoPedido);
         return sb.toString();
     }

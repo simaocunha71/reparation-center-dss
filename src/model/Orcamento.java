@@ -20,9 +20,10 @@ public class Orcamento implements Carregavel {
     }
 
     //TODO: ver clone do pedido
-    public Orcamento(int num_ref, IPedido pedido){
+    public Orcamento(int num_ref, IPedido pedido, boolean confirmado){
         this.num_ref = num_ref;
         this.planoDeTrabalho = new PlanoDeTrabalho(pedido);
+        this.confirmado = confirmado;
     }
 
     public int get_num_ref(){
@@ -36,6 +37,10 @@ public class Orcamento implements Carregavel {
 
     public void confirma(){
         this.confirmado = true;
+    }
+
+    public void desconfirma(){
+        this.confirmado = false;
     }
 
     public boolean getConfirmado(){return this.confirmado;}

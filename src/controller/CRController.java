@@ -35,6 +35,7 @@ public class CRController {
     private final String[] menuPrincipalGestor = new String[]{
             "Registar cliente",
             "Registar pedido",
+            "Confirmar orcamento",
             "Lista de pedidos de orçamento",
             "Lista de equipamentos para reparação",
             "Lista de funcionários",
@@ -51,6 +52,7 @@ public class CRController {
 
     //TODO: confirmar orçamento
     private final String[] menuPrincipalFuncionario = new String[]{
+            "Registar cliente",
             "Registar pedido",
             "Confirmar orcamento",
             "Logout",
@@ -195,15 +197,17 @@ public class CRController {
 
         menu.setHandler(2,this::registarPedido);
 
-        menu.setHandler(3,this::listaDePedidosOrcamento);
+        menu.setHandler(3,this::confirmarOrcamento);
+
+        menu.setHandler(4,this::listaDePedidosOrcamento);
 //
-        //menu.setHandler(4,this::listaDeEquipamentosReparacao);
+        //menu.setHandler(5,this::listaDeEquipamentosReparacao);
 //
-        //menu.setHandler(5,this::listaDeFuncionarios);
-        //menu.setHandler(6,this::listaDeTecnicos);
+        //menu.setHandler(6,this::listaDeFuncionarios);
+        //menu.setHandler(7,this::listaDeTecnicos);
 //
-        menu.setHandler(7,this::registarUtilizador);
-        menu.setHandler(8,()->{menu.returnMenu();logout();});
+        menu.setHandler(8,this::registarUtilizador);
+        menu.setHandler(9,()->{menu.returnMenu();logout();});
 
         menu.simpleRun();
     }
@@ -333,22 +337,29 @@ public class CRController {
     private void menuInicialTecnico() throws IOException, ClassNotFoundException {
         CRView menu = new CRView("Menu Inicial", menuPrincipalTecnico);
 
-        //menu.setHandler(1,this::listaDePedidosOrcamento);
+        menu.setHandler(1,this::listaDePedidosOrcamento);
 
-        //menu.setHandler(2,this::listaDeEquipamentosReparacao);
+        menu.setHandler(2,this::listaDeEquipamentosReparacao);
         menu.setHandler(3,()->{menu.returnMenu();logout();});
 
         menu.simpleRun();
     }
 
+    //TODO:
+    private void listaDeEquipamentosReparacao() {
+
+    }
+
     private void menuInicialFuncionario() throws IOException, ClassNotFoundException {
         CRView menu = new CRView("Menu Inicial", menuPrincipalFuncionario);
 
-        menu.setHandler(1,this::registarPedido);
+        menu.setHandler(1,this::registarCliente);
 
-        menu.setHandler(2,this::confirmarOrcamento);
+        menu.setHandler(2,this::registarPedido);
 
-        menu.setHandler(3,()->{menu.returnMenu();logout();});
+        menu.setHandler(3,this::confirmarOrcamento);
+
+        menu.setHandler(4,()->{menu.returnMenu();logout();});
 
         menu.simpleRun();
     }
@@ -374,7 +385,7 @@ public class CRController {
         AtomicInteger i = new AtomicInteger(1);
         for(; i.get() <= orcamentos.size();i.incrementAndGet()){
             int posicao = i.get();
-            int num_ref = orcamentos.get(posicao).get_num_ref();
+            int num_ref = orcamentos.get(posicao-1).get_num_ref();
             menu.setHandler(i.get(),()->{centro.confirmar_orcamento(num_ref);menu.returnMenu();});
         }
         menu.simpleRun();
