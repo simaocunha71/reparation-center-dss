@@ -81,6 +81,22 @@ public class Orcamento implements Carregavel {
         return sb.toString();
     }
 
+    public float get_custo_gasto(){
+        return planoDeTrabalho.calcula_custo_gasto();
+    }
+
+    public float get_tempo_gasto(){
+        return planoDeTrabalho.calcula_tempo_gasto();
+    }
+
+    public float orcamento_gasto(){
+        return planoDeTrabalho.orcamento_gasto();
+    }
+
+    public boolean ultrapassou120PorCentoOrcamento(){
+        return planoDeTrabalho.ultrapassou120PorCentoOrcamento();
+    }
+
     public LocalDateTime getDataConfirmacao() {
         return dataConfirmacao;
     }

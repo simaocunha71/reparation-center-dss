@@ -132,6 +132,7 @@ public class CRController {
             "Apresentar informações", //descriçao, custo estimado, duração estimada, custo gasto até ao momento, tempo gasto até ao momento, percentagem de orçamento gasto;
             "Executar passo", //aberto até o orçamento passar 120% do valor estimado
             "Notificar cliente", //fechado até o orçamento passar 120% do valor estimado.
+            "Concluir reparacao",
             "Guardar e sair"
     };
 
@@ -387,8 +388,44 @@ public class CRController {
         menu.simpleRun();
     }
 
-    private void processar_reparaçao(int num_ref) {
+    private void processar_reparaçao(int num_ref) throws IOException, ClassNotFoundException {
+        Orcamento orcamento = centro.get_orcamento(num_ref);
+        CRView menu = new CRView("Processar Reparacao",menuProcessarReparacao);
+        if(orcamento!=null) {
+            menu.setPreCondition(2,()->!orcamento.ultrapassou120PorCentoOrcamento());
+            menu.setPreCondition(3, orcamento::ultrapassou120PorCentoOrcamento);
+            menu.setPreCondition(4, orcamento::concluido);
+            menu.setPreCondition(5, orcamento::valida);
 
+
+            menu.setHandler(1, () -> {
+                StringBuilder sb = new StringBuilder();
+                sb.append("Equipamento [#" + num_ref +"]\n")
+                        .append("Custo Estimado [" + orcamento.getCustoEstimado() + "]\n")
+                        .append("Custo Real [" + orcamento.get_custo_gasto() + "]\n")
+                        .append("Percentagem gasta [" + orcamento.orcamento_gasto() + "]\n")
+                        .append("Tempo Estimado [" + orcamento.getDuracaoEstimada() + "]\n")
+                        .append("Tempo Real [" + orcamento.get_tempo_gasto() + "]\n")
+                        .append("Orcamento excedido [" + orcamento.ultrapassou120PorCentoOrcamento() +"]");
+                menu.showInfo(sb);
+            });
+            menu.setHandler(2,()->{
+                executarPasso(orcamento);
+            });
+            menu.setHandler(3,()->{
+                notificarCliente(orcamento);
+            });
+            menu.setHandler(4,()->{
+                centro.remover_orcamento(orcamento);
+                menu.returnMenu();
+            });
+            menu.setHandler(5,()->{
+                centro.adicionar_orcamento(orcamento);
+                menu.returnMenu();
+            });
+
+            menu.simpleRun();
+        }
     }
 
     private void menuInicialFuncionario() throws IOException, ClassNotFoundException {
