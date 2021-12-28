@@ -23,7 +23,6 @@ public class Gestor implements IUtilizador {
     public String getId(){return this.id;}
     public String getPassword(){return this.password;}
 
-    @Override
     public void carregar(String string) {
         String[]split = string.split(";");
         if(split.length == 3) {
@@ -33,8 +32,7 @@ public class Gestor implements IUtilizador {
         }
     }
 
-    @Override
-    public boolean valida_utilizador() {
+    public boolean valida() {
         return id.length()>0 && nome.length()>0 && password.length()>0;
     }
 

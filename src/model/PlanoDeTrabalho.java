@@ -17,11 +17,8 @@ public class PlanoDeTrabalho implements Carregavel {
 
     public PlanoDeTrabalho(IPedido pedidoAssociado){
         this.pedidoAssociado = pedidoAssociado; //Nao sei se tem de fazer clone. mby yes
-    }
-
-    public PlanoDeTrabalho(float custoEstimado, float duracaoEstimada){
-        this.custoEstimado = custoEstimado;
-        this.duracaoEstimada = duracaoEstimada;
+        this.custoEstimado = -1;
+        this.duracaoEstimada = -1;
         this.custoReal = 0;
         this.duracaoReal = 0;
         this.passos = new ArrayList<>();
@@ -88,6 +85,8 @@ public class PlanoDeTrabalho implements Carregavel {
         }
     }
 
+
+    //TODO: valida
     public boolean valida() {
         return true;
     }
@@ -99,7 +98,7 @@ public class PlanoDeTrabalho implements Carregavel {
     }
 
     public void adicionar_passo(Passo p){
-        passos.add(new Passo(p.descricao,p.custoEstimado,p.duracaoEstimada)); //secalhar nao é preciso
+        passos.add(p); //TODO:clone
     }
 
     //custoEstimado;custoReal;tempoEstimado;tempoReal;booleanoRealizado;numeroPassos@Passos
@@ -115,10 +114,11 @@ public class PlanoDeTrabalho implements Carregavel {
         if(realizado) sb.append("1;");
         else sb.append("0;");
         sb.append(passos.size()).append("@");
-        for(int i = 0; i < passos.size()-1; i++){
+        int i = 0;
+        for(; i < passos.size()-1; i++){
             sb.append(passos.get(i).toString()).append("->");
         }
-        sb.append(passos.get(passos.size()-1).toString());
+        if(passos.size() != 0) sb.append(passos.get(passos.size()-1).toString());
         return sb.toString();
     }
 

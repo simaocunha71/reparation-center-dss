@@ -110,12 +110,31 @@ public class CRFacade implements ICentroReparacoes {
 
     public void adicionar_plano(PlanoDeTrabalho plano) throws IOException {
         int num_referencia = plano.get_num_referencia();
+        remove_pedido_orcamento(num_referencia);
+        transferencia_seccao(num_referencia);
+        System.out.println("DEBUG: TRANSFERIU "+num_referencia);
         if(!planos.containsKey(num_referencia)){
             planos.put(num_referencia,plano);
             gravar_plano(plano);
         }
     }
 
+    private void transferencia_seccao(int num_referencia) throws IOException {
+        armazem.transferencia_seccao(num_referencia);
+        gravar_todos_equipamento();
+    }
+
+    private void remove_pedido_orcamento(int num_referencia) throws IOException {
+        Iterator<IPedido> iterator = pedidosOrcamentos.iterator();
+        boolean encontrado = false;
+        while(iterator.hasNext() && !encontrado){
+            if(iterator.next().getNumeroRegistoEquipamento() == num_referencia){
+                iterator.remove();
+                encontrado = true;
+            }
+        }
+        gravar_todos_pedidos();
+    }
 
 
     public void fazer_pedido(String idCLiente){
@@ -424,8 +443,8 @@ public class CRFacade implements ICentroReparacoes {
     }
 
     //TODO: pra ja so guarda os de orçamento
-    private void gravar_todos_pedidos(IPedido pedido) throws IOException {
-        FileWriter w = new FileWriter("cp/pedidos.csv",true);
+    private void gravar_todos_pedidos() throws IOException {
+        FileWriter w = new FileWriter("cp/pedidos.csv");
         pedidosOrcamentos.forEach(k-> {
             try {
                 w.write(k.toString()+"\n");
@@ -468,10 +487,12 @@ public class CRFacade implements ICentroReparacoes {
 
     public IPedido get_pedido(int posicao){
         Iterator<IPedido> iterator = pedidosOrcamentos.iterator();
-        for(int i = 0; i < posicao-1 && iterator.hasNext(); i++){
+        for(int i = 1; i < posicao && iterator.hasNext(); i++){
             iterator.next();
         }
-        return iterator.next().clone();
+        IPedido pedido = null;
+        if (iterator.hasNext()) pedido = iterator.next().clone();
+        return pedido;
     }
 
 }
