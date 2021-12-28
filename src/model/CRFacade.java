@@ -113,6 +113,21 @@ public class CRFacade implements ICentroReparacoes {
         }
     }
 
+    public void adicionar_orcamento(Orcamento orcamento) throws IOException {
+        int num_ref = orcamento.get_num_ref();
+        if(!orcamentos.containsKey(num_ref)){
+            orcamentos.put(num_ref,orcamento.clone());
+            gravar_orcamento(orcamentos.get(num_ref));
+        }else {
+            orcamentos.remove(num_ref);
+            orcamentos.put(num_ref,orcamento.clone());
+            if(orcamento.concluido()){
+                remove_pedido_orcamento(num_ref);
+            }
+            gravar_todos_orcamentos();
+        }
+    }
+
 
     public void gerar_orcamento(PlanoDeTrabalho plano) throws IOException {
         int num_referencia = plano.get_num_referencia();
@@ -163,8 +178,22 @@ public class CRFacade implements ICentroReparacoes {
                 encontrado = true;
             }
         }
+        if(!encontrado){
+            pedidosJaPlaneados.remove(num_referencia);
+        }
         gravar_todos_pedidos();
     }
+
+    public void remover_orcamento(Orcamento orcamento) throws IOException {
+        int num_ref = orcamento.get_num_ref();
+        if(orcamentos.containsKey(num_ref)){
+            orcamentos.remove(num_ref);
+            transferencia_seccao(num_ref);
+            gravar_orcamento(orcamentos.get(num_ref));
+            gravar_todos_equipamento();
+        }
+    }
+
 
     private void adicionar_pedido_ja_planeado(IPedido pedido) {
         System.out.println("DEBUG A ADICIONAR PEDIDO PLANEADO");
@@ -189,6 +218,7 @@ public class CRFacade implements ICentroReparacoes {
             throw  new NaoExisteExcecao("Cliente não existe no sistema");
         }else{clientes.remove(nif);}
     }
+
 
     /* state loaders */
 

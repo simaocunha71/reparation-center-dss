@@ -111,6 +111,10 @@ public class Orcamento implements Carregavel {
         return new Orcamento(this.num_ref,this.planoDeTrabalho,this.confirmado,this.dataConfirmacao);
     }
 
+    public Passo get_next_passo(){
+        return planoDeTrabalho.getProximoPasso();
+    }
+
     public boolean concluido(){
         return this.planoDeTrabalho.getRealizado();
     }

@@ -138,6 +138,7 @@ public class CRController {
             "Apresentar informações", //descriçao, custo estimado, duração estimada
             "Custo real",
             "Duração real",
+            "Executar SubPasso",
             "Guardar e sair",
     };
 
@@ -390,10 +391,10 @@ public class CRController {
         Orcamento orcamento = centro.get_orcamento(num_ref);
         CRView menu = new CRView("Processar Reparacao",menuProcessarReparacao);
         if(orcamento!=null) {
-            menu.setPreCondition(2,()->!orcamento.ultrapassou120PorCentoOrcamento());
+            menu.setPreCondition(2,()->!orcamento.ultrapassou120PorCentoOrcamento() && !orcamento.concluido() && orcamento.get_next_passo()!=null);
             menu.setPreCondition(3, orcamento::ultrapassou120PorCentoOrcamento);
             menu.setPreCondition(4, orcamento::concluido);
-            menu.setPreCondition(5, orcamento::valida);
+            menu.setPreCondition(5, ()-> orcamento.valida() && !orcamento.concluido());
 
 
             menu.setHandler(1, () -> {
@@ -411,10 +412,14 @@ public class CRController {
                 executarPasso(orcamento);
             });
             menu.setHandler(3,()->{
-                notificarCliente(orcamento);
+                menu.showInfo("Cliente notificado, orcamento retornado a lista de espera.");
+                orcamento.desconfirma();
+                centro.adicionar_orcamento(orcamento);
+                menu.returnMenu();
             });
             menu.setHandler(4,()->{
-                centro.remover_orcamento(orcamento);
+                menu.showInfo("Reparacao concluida.");
+                centro.adicionar_orcamento(orcamento);
                 menu.returnMenu();
             });
             menu.setHandler(5,()->{
@@ -425,6 +430,55 @@ public class CRController {
             menu.simpleRun();
         }
     }
+
+    private void executarPasso(Orcamento orcamento) throws IOException, ClassNotFoundException {
+        CRView menu = new CRView("Processar Reparacao",menuProcessarReparacao);
+        Passo passo = orcamento.get_next_passo();
+        AtomicReference<Float> custoReal = new AtomicReference<Float>((float) 0);
+        AtomicReference<Float> tempoReal = new AtomicReference<Float>((float) 0);
+
+        menu.setPreCondition(2,()->!orcamento.ultrapassou120PorCentoOrcamento() && !orcamento.concluido() && orcamento.get_next_passo()!=null);
+        menu.setPreCondition(3, orcamento::ultrapassou120PorCentoOrcamento);
+        menu.setPreCondition(4, orcamento::concluido);
+        menu.setPreCondition(5, ()-> orcamento.valida() && !orcamento.concluido());
+
+
+        menu.setHandler(1, () -> {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Descricao [#" + passo.getDescricao() +"]\n")
+                    .append("Custo Estimado [" + passo.getCustoEstimado() + "]\n")
+                    .append("Custo Real [" + passo.calcula_custo_gasto() + "]\n")
+                    .append("Tempo Estimado [" + passo.getDuracaoEstimada() + "]\n")
+                    .append("Tempo Real [" + passo.calcula_tempo_gasto() + "]\n")
+                    .append("Realizado [" + passo.concluido() + "]\n")
+                    .append("Percentagem gasta [" + orcamento.orcamento_gasto() + "]\n");
+
+            menu.showInfo(sb);
+        });
+        menu.setHandler(2,()->{
+
+        });
+        menu.setHandler(3,()->{
+            menu.showInfo("Cliente notificado, orcamento retornado a lista de espera.");
+            orcamento.desconfirma();
+            centro.adicionar_orcamento(orcamento);
+            menu.returnMenu();
+        });
+        menu.setHandler(4,()->{
+            menu.showInfo("Reparacao concluida.");
+            centro.adicionar_orcamento(orcamento);
+            menu.returnMenu();
+        });
+        menu.setHandler(5,()->{
+            centro.adicionar_orcamento(orcamento);
+            menu.returnMenu();
+        });
+
+
+        menu.simpleRun();
+    }
+
+
 
     private void menuInicialFuncionario() throws IOException, ClassNotFoundException {
         CRView menu = new CRView("Menu Inicial", menuPrincipalFuncionario);

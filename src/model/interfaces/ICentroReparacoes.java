@@ -16,6 +16,10 @@ public interface ICentroReparacoes {
 
     void adicionar_cliente(String nif, String nome, String numTelemovel, String email) throws JaExistenteExcecao, IOException;
 
+    void adicionar_orcamento(Orcamento orcamento) throws IOException;
+
+    void remover_orcamento(Orcamento orcamento) throws IOException;
+
     void carregar_utilizadores(String filename) throws IOException, JaExistenteExcecao;
 
     void carregar_cp(String utilizadoresFN,String clientesFN,String armazemFN,String pedidosFN, String planosFN) throws IOException, JaExistenteExcecao;

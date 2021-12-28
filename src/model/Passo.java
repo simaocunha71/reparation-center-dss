@@ -75,6 +75,10 @@ public class Passo implements Carregavel {
         return duracaoReal;
     }
 
+    public String getDescricao() {
+        return descricao;
+    }
+
     //se nao tem subpassos
     public void concluir(String idTecnico, float custoReal, float duracaoReal){
         this.custoReal = custoReal;
@@ -147,6 +151,14 @@ public class Passo implements Carregavel {
 
     public void setCustoEstimado(float custoEstimado) {
         this.custoEstimado = custoEstimado;
+    }
+
+    public void setCustoReal(float custoReal) {
+        this.custoReal = custoReal;
+    }
+
+    public void setDuracaoReal(float duracaoReal) {
+        this.duracaoReal = duracaoReal;
     }
 
     public void setDuracaoEstimada(float duracaoEstimada) {
