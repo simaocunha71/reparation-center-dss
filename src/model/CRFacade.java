@@ -35,6 +35,7 @@ public class CRFacade implements ICentroReparacoes {
         this.pedidosOrcamentos = new TreeSet<IPedido>(new IPedidoComparator());
         this.armazem = new Armazem();
         this.orcamentos = new HashMap<>();
+        this.pedidosJaPlaneados = new HashMap<>();
     }
 
     /**
@@ -327,8 +328,8 @@ public class CRFacade implements ICentroReparacoes {
                             valido = true;
                         }
                         IPedido pedido = new PedidoExpresso();
-                        if (pedidosOrcamentos.stream().anyMatch(k -> k.getNumeroRegistoEquipamento() == numRegisto)) {
-                            pedido = pedidosOrcamentos.stream().filter(k -> k.getNumeroRegistoEquipamento() == numRegisto).findFirst().get();
+                        if (pedidosJaPlaneados.containsKey(numRegisto)) {
+                            pedido = pedidosJaPlaneados.get(numRegisto);
                         }else valido = false;
                         if(valido) {
                             System.out.println("DEBUG: IF1");
@@ -344,7 +345,6 @@ public class CRFacade implements ICentroReparacoes {
                 }
             }
         }
-
         br.close();
     }
 
@@ -479,6 +479,13 @@ public class CRFacade implements ICentroReparacoes {
         pedidosOrcamentos.forEach(k-> {
             try {
                 w.write("1@"+k.toString()+"\n");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+        pedidosJaPlaneados.forEach((v,k)-> {
+            try {
+                w.write("3@"+k.toString()+"\n");
             } catch (IOException e) {
                 e.printStackTrace();
             }
