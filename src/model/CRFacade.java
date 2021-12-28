@@ -136,6 +136,13 @@ public class CRFacade implements ICentroReparacoes {
         return set.stream().toList();
     }
 
+
+    public Orcamento get_orcamento(int num_ref) {
+        Orcamento orcamento = null;
+        if(orcamentos.containsKey(num_ref)) orcamento= orcamentos.get(num_ref);
+        return orcamento.clone();
+    }
+
     public Equipamento getEquipamento(int num_ref) {
         return armazem.getEquipamento(num_ref).clone();
     }

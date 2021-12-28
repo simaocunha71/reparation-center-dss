@@ -52,5 +52,7 @@ public interface ICentroReparacoes {
 
     List<Orcamento> get_orcamentos_confirmados();
 
+    Orcamento get_orcamento(int num_ref);
+
     Equipamento getEquipamento(int num_ref);
 }
