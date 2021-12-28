@@ -67,17 +67,12 @@ public class Armazem {
         }
     }
 
-
     public void regista_equipamento(Equipamento e, int local) {
         switch (local){
             case 1 -> regista_para_orcamento(e);
             case 2 -> regista_para_reparacao(e);
             case 3 -> regista_prontos_entregar(e);
         }
-    }
-
-    public boolean contem_equipamento_para_orcamento(int numeroRegisto){
-        return paraOrcamento.containsKey(numeroRegisto);
     }
 
     public String toString(){
@@ -89,51 +84,70 @@ public class Armazem {
     }
 
 
-    public void transferencia_seccao(int num_referencia) {
-        if(paraOrcamento.containsKey(num_referencia)){
-            Equipamento e = paraOrcamento.get(num_referencia);
-            paraOrcamento.remove(num_referencia);
-            paraReparacao.put(num_referencia,e);
-            System.out.println("DEBUG: TRANSFERIU "+num_referencia+" DA SECÇÃO 1 PARA A SECÇÃO 2");
-        }
-        else if(paraReparacao.containsKey(num_referencia)){
-            Equipamento e = paraReparacao.get(num_referencia);
-            paraReparacao.remove(num_referencia);
-            prontosAEntregar.put(num_referencia,e);
-            System.out.println("DEBUG: TRANSFERIU "+num_referencia+" DA SECÇÃO 2 PARA A SECÇÃO 3");
-        }
-        else {
-            prontosAEntregar.remove(num_referencia);
-            System.out.println("DEBUG: TIROU "+num_referencia+" DA SECÇÃO 3");
-        }
-    }
-
-    public int get_seccao(int num_ref) {
+    public void transferencia_seccao(int num_ref) {
         if(paraOrcamento.containsKey(num_ref)){
-            return 1;
+            Equipamento e = getEquipamentoParaOrcamento(num_ref);
+            remove_seccao_1(num_ref);
+            paraReparacao.put(num_ref,e);
         }
         else if(paraReparacao.containsKey(num_ref)){
-            return 2;
+            Equipamento e = getEquipamentoParaReparacao(num_ref);
+            remove_seccao_2(num_ref);
+            prontosAEntregar.put(num_ref,e);
         }
-        else if(prontosAEntregar.containsKey(num_ref)){
-            return 3;
-        }else return -1;
+        else {
+            remove_seccao_3(num_ref);
+        }
     }
 
+    private void remove_seccao_1(int num_ref){
+        paraOrcamento.remove(num_ref);
+    }
+
+    private void remove_seccao_2(int num_ref){
+        paraReparacao.remove(num_ref);
+    }
+
+    private void remove_seccao_3(int num_ref){
+        prontosAEntregar.remove(num_ref);
+    }
+
+
+    public boolean contem_equipamento_para_orcamento(int numeroRegisto){
+        return paraOrcamento.containsKey(numeroRegisto);
+    }
 
     public boolean contem_equipamento_para_reparacao(int numeroRegisto){
         return paraReparacao.containsKey(numeroRegisto);
     }
 
+    public boolean contem_equipamento_pronto_a_entregar(int numeroRegisto){
+        return prontosAEntregar.containsKey(numeroRegisto);
+    }
+
     public Equipamento getEquipamento(int num_ref) {
+        Equipamento e = null;
+        e = getEquipamentoParaOrcamento(num_ref);
+        if(e == null) e = getEquipamentoParaReparacao(num_ref);
+        if(e == null) e = getEquipamentoProntoAEntregar(num_ref);
+        return e;
+    }
+
+    private Equipamento getEquipamentoParaOrcamento(int num_ref){
         if(contem_equipamento_para_orcamento(num_ref))
             return paraOrcamento.get(num_ref).clone();
-        else if(contem_equipamento_para_reparacao(num_ref))
+        else return null;
+    }
+
+    private Equipamento getEquipamentoParaReparacao(int num_ref){
+        if(contem_equipamento_para_reparacao(num_ref))
             return paraReparacao.get(num_ref).clone();
-        else if(prontosAEntregar.containsKey(num_ref))
+        else return null;
+    }
+
+    private Equipamento getEquipamentoProntoAEntregar(int num_ref){
+        if(contem_equipamento_pronto_a_entregar(num_ref))
             return prontosAEntregar.get(num_ref).clone();
-        return null;
+        else return null;
     }
 }
-
-//TODO: busca por cada map com o numRegisto do Equipamento

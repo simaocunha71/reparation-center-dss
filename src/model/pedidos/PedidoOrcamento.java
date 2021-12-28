@@ -32,9 +32,8 @@ public class PedidoOrcamento implements IPedido {
         this.dataRegisto = null;
     }
 
-    //TODO: valida_pedido
     public boolean valida(){
-        return true;
+        return nifCliente.length() > 0 && numeroRegistoEquipamento > 0 && descricaoPedido.length() > 0 && dataRegisto != null;
     }
 
     public String getNifCliente() {

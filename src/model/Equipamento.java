@@ -81,9 +81,8 @@ public class Equipamento {
         return sb.toString();
     }
 
-    //TODO:
     public Equipamento clone(){
-        return this;
+        return new Equipamento(this.nifCliente,this.numeroRegisto,this.modelo,this.descricao);
     }
 
 
