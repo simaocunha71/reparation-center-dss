@@ -31,6 +31,16 @@ public class SubPasso implements Carregavel {
         this.idTecnico = null;
     }
 
+    public SubPasso(String descricao, float custoEstimado, float duracaoEstimada, float custoReal, float duracaoReal, boolean realizado, String idTecnico) {
+        this.descricao = descricao;
+        this.custoEstimado = custoEstimado;
+        this.duracaoEstimada = duracaoEstimada;
+        this.custoReal = custoReal;
+        this.duracaoReal = duracaoReal;
+        this.realizado = realizado;
+        this.idTecnico = idTecnico;
+    }
+
     public void concluir(String idTecnico, float custoReal, float duracaoReal){
         this.custoReal = custoReal;
         this.duracaoReal = duracaoReal;
@@ -86,9 +96,8 @@ public class SubPasso implements Carregavel {
         this.descricao = descricao;
     }
 
-    //TODO: valida
     public boolean valida() {
-        return true;
+        return descricao.length()>0 && custoEstimado >= 0 && duracaoEstimada >= 0 && ((!realizado && idTecnico == null)||(realizado && idTecnico != null));
     }
 
     public String toString(){
@@ -128,5 +137,10 @@ public class SubPasso implements Carregavel {
         if (realizado) tempo_gasto = this.duracaoReal;
         return  tempo_gasto;
     }
+
+    public SubPasso clone(){
+        return new SubPasso(this.descricao,this.custoEstimado,this.duracaoEstimada,this.custoReal,this.duracaoReal,this.realizado,this.idTecnico);
+    }
+
 }
 

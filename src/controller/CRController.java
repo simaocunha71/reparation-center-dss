@@ -34,7 +34,6 @@ public class CRController {
             "Entrar",
     };
 
-    //TODO: confirmar orçamento
     private final String[] menuPrincipalGestor = new String[]{
             "Registar cliente",
             "Registar pedido",
@@ -53,7 +52,6 @@ public class CRController {
             "Logout",
     };
 
-    //TODO: confirmar orçamento
     private final String[] menuPrincipalFuncionario = new String[]{
             "Registar cliente",
             "Registar pedido",

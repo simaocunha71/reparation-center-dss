@@ -18,6 +18,13 @@ public class PedidoOrcamento implements IPedido {
         this.dataRegisto = LocalDateTime.now();
     }
 
+    public PedidoOrcamento(String nifCliente, int numeroRegistoEquipamento, String descricaoPedido, LocalDateTime dataRegisto){
+        this.nifCliente = nifCliente;
+        this.numeroRegistoEquipamento = numeroRegistoEquipamento;
+        this.descricaoPedido = descricaoPedido;
+        this.dataRegisto = dataRegisto;
+    }
+
     public PedidoOrcamento(){
         this.nifCliente = "";
         this.numeroRegistoEquipamento = -1;
@@ -72,8 +79,6 @@ public class PedidoOrcamento implements IPedido {
     }
 
     public IPedido clone(){
-        PedidoOrcamento clone = new PedidoOrcamento(this.nifCliente,this.numeroRegistoEquipamento,this.descricaoPedido);
-        clone.dataRegisto = this.dataRegisto;
-        return clone;
+        return new PedidoOrcamento(this.nifCliente,this.numeroRegistoEquipamento,this.descricaoPedido,this.dataRegisto);
     }
 }
