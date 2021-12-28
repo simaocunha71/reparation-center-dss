@@ -40,7 +40,9 @@ public class PlanoDeTrabalho implements Carregavel {
         }
     }
 
-
+    public boolean getRealizado() {
+        return realizado;
+    }
 
     public int get_num_referencia(){
         return pedidoAssociado.getNumeroRegistoEquipamento();
@@ -209,4 +211,5 @@ public class PlanoDeTrabalho implements Carregavel {
     public float orcamento_gasto(){
         return calcula_custo_gasto()*100/this.custoEstimado;
     }
+
 }
