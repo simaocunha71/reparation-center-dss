@@ -5,6 +5,10 @@ import model.excecoes.JaExistenteExcecao;
 import model.interfaces.ICentroReparacoes;
 import model.interfaces.ICliente;
 import model.interfaces.IPedido;
+import model.orcamento.Orcamento;
+import model.orcamento.Passo;
+import model.orcamento.PlanoDeTrabalho;
+import model.orcamento.SubPasso;
 import view.CRView;
 import view.AuxiliarView;
 
@@ -38,8 +42,8 @@ public class CRController {
             "Registar cliente",
             "Registar pedido",
             "Confirmar orcamento",
-            "Lista de pedidos de orçamento",
-            "Lista de equipamentos para reparação",
+            "Gerar orçamento/Criar plano",
+            "Processar reparação",
             "Lista de funcionários",
             "Lista de técnicos",
             "Registar utilizador",
@@ -130,17 +134,23 @@ public class CRController {
             "Apresentar informações", //descriçao, custo estimado, duração estimada, custo gasto até ao momento, tempo gasto até ao momento, percentagem de orçamento gasto;
             "Executar passo", //aberto até o orçamento passar 120% do valor estimado
             "Notificar cliente", //fechado até o orçamento passar 120% do valor estimado.
-            "Concluir reparacao",
-            "Guardar"
+            "Guardar",
+            "Concluir reparacao"
     };
 
     private final String[] menuExecutarPasso = new String[]{
             "Apresentar informações", //descriçao, custo estimado, duração estimada
-            "Custo real",
-            "Duração real",
+            "Custo real [0]",
+            "Duração real [0]",
             "Executar SubPasso",
-            "Guardar",
-            "Voltar"
+            "Guardar"
+    };
+
+    private final String[] menuExecutarSubPasso = new String[]{
+            "Apresentar informações", //descriçao, custo estimado, duração estimada
+            "Custo real [0]",
+            "Duração real [0]",
+            "Guardar e voltar"
     };
 
 
@@ -383,7 +393,7 @@ public class CRController {
                     .append("Tempo estimado [" + orcamento.getDuracaoEstimada() + "]");
             orcamentosString[i] = sb.toString();
         }
-        CRView menu = new CRView("Lista de Orcamentos por confirmar",orcamentosString);
+        CRView menu = new CRView("Lista de Equipamentos a reparar",orcamentosString);
         AtomicInteger i = new AtomicInteger(1);
         for(; i.get() <= orcamentosString.length;i.incrementAndGet()){
             int posicao = i.get();
@@ -395,41 +405,44 @@ public class CRController {
 
     private void processar_reparaçao(int num_ref) throws IOException, ClassNotFoundException {
         Orcamento orcamento = centro.get_orcamento(num_ref);
+        Orcamento clone = orcamento.clone();
         CRView menu = new CRView("Processar Reparacao",menuProcessarReparacao);
-        if(orcamento!=null) {
-            menu.setPreCondition(2,()->!orcamento.ultrapassou120PorCentoOrcamento() && !orcamento.concluido() && orcamento.get_next_passo()!=null);
-            menu.setPreCondition(3, orcamento::ultrapassou120PorCentoOrcamento);
-            menu.setPreCondition(4, orcamento::concluido);
-            menu.setPreCondition(5, ()-> orcamento.valida() && !orcamento.concluido());
+        if(clone!=null) {
+            menu.setPreCondition(2,()->!clone.ultrapassou120PorCentoOrcamento() && !clone.concluido() && clone.get_next_passo()!=null);
+            menu.setPreCondition(3, clone::ultrapassou120PorCentoOrcamento);
+            menu.setPreCondition(4, ()-> clone.valida() && !clone.concluido());
+            menu.setPreCondition(5, clone::concluido);
 
 
             menu.setHandler(1, () -> {
                 StringBuilder sb = new StringBuilder();
                 sb.append("Equipamento [#" + num_ref +"]\n")
-                        .append("Custo Estimado [" + orcamento.getCustoEstimado() + "]\n")
-                        .append("Custo Real [" + orcamento.get_custo_gasto() + "]\n")
-                        .append("Percentagem gasta [" + orcamento.orcamento_gasto() + "]\n")
-                        .append("Tempo Estimado [" + orcamento.getDuracaoEstimada() + "]\n")
-                        .append("Tempo Real [" + orcamento.get_tempo_gasto() + "]\n")
-                        .append("Orcamento excedido [" + orcamento.ultrapassou120PorCentoOrcamento() +"]");
+                        .append("Custo Estimado [" + clone.getCustoEstimado() + "]\n")
+                        .append("Custo Real [" + clone.get_custo_gasto() + "]\n")
+                        .append("Percentagem gasta [" + clone.orcamento_gasto() + "]\n")
+                        .append("Tempo Estimado [" + clone.getDuracaoEstimada() + "]\n")
+                        .append("Tempo Real [" + clone.get_tempo_gasto() + "]\n")
+                        .append("Orcamento excedido [" + clone.ultrapassou120PorCentoOrcamento() +"]");
                 menu.showInfo(sb);
             });
             menu.setHandler(2,()->{
-                executarPasso(orcamento);
+                executarPasso(clone);
             });
             menu.setHandler(3,()->{
                 menu.showInfo("Cliente notificado, orcamento retornado a lista de espera.");
-                orcamento.desconfirma();
-                centro.adicionar_orcamento(orcamento);
+                clone.desconfirma();
+                centro.adicionar_orcamento(clone);
                 menu.returnMenu();
             });
             menu.setHandler(4,()->{
+                orcamento.carregar(clone);
                 centro.adicionar_orcamento(orcamento);
-                menu.showInfo("Reparacao concluida.");
-                menu.returnMenu();
             });
             menu.setHandler(5,()->{
-                centro.adicionar_orcamento(orcamento);
+                orcamento.carregar(clone);
+                centro.concluir_reparacao(clone);
+                menu.showInfo("Reparacao concluida.");
+                menu.returnMenu();
             });
 
             menu.simpleRun();
@@ -437,15 +450,20 @@ public class CRController {
     }
 
     private void executarPasso(Orcamento orcamento) throws IOException, ClassNotFoundException {
-        CRView menu = new CRView("Executar Passo",menuExecutarPasso);
         Passo passo = orcamento.get_next_passo();
         Passo clone = passo.clone();
-        menu.setSamePreCondition(new int[]{2,3}, ()-> !passo.temSubPassos());
-        menu.setPreCondition(4, passo::existe_proximo_subpasso);
-        menu.setPreCondition(5, passo::valida);
-
+        int total_passos = orcamento.get_num_total_passos();
+        String title = "Executar Passo ["+clone.getNumero_passo()+"/"+total_passos+"]";
+        CRView menu = new CRView(title,menuExecutarPasso);
+        menu.setSamePreCondition(new int[]{2,3}, ()-> !clone.temSubPassos());
+        menu.setPreCondition(4, ()-> clone.existe_proximo_subpasso() && orcamento.getCustoEstimado()*1.2 >= orcamento.get_custo_gasto()+clone.calcula_custo_gasto());
+        menu.setPreCondition(5, clone::valida);
+        int total_subpassos = clone.get_total_subpassos();
+        float percentagem_orcamento = (orcamento.get_custo_gasto())*100/orcamento.getCustoEstimado();
 
         menu.setHandler(1, () -> {
+            float percentagem_gasta = percentagem_orcamento;
+            percentagem_gasta += clone.calcula_custo_gasto()*100/orcamento.getCustoEstimado();
             StringBuilder sb = new StringBuilder();
             sb.append("Descricao [#" + clone.getDescricao() +"]\n")
                     .append("Custo Estimado [" + clone.getCustoEstimado() + "]\n")
@@ -453,9 +471,10 @@ public class CRController {
                     .append("Tempo Estimado [" + clone.getDuracaoEstimada() + "]\n")
                     .append("Tempo Real [" + clone.calcula_tempo_gasto() + "]\n")
                     .append("Realizado [" + clone.concluido() + "]\n")
-                    .append("Percentagem gasta [" + orcamento.orcamento_gasto() + "]\n");
+                    .append("Percentagem gasta [" + percentagem_gasta + "]\n");
 
             menu.showInfo(sb);
+
         });
         menu.setHandler(2,()->{
             clone.setCustoReal(scanFloat("Custo Real:"));
@@ -467,30 +486,29 @@ public class CRController {
 
         });
         menu.setHandler(4,()->{
-            executarSubpasso(clone.getProximoSubPasso());
+            executarSubpasso(clone.getProximoSubPasso(),total_subpassos);
         });
         menu.setHandler(5,()->{
             if(passo.temSubPassos()){
                 passo.carrega(clone);
                 if(passo.concluido()){
-                    passo.concluir();
+                    menu.returnMenu();
                 }
             }else{
-                passo.setCustoReal(clone.calcula_custo_gasto());
-                passo.setDuracaoReal(clone.calcula_tempo_gasto());
-                passo.concluir(centro.get_logged_id(),passo.getCustoReal(),passo.getDuracaoReal());
+                clone.concluir(centro.get_logged_id(),clone.getCustoReal(),clone.getDuracaoReal());
+                passo.carrega(clone);
             }
         });
-        menu.setHandler(6, menu::returnMenu);
 
         menu.simpleRun();
     }
 
-    private void executarSubpasso(SubPasso subPasso) throws IOException, ClassNotFoundException {
-        CRView menu = new CRView("Executar SubPasso",menuExecutarPasso);
+    private void executarSubpasso(SubPasso subPasso, int total_subpassos) throws IOException, ClassNotFoundException {
+
+        String title = "Executar SubPasso ["+subPasso.getNumero_subpasso()+"/"+total_subpassos+"]";
+        CRView menu = new CRView(title,menuExecutarSubPasso);
         SubPasso clone = subPasso.clone();
-        menu.setPreCondition(4, ()->false);
-        menu.setPreCondition(5, subPasso::valida);
+        menu.setPreCondition(4, subPasso::valida);
 
 
         menu.setHandler(1, () -> {
@@ -499,7 +517,7 @@ public class CRController {
                     .append("Custo Estimado [" + clone.getCustoEstimado() + "]\n")
                     .append("Custo Real [" + clone.getCustoReal() + "]\n")
                     .append("Tempo Estimado [" + clone.getDuracaoEstimada() + "]\n")
-                    .append("Tempo Real [" + clone.getCustoReal() + "]\n")
+                    .append("Tempo Real [" + clone.getDuracaoReal() + "]\n")
                     .append("Realizado [" + subPasso.concluido() + "]\n");
             menu.showInfo(sb);
         });
@@ -512,12 +530,10 @@ public class CRController {
             menu.changeOption(3,"Duracao Real [" + clone.getDuracaoReal() + "]" );
 
         });
-        menu.setHandler(5,()->{
-            subPasso.setCustoReal(clone.calcula_custo_gasto());
-            subPasso.setDuracaoReal(clone.calcula_tempo_gasto());
-            subPasso.concluir(centro.get_logged_id(),subPasso.getCustoReal(),subPasso.getDuracaoReal());
+        menu.setHandler(4,()->{
+            clone.concluir(centro.get_logged_id(),clone.getCustoReal(),clone.getDuracaoReal());
+            subPasso.carrega(clone); menu.returnMenu();
         });
-        menu.setHandler(6, menu::returnMenu);
 
         menu.simpleRun();
     }

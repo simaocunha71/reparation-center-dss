@@ -1,10 +1,14 @@
 package model;
 
+import model.armazem.Armazem;
+import model.armazem.Equipamento;
 import model.comparators.IOrcamentoComparator;
 import model.comparators.IPedidoComparator;
 import model.excecoes.JaExistenteExcecao;
 import model.excecoes.NaoExisteExcecao;
 import model.interfaces.*;
+import model.orcamento.Orcamento;
+import model.orcamento.PlanoDeTrabalho;
 import model.pedidos.PedidoExpresso;
 import model.pedidos.PedidoOrcamento;
 import model.utilizadores.Funcionario;
@@ -25,7 +29,7 @@ public class CRFacade implements ICentroReparacoes {
     private Map<String, ICliente> clientes;//map com clientes do sistema
     private Set<IPedido> pedidosOrcamentos;
     private Map<Integer, IPedido> pedidosJaPlaneados;
-    private Map<Integer,Orcamento> orcamentos; //numero de registo do equipamento é a key
+    private Map<Integer, Orcamento> orcamentos; //numero de registo do equipamento é a key
     private Armazem armazem;
     private IUtilizador logado;
 
@@ -125,9 +129,6 @@ public class CRFacade implements ICentroReparacoes {
         }else {
             orcamentos.remove(num_ref);
             orcamentos.put(num_ref,orcamento.clone());
-            if(orcamento.concluido()){
-                remove_pedido_orcamento(num_ref);
-            }
             gravar_todos_orcamentos();
         }
     }
@@ -151,7 +152,7 @@ public class CRFacade implements ICentroReparacoes {
 
     public List<Orcamento> get_orcamentos_confirmados() {
         Set<Orcamento> set = new TreeSet<Orcamento>(new IOrcamentoComparator());
-        orcamentos.values().stream().filter(Orcamento::getConfirmado).map(Orcamento::clone).forEach(set::add);
+        orcamentos.values().stream().filter(k -> k.getConfirmado() && pedidosJaPlaneados.containsKey(k.get_num_ref())).map(Orcamento::clone).forEach(set::add);
         return set.stream().toList();
     }
 
@@ -182,18 +183,24 @@ public class CRFacade implements ICentroReparacoes {
                 encontrado = true;
             }
         }
-        if(!encontrado){
-            pedidosJaPlaneados.remove(num_referencia);
-        }
-        gravar_todos_pedidos();
+        if(encontrado) gravar_todos_pedidos();
     }
 
-    public void remover_orcamento(Orcamento orcamento) throws IOException {
+    private void remove_pedido_ja_planeado(int num_referencia) throws IOException {
+        if(pedidosJaPlaneados.containsKey(num_referencia)) {
+            pedidosJaPlaneados.remove(num_referencia);
+            gravar_todos_pedidos();
+        }
+    }
+
+    public void concluir_reparacao(Orcamento orcamento) throws IOException {
         int num_ref = orcamento.get_num_ref();
         if(orcamentos.containsKey(num_ref)){
             orcamentos.remove(num_ref);
+            orcamentos.put(num_ref,orcamento.clone());
             transferencia_seccao(num_ref);
-            gravar_orcamento(orcamentos.get(num_ref));
+            remove_pedido_ja_planeado(num_ref);
+            gravar_todos_orcamentos();
             gravar_todos_equipamento();
         }
     }

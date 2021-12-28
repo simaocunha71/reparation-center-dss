@@ -1,4 +1,4 @@
-package model;
+package model.orcamento;
 
 import model.interfaces.Carregavel;
 
@@ -16,6 +16,7 @@ public class Passo implements Carregavel {
     private float duracaoReal; //em minutos
     private boolean realizado;
     private String idTecnicoRealizou; //"idTecnico", caso não tenha sub-passos ou "vários", caso tenha sub-passos
+    private int numero_passo;
 
     public Passo(String descricao, float custoEstimado, float duracaoEstimada){
         this.descricao = descricao;
@@ -26,6 +27,7 @@ public class Passo implements Carregavel {
         this.subpassos = new ArrayList<>();
         this.realizado = false;
         this.idTecnicoRealizou = null;
+        this.numero_passo = -1;
     }
 
     public Passo() {
@@ -35,9 +37,10 @@ public class Passo implements Carregavel {
         this.custoReal = 0;
         this.duracaoReal = 0;
         this.subpassos = new ArrayList<>();
+        this.numero_passo = -1;
     }
 
-    public Passo(String descricao, float custoEstimado, float duracaoEstimada, float custoReal, float duracaoReal, boolean realizado, String idTecnico,List<SubPasso> subpassos) {
+    public Passo(String descricao, float custoEstimado, float duracaoEstimada, float custoReal, float duracaoReal, boolean realizado, String idTecnico,List<SubPasso> subpassos,int numero_passo) {
         this.descricao = descricao;
         this.custoEstimado = custoEstimado;
         this.duracaoEstimada = duracaoEstimada;
@@ -49,6 +52,7 @@ public class Passo implements Carregavel {
         for(SubPasso sp : subpassos){
             this.subpassos.add(sp.clone());
         }
+        this.numero_passo = numero_passo;
     }
 
     public void carrega(Passo passo) {
@@ -63,6 +67,7 @@ public class Passo implements Carregavel {
         for(SubPasso sp : passo.subpassos){
             this.subpassos.add(sp.clone());
         }
+        this.numero_passo = passo.numero_passo;
     }
 
     //se tiver subpassos
@@ -86,6 +91,10 @@ public class Passo implements Carregavel {
         }
     }
 
+    public void setNumero_passo(int numero_passo) {
+        this.numero_passo = numero_passo;
+    }
+
     public float getCustoReal() {
         return custoReal;
     }
@@ -105,13 +114,21 @@ public class Passo implements Carregavel {
         this.custoReal = custoReal;
         this.duracaoReal = duracaoReal;
         this.idTecnicoRealizou = idTecnico;
-        realizado = true;
+        this.realizado = true;
     }
 
 
     public void adicionar_subpasso(String descricao, float custoEstimado, float duracaoEstimada){
-        SubPasso novoPasso = new SubPasso(descricao,custoEstimado,duracaoEstimada);
-        subpassos.add(novoPasso);
+        if(subpassos.size() == 0){
+            this.custoEstimado = 0;
+            this.duracaoEstimada = 0;
+        }
+        SubPasso sp = new SubPasso(descricao,custoEstimado,duracaoEstimada);
+        int numeroSubPasso = subpassos.size()+1;
+        sp.setNumero_subpasso(numeroSubPasso);
+        subpassos.add(sp.clone());
+        this.custoEstimado += sp.getCustoEstimado();
+        this.duracaoEstimada += sp.getDuracaoEstimada();
     }
 
     public void adicionar_subpasso(SubPasso sp){
@@ -119,7 +136,9 @@ public class Passo implements Carregavel {
             this.custoEstimado = 0;
             this.duracaoEstimada = 0;
         }
-        subpassos.add(sp);
+        int numeroSubPasso = subpassos.size()+1;
+        sp.setNumero_subpasso(numeroSubPasso);
+        subpassos.add(sp.clone());
         this.custoEstimado += sp.getCustoEstimado();
         this.duracaoEstimada += sp.getDuracaoEstimada();
     }
@@ -198,7 +217,6 @@ public class Passo implements Carregavel {
         }
         if(realizado){
             if(idTecnicoRealizou==null && subpassos.size()==0) valido = false;
-            if(idTecnicoRealizou!=null && subpassos.size()>0) valido = false;
         }
         else{
             if(idTecnicoRealizou!=null) valido = false;
@@ -208,6 +226,16 @@ public class Passo implements Carregavel {
     }
 
     public boolean concluido() {
+        if(!realizado) {
+            boolean concluido = true;
+            for (SubPasso sp : subpassos) {
+                if (!sp.concluido()) concluido = false;
+            }
+            if (subpassos.size() == 0) concluido = false;
+            if (concluido) {
+                concluir();
+            }
+        }
         return realizado;
     }
 
@@ -252,6 +280,10 @@ public class Passo implements Carregavel {
 
     public float getDuracaoEstimada() {
         return duracaoEstimada;
+    }
+
+    public int getNumero_passo() {
+        return numero_passo;
     }
 
     public float calcula_custo_gasto(){
@@ -310,7 +342,26 @@ public class Passo implements Carregavel {
     }
 
     public Passo clone(){
-        return new Passo(this.descricao,this.custoEstimado,this.duracaoEstimada,this.custoReal,this.duracaoReal,this.realizado,this.idTecnicoRealizou,this.subpassos);
+        return new Passo(this.descricao,this.custoEstimado,this.duracaoEstimada,this.custoReal,this.duracaoReal,this.realizado,this.idTecnicoRealizou,this.subpassos,this.numero_passo);
     }
 
+    public int get_total_subpassos(){
+        return subpassos.size();
+    }
+
+    public float calcula_gasto_estimado() {
+        float gasto_estimado = 0;
+        for(SubPasso sp : subpassos){
+            gasto_estimado += sp.getCustoEstimado();
+        }
+        return gasto_estimado;
+    }
+
+    public float calcula_duracao_estimada() {
+        float duracao_estimada = 0;
+        for(SubPasso sp : subpassos){
+            duracao_estimada += sp.getDuracaoEstimada();
+        }
+        return duracao_estimada;
+    }
 }

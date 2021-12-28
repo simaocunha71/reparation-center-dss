@@ -1,4 +1,4 @@
-package model;
+package model.orcamento;
 
 import model.interfaces.Carregavel;
 
@@ -10,6 +10,7 @@ public class SubPasso implements Carregavel {
     private float duracaoReal; //em minutos
     private boolean realizado;
     private String idTecnico;
+    private int numero_subpasso;
 
     public SubPasso(String descricao, float custoEstimado, float duracaoEstimada){
         this.descricao = descricao;
@@ -19,6 +20,7 @@ public class SubPasso implements Carregavel {
         this.duracaoReal = 0;
         this.realizado = false;
         this.idTecnico = null;
+        this.numero_subpasso = -1;
     }
 
     public SubPasso() {
@@ -29,9 +31,10 @@ public class SubPasso implements Carregavel {
         this.duracaoReal = 0;
         this.realizado = false;
         this.idTecnico = null;
+        this.numero_subpasso = -1;
     }
 
-    public SubPasso(String descricao, float custoEstimado, float duracaoEstimada, float custoReal, float duracaoReal, boolean realizado, String idTecnico) {
+    public SubPasso(String descricao, float custoEstimado, float duracaoEstimada, float custoReal, float duracaoReal, boolean realizado, String idTecnico, int numero_subpasso) {
         this.descricao = descricao;
         this.custoEstimado = custoEstimado;
         this.duracaoEstimada = duracaoEstimada;
@@ -39,6 +42,18 @@ public class SubPasso implements Carregavel {
         this.duracaoReal = duracaoReal;
         this.realizado = realizado;
         this.idTecnico = idTecnico;
+        this.numero_subpasso = numero_subpasso;
+    }
+
+    public void carrega(SubPasso passo) {
+        this.descricao = passo.descricao;
+        this.custoEstimado = passo.custoEstimado;
+        this.duracaoEstimada = passo.duracaoEstimada;
+        this.custoReal = passo.custoReal;
+        this.duracaoReal = passo.duracaoReal;
+        this.realizado = passo.realizado;
+        this.idTecnico = passo.idTecnico;
+        this.numero_subpasso = passo.numero_subpasso;
     }
 
     public void concluir(String idTecnico, float custoReal, float duracaoReal){
@@ -74,6 +89,9 @@ public class SubPasso implements Carregavel {
         this.duracaoReal = duracaoReal;
     }
 
+    public void setNumero_subpasso(int numero_subpasso) {
+        this.numero_subpasso = numero_subpasso;
+    }
 
     //descriçao;custoEstimado;custoReal;duracaoEstimada;duracaoReal;booleanRealizado;idTecnico
     public void carregar(String string) {
@@ -137,6 +155,10 @@ public class SubPasso implements Carregavel {
         return duracaoEstimada;
     }
 
+    public int getNumero_subpasso() {
+        return numero_subpasso;
+    }
+
     public void recalcula_estimativas() {
         if(realizado){
             this.custoEstimado = custoReal;
@@ -157,7 +179,7 @@ public class SubPasso implements Carregavel {
     }
 
     public SubPasso clone(){
-        return new SubPasso(this.descricao,this.custoEstimado,this.duracaoEstimada,this.custoReal,this.duracaoReal,this.realizado,this.idTecnico);
+        return new SubPasso(this.descricao,this.custoEstimado,this.duracaoEstimada,this.custoReal,this.duracaoReal,this.realizado,this.idTecnico, this.numero_subpasso);
     }
 
 }

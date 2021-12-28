@@ -1,8 +1,8 @@
 package model.interfaces;
 
-import model.Equipamento;
-import model.Orcamento;
-import model.PlanoDeTrabalho;
+import model.armazem.Equipamento;
+import model.orcamento.Orcamento;
+import model.orcamento.PlanoDeTrabalho;
 import model.excecoes.JaExistenteExcecao;
 
 import java.io.IOException;
@@ -20,7 +20,7 @@ public interface ICentroReparacoes {
 
     void adicionar_orcamento(Orcamento orcamento) throws IOException;
 
-    void remover_orcamento(Orcamento orcamento) throws IOException;
+    void concluir_reparacao(Orcamento orcamento) throws IOException;
 
     void carregar_utilizadores(String filename) throws IOException, JaExistenteExcecao;
 

@@ -1,7 +1,6 @@
 package model.comparators;
 
-import model.Orcamento;
-import model.interfaces.IPedido;
+import model.orcamento.Orcamento;
 
 import java.util.Comparator;
 

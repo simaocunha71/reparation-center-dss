@@ -1,4 +1,4 @@
-package model;
+package model.orcamento;
 
 import model.interfaces.Carregavel;
 import model.interfaces.IPedido;
@@ -33,6 +33,13 @@ public class Orcamento implements Carregavel {
         this.dataConfirmacao = dataConfirmacao;
     }
 
+    public void carregar(Orcamento orcamento){
+        this.num_ref = orcamento.num_ref;
+        this.planoDeTrabalho = orcamento.planoDeTrabalho.clone();
+        this.confirmado = orcamento.confirmado;
+        this.dataConfirmacao = orcamento.dataConfirmacao;
+    }
+
     public int get_num_ref(){
         return num_ref;
     }
@@ -60,16 +67,17 @@ public class Orcamento implements Carregavel {
     public boolean getConfirmado(){return this.confirmado;}
 
     public float getCustoEstimado() {
-        return planoDeTrabalho.getCustoEstimado();
+        return planoDeTrabalho.calcula_gasto_estimado();
     }
 
     public float getDuracaoEstimada() {
-        return planoDeTrabalho.getDuracaoEstimada();
+        return planoDeTrabalho.calcula_duracao_estimada();
     }
 
 
     public void carregar(String string) {
         planoDeTrabalho.carregar(string);
+        System.out.println("DEBUG CARREGAR"+valida());
     }
 
 
@@ -116,6 +124,10 @@ public class Orcamento implements Carregavel {
     }
 
     public boolean concluido(){
-        return this.planoDeTrabalho.getRealizado();
+        return this.planoDeTrabalho.concluido();
+    }
+
+    public int get_num_total_passos() {
+        return this.planoDeTrabalho.get_total_passos();
     }
 }

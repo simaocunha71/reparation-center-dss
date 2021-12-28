@@ -1,4 +1,4 @@
-package model;
+package model.armazem;
 
 import java.io.IOException;
 import java.util.HashMap;

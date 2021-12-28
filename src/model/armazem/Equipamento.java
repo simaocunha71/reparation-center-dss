@@ -1,4 +1,4 @@
-package model;
+package model.armazem;
 
 public class Equipamento {
     private String nifCliente;
