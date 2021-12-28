@@ -87,7 +87,7 @@ public class Armazem {
         prontosAEntregar.forEach((k,v)->sb.append(v.toString()).append("@3\n"));
         return sb.toString();
     }
-<<<<<<< HEAD
+
 
     public void transferencia_seccao(int num_referencia) {
         if(paraOrcamento.containsKey(num_referencia)){
@@ -107,8 +107,7 @@ public class Armazem {
             System.out.println("DEBUG: TIROU "+num_referencia+" DA SECÇÃO 3");
         }
     }
-=======
->>>>>>> parent of b090719 (Merge branch 'main' of https://github.com/simaocunha71/DSS-Projeto into main)
+
 }
 
 //TODO: busca por cada map com o numRegisto do Equipamento
