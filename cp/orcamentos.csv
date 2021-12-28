@@ -1,8 +1,1 @@
-@: delimita informaçoes do plano dos passos
-->: delimita passos
-$ -> delimita passsos dos subpasss
-/ -> delimita subpassos
-; -> delimita informaçoes
-
-nR;booleano#nP@dP1;cEP1;tEP1;nSP$dSP1;cESP1;tESP1/dSP2;cESP2;tESP2->cEP2;tEP2;nSP$
-
+2;1;2021-12-28T19:06:11.052445700#45.0;0.0;45.0;0.0;0;1@arranjar;45.0;0.0;45.0;0.0;0;null;1%arranjar;45.0;0.0;45.0;0.0;0;null

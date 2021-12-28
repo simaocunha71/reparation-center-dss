@@ -78,10 +78,10 @@ public class PlanoDeTrabalho implements Carregavel {
             if(infos.length == 6) {
                 int nP = 0;
                 try {
-                    this.custoEstimado = Integer.parseInt(infos[0]);
-                    this.custoReal = Integer.parseInt(infos[1]);
-                    this.duracaoEstimada = Integer.parseInt(infos[2]);
-                    this.duracaoReal = Integer.parseInt(infos[3]);
+                    this.custoEstimado = Float.parseFloat(infos[0]);
+                    this.custoReal = Float.parseFloat(infos[1]);
+                    this.duracaoEstimada = Float.parseFloat(infos[2]);
+                    this.duracaoReal = Float.parseFloat(infos[3]);
                     int b = Integer.parseInt(infos[4]);
                     if (b == 1) this.realizado = true;
                     nP = Integer.parseInt(infos[5]);
@@ -121,7 +121,7 @@ public class PlanoDeTrabalho implements Carregavel {
         for(Passo p : passos){
             if(!p.valida()) valido = false;
         }
-        return valido && duracaoEstimada >= 0 && custoEstimado >= 0;
+        return valido && duracaoEstimada >= 0 && custoEstimado >= 0 && passos.size() > 0;
     }
 
     public void adicionar_passo(String descricao, float custoEstimado, float duracaoEstimada){

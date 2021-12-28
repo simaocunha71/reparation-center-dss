@@ -12,6 +12,8 @@ public interface ICentroReparacoes {
 
     IUtilizador get_utilizador_by_ID(String id);
 
+    String get_logged_id();
+
     void adicionar_utilizador(String id,String nome,String password,int permissao) throws JaExistenteExcecao, IOException;
 
     void adicionar_cliente(String nif, String nome, String numTelemovel, String email) throws JaExistenteExcecao, IOException;

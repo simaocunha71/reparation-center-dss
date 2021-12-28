@@ -58,19 +58,37 @@ public class SubPasso implements Carregavel {
         return duracaoReal;
     }
 
+    public String getDescricao() {
+        return descricao;
+    }
+
+    public String getIdTecnico() {
+        return idTecnico;
+    }
+
+    public void setCustoReal(float custoReal) {
+        this.custoReal = custoReal;
+    }
+
+    public void setDuracaoReal(float duracaoReal) {
+        this.duracaoReal = duracaoReal;
+    }
+
+
     //descriçao;custoEstimado;custoReal;duracaoEstimada;duracaoReal;booleanRealizado;idTecnico
     public void carregar(String string) {
        String[] infos = string.split(";");
        if (infos.length == 7){
            try {
                this.descricao = infos[0];
-               this.custoEstimado = Integer.parseInt(infos[1]);
-               this.custoReal = Integer.parseInt(infos[2]);
-               this.duracaoEstimada = Integer.parseInt(infos[3]);
-               this.duracaoReal = Integer.parseInt(infos[4]);
+               this.custoEstimado = Float.parseFloat(infos[1]);
+               this.custoReal = Float.parseFloat(infos[2]);
+               this.duracaoEstimada = Float.parseFloat(infos[3]);
+               this.duracaoReal = Float.parseFloat(infos[4]);
                int b = Integer.parseInt(infos[5]);
                if(b == 1) this.realizado = true;
                this.idTecnico = infos[6];
+               if(idTecnico.equals("null")) idTecnico = null;
            }
            catch(NumberFormatException ignored){
                this.descricao = "";

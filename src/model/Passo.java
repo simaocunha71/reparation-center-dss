@@ -3,7 +3,9 @@ package model;
 import model.interfaces.Carregavel;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class Passo implements Carregavel {
     private List<SubPasso> subpassos;
@@ -49,14 +51,31 @@ public class Passo implements Carregavel {
         }
     }
 
+    public void carrega(Passo passo) {
+        this.descricao = passo.descricao;
+        this.custoEstimado = passo.custoEstimado;
+        this.duracaoEstimada = passo.duracaoEstimada;
+        this.custoReal = passo.custoReal;
+        this.duracaoReal = passo.duracaoReal;
+        this.realizado = passo.realizado;
+        this.idTecnicoRealizou = passo.idTecnicoRealizou;
+        this.subpassos = new ArrayList<>();
+        for(SubPasso sp : passo.subpassos){
+            this.subpassos.add(sp.clone());
+        }
+    }
+
     //se tiver subpassos
     public void concluir(){
         boolean subpassosConcluidos = true;
+        Set<String> tecnicos =new HashSet<>();
         for(SubPasso sp : subpassos){
             if(!sp.concluido()) subpassosConcluidos = false;
+            tecnicos.add(sp.getIdTecnico());
         }
         if(subpassosConcluidos) {
-            this.idTecnicoRealizou = "vários";
+            if(tecnicos.size() > 1) this.idTecnicoRealizou = "vários";
+            else this.idTecnicoRealizou = tecnicos.stream().findFirst().get();
             this.custoReal = 0;
             this.duracaoReal = 0;
             for (SubPasso sp : subpassos) {
@@ -79,6 +98,8 @@ public class Passo implements Carregavel {
         return descricao;
     }
 
+
+
     //se nao tem subpassos
     public void concluir(String idTecnico, float custoReal, float duracaoReal){
         this.custoReal = custoReal;
@@ -94,6 +115,10 @@ public class Passo implements Carregavel {
     }
 
     public void adicionar_subpasso(SubPasso sp){
+        if(subpassos.size() == 0){
+            this.custoEstimado = 0;
+            this.duracaoEstimada = 0;
+        }
         subpassos.add(sp);
         this.custoEstimado += sp.getCustoEstimado();
         this.duracaoEstimada += sp.getDuracaoEstimada();
@@ -111,13 +136,14 @@ public class Passo implements Carregavel {
                 int nSP = 0;
                 try {
                     this.descricao = infos[0];
-                    this.custoEstimado = Integer.parseInt(infos[1]);
-                    this.custoReal = Integer.parseInt(infos[2]);
-                    this.duracaoEstimada = Integer.parseInt(infos[3]);
-                    this.duracaoReal = Integer.parseInt(infos[4]);
+                    this.custoEstimado = Float.parseFloat(infos[1]);
+                    this.custoReal = Float.parseFloat(infos[2]);
+                    this.duracaoEstimada = Float.parseFloat(infos[3]);
+                    this.duracaoReal = Float.parseFloat(infos[4]);
                     int b = Integer.parseInt(infos[5]);
                     if(b == 1) this.realizado = true;
                     this.idTecnicoRealizou = infos[6];
+                    if(idTecnicoRealizou.equals("null")) idTecnicoRealizou = null;
                     nSP = Integer.parseInt(infos[7]);
                 }
                 catch(NumberFormatException ignored){
@@ -170,7 +196,6 @@ public class Passo implements Carregavel {
         for(SubPasso sp : subpassos){
             if(!sp.valida()) valido = false;
         }
-
         if(realizado){
             if(idTecnicoRealizou==null && subpassos.size()==0) valido = false;
             if(idTecnicoRealizou!=null && subpassos.size()>0) valido = false;

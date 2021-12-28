@@ -50,6 +50,10 @@ public class CRFacade implements ICentroReparacoes {
         return utilizadores.get(id);
     }
 
+    public String get_logged_id(){
+        return logado.getId();
+    }
+
     /**
      * Procura cliente no map de clientes
      * @param id id
