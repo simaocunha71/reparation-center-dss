@@ -1,11 +1,9 @@
 package controller;
 
-import model.CRFacade;
-import model.Passo;
-import model.PlanoDeTrabalho;
-import model.SubPasso;
+import model.*;
 import model.excecoes.JaExistenteExcecao;
 import model.interfaces.ICentroReparacoes;
+import model.interfaces.ICliente;
 import model.interfaces.IPedido;
 import view.CRView;
 import view.AuxiliarView;
@@ -54,6 +52,7 @@ public class CRController {
     //TODO: confirmar orçamento
     private final String[] menuPrincipalFuncionario = new String[]{
             "Registar pedido",
+            "Confirmar orcamento",
             "Logout",
     };
 
@@ -124,13 +123,14 @@ public class CRController {
             "Guardar e sair"
     };
 
+
     private boolean logged = false;
 
 
 
     public void run() throws IOException, ClassNotFoundException {
         try {
-            centro.carregar_cp("cp/utilizadores.csv", "cp/clientes.csv","cp/armazem.csv", "cp/pedidos.csv","cp/planos.csv");
+            centro.carregar_cp("cp/utilizadores.csv", "cp/clientes.csv","cp/armazem.csv", "cp/pedidos.csv","cp/orcamentos.csv");
         }
         catch (JaExistenteExcecao e){
         }
@@ -219,11 +219,7 @@ public class CRController {
         menu.simpleRun();
     }
 
-    //TODO: FAZER MENU DE FAZER PLANO
     private void fazerPlano(int i) throws IOException, ClassNotFoundException {
-        //TODO:Adicionar passo (vai ter um menu) [preço estimado/tempo estimado/descricao e sub-passos (com as mesmas merdas)]
-        //TODO:Apresentar plano
-        //TODO:Gravar
         IPedido pedido = centro.get_pedido(i);
         PlanoDeTrabalho plano = new PlanoDeTrabalho(pedido);
         CRView menu = new CRView("Registar Plano",menuPlano);
@@ -238,7 +234,7 @@ public class CRController {
         });
 
         menu.setHandler(3,()->{
-            if(plano.valida()) centro.adicionar_plano(plano);
+            if(plano.valida()) centro.gerar_orcamento(plano);
             menu.returnMenu();
         });
         menu.simpleRun();
@@ -350,12 +346,53 @@ public class CRController {
 
         menu.setHandler(1,this::registarPedido);
 
-        menu.setHandler(2,()->{menu.returnMenu();logout();});
+        menu.setHandler(2,this::confirmarOrcamento);
+
+        menu.setHandler(3,()->{menu.returnMenu();logout();});
 
         menu.simpleRun();
     }
 
+    private void confirmarOrcamento() throws IOException, ClassNotFoundException {
+        List<Orcamento> orcamentos = centro.get_orcamentos_por_confirmar();
 
+        String[] orcamentosString = new String[orcamentos.size()];
+        for(int i =0; i<orcamentos.size();i++){
+            Orcamento orcamento = orcamentos.get(i);
+            IPedido pedido = orcamento.get_pedido_plano();
+            ICliente cliente = centro.get_cliente(pedido.getNifCliente());
+            StringBuilder sb = new StringBuilder();
+            sb.append("Equipamento [#" + orcamento.get_num_ref() + "]")
+                    .append("Data [" + pedido.getTempoRegisto() + "]")
+                    .append("Preco estimado [" + orcamento.getCustoEstimado() + "]")
+                    .append("Tempo estimado [" + orcamento.getDuracaoEstimada() + "]")
+                    .append("Cliente [" + cliente.getNif() + "]")
+                    .append("Email [" + cliente.getEmail() +"]");
+            orcamentosString[i] = sb.toString();
+        }
+        CRView menu = new CRView("Lista de Orcamentos por confirmar",orcamentosString);
+        AtomicInteger i = new AtomicInteger(1);
+        for(; i.get() <= orcamentos.size();i.incrementAndGet()){
+            int posicao = i.get();
+            int num_ref = orcamentos.get(posicao).get_num_ref();
+            menu.setHandler(i.get(),()->{centro.confirmar_orcamento(num_ref);menu.returnMenu();});
+        }
+        menu.simpleRun();
+
+
+    }
+
+/*
+* IPedido pedido = k.get_pedido_plano();
+                ICliente cliente = clientes.get(pedido.getNifCliente());
+                StringBuilder sb = new StringBuilder();
+                sb.append("Equipamento [#" + v + "]")
+                        .append("Data [" + pedido.getTempoRegisto() + "]")
+                        .append("Preco estimado [" + k.getCustoEstimado() + "]")
+                        .append("Tempo estimado [" + k.getDuracaoEstimada() + "]")
+                        .append("Cliente [" + cliente.getNif() + "]")
+                        .append("Email [" + cliente.getEmail() +"]");
+* */
     private void registarCliente() throws IOException, ClassNotFoundException {
         CRView menu = new CRView("Registar Cliente", menuRegistoCliente);
         AtomicReference<String> nome = new AtomicReference<>();

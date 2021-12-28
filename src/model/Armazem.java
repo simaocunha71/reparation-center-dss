@@ -108,6 +108,18 @@ public class Armazem {
         }
     }
 
+    public int get_seccao(int num_ref) {
+        if(paraOrcamento.containsKey(num_ref)){
+            return 1;
+        }
+        else if(paraReparacao.containsKey(num_ref)){
+            return 2;
+        }
+        else if(prontosAEntregar.containsKey(num_ref)){
+            return 3;
+        }else return -1;
+    }
+
 }
 
 //TODO: busca por cada map com o numRegisto do Equipamento

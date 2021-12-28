@@ -1,6 +1,7 @@
 package model.interfaces;
 
 import model.Equipamento;
+import model.Orcamento;
 import model.PlanoDeTrabalho;
 import model.excecoes.JaExistenteExcecao;
 
@@ -41,5 +42,12 @@ public interface ICentroReparacoes {
 
     IPedido get_pedido(int posicao);
 
-    void adicionar_plano(PlanoDeTrabalho plano) throws IOException;
+    void gerar_orcamento(PlanoDeTrabalho plano) throws IOException;
+
+    List<Orcamento> get_orcamentos_por_confirmar();
+
+    ICliente get_cliente(String nif);
+
+    void confirmar_orcamento(int num_ref);
+
 }

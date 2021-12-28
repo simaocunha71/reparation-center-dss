@@ -14,13 +14,14 @@ import model.clientes.Cliente;
 import java.io.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class CRFacade implements ICentroReparacoes {
 
     private Map<String, IUtilizador> utilizadores; //map com utilizadores do sistema
     private Map<String, ICliente> clientes;//map com clientes do sistema
     private Set<IPedido> pedidosOrcamentos;
-    private Map<Integer,PlanoDeTrabalho> planos; //numero de registo do equipamento é a key
+    private Map<Integer,Orcamento> orcamentos; //numero de registo do equipamento é a key
     private Armazem armazem;
     private IUtilizador logado;
 
@@ -32,7 +33,7 @@ public class CRFacade implements ICentroReparacoes {
         this.clientes = new HashMap<>();
         this.pedidosOrcamentos = new TreeSet<IPedido>(new IPedidoComparator());
         this.armazem = new Armazem();
-        this.planos = new HashMap<>();
+        this.orcamentos = new HashMap<>();
     }
 
     /**
@@ -108,15 +109,20 @@ public class CRFacade implements ICentroReparacoes {
     }
 
 
-    public void adicionar_plano(PlanoDeTrabalho plano) throws IOException {
+    public void gerar_orcamento(PlanoDeTrabalho plano) throws IOException {
         int num_referencia = plano.get_num_referencia();
         remove_pedido_orcamento(num_referencia);
         transferencia_seccao(num_referencia);
-        System.out.println("DEBUG: TRANSFERIU "+num_referencia);
-        if(!planos.containsKey(num_referencia)){
-            planos.put(num_referencia,plano);
-            gravar_plano(plano);
+        if(!orcamentos.containsKey(num_referencia)){
+            Orcamento orcamento = new Orcamento(plano);
+            orcamentos.put(num_referencia,orcamento);
+            gravar_orcamento(orcamento);
         }
+    }
+
+
+    public List<Orcamento> get_orcamentos_por_confirmar() {
+        return orcamentos.values().stream().filter(k->!k.getConfirmado()).collect(Collectors.toList());
     }
 
     private void transferencia_seccao(int num_referencia) throws IOException {
@@ -220,11 +226,11 @@ public class CRFacade implements ICentroReparacoes {
         }
     }
 
-    private void carregar_plano(PlanoDeTrabalho plano) throws JaExistenteExcecao {
-        int num_referencia = plano.get_num_referencia();
-        if(!planos.containsKey(num_referencia)){
-            planos.put(num_referencia,plano);
-        }else throw new JaExistenteExcecao("Plano ja existe");
+    private void carregar_orcamento(Orcamento orcamento) throws JaExistenteExcecao {
+        int num_referencia = orcamento.get_num_ref();
+        if(!orcamentos.containsKey(num_referencia)){
+            orcamentos.put(num_referencia,orcamento);
+        }else throw new JaExistenteExcecao("Orcamento ja existe");
     }
 
     /**
@@ -293,24 +299,36 @@ public class CRFacade implements ICentroReparacoes {
         }
     }
 
-    private void carregar_planos(String filename) throws IOException {
+    private void carregar_orcamentos(String filename) throws IOException {
         BufferedReader br = new BufferedReader(new FileReader(filename));
         String linha;
         String[] split;
+        boolean valido = false;
         while((linha = br.readLine()) != null){
             split = linha.split("#");
-            if(split.length == 2){
-                try{
-                    int numRegisto = Integer.parseInt(split[0]);
-                    IPedido pedido = new PedidoExpresso();
-                    if(pedidosOrcamentos.stream().anyMatch(k->k.getNumeroRegistoEquipamento()==numRegisto)){
-                        pedido = pedidosOrcamentos.stream().filter(k->k.getNumeroRegistoEquipamento()==numRegisto).findFirst().get();
+            if(split.length == 2) {
+                String[] infos = split[0].split(";");
+                if (infos.length == 2) {
+                    try {
+                        int numRegisto = Integer.parseInt(infos[0]);
+                        boolean confirmacao = false;
+                        if(Integer.parseInt(infos[1]) == 0) valido = true;
+                        else if(Integer.parseInt(infos[1]) == 1){
+                            confirmacao = true;
+                            valido = true;
+                        }
+                        IPedido pedido = new PedidoExpresso();
+                        if (pedidosOrcamentos.stream().anyMatch(k -> k.getNumeroRegistoEquipamento() == numRegisto)) {
+                            pedido = pedidosOrcamentos.stream().filter(k -> k.getNumeroRegistoEquipamento() == numRegisto).findFirst().get();
+                        }else valido = false;
+                        if(valido) {
+                            Orcamento orcamento = new Orcamento(numRegisto, pedido);
+                            orcamento.carregar(split[1]);
+                            if (orcamento.valida()) carregar_orcamento(orcamento);
+                        }
+                    } catch (NumberFormatException | JaExistenteExcecao ignored) {
                     }
-                    PlanoDeTrabalho plano = new PlanoDeTrabalho(pedido);
-                    plano.carregar(split[1]);
-                    if(plano.valida()) carregar_plano(plano);
                 }
-                catch (NumberFormatException | JaExistenteExcecao ignored){}
             }
         }
 
@@ -325,12 +343,12 @@ public class CRFacade implements ICentroReparacoes {
     }
 
 
-    public void carregar_cp(String utilizadoresFN,String clientesFN,String armazemFN,String pedidosFN,String planosFN) throws IOException, JaExistenteExcecao {
+    public void carregar_cp(String utilizadoresFN,String clientesFN,String armazemFN,String pedidosFN,String orcamentosFN) throws IOException, JaExistenteExcecao {
         carregar_utilizadores(utilizadoresFN);
         carregar_clientes(clientesFN);
         carregar_armazem(armazemFN);
         carregar_pedidos(pedidosFN);
-        carregar_planos(planosFN);
+        carregar_orcamentos(orcamentosFN);
     }
 
 
@@ -436,9 +454,9 @@ public class CRFacade implements ICentroReparacoes {
         w.close();
     }
 
-    private void gravar_plano(PlanoDeTrabalho plano) throws IOException {
-        FileWriter w = new FileWriter("cp/planos.csv",true);
-        w.write(plano.toString()+"\n");
+    private void gravar_orcamento(Orcamento orcamento) throws IOException {
+        FileWriter w = new FileWriter("cp/orcamentos.csv",true);
+        w.write(orcamento.toString()+"\n");
         w.close();
     }
 
@@ -461,9 +479,9 @@ public class CRFacade implements ICentroReparacoes {
         w.close();
     }
 
-    private void gravar_todos_planos() throws IOException {
-        FileWriter w = new FileWriter("cp/armazem.csv");
-        planos.forEach((k,v)-> {
+    private void gravar_todos_orcamentos() throws IOException {
+        FileWriter w = new FileWriter("cp/orcamentos.csv");
+        orcamentos.forEach((k,v)-> {
             try {
                 w.write(v.toString()+"\n");
             } catch (IOException e) {
@@ -493,6 +511,18 @@ public class CRFacade implements ICentroReparacoes {
         IPedido pedido = null;
         if (iterator.hasNext()) pedido = iterator.next().clone();
         return pedido;
+    }
+
+    public ICliente get_cliente(String nif){
+        ICliente cliente = null;
+        if(clientes.containsKey(nif)) cliente = clientes.get(nif).clone();
+        return cliente;
+    }
+
+    public void confirmar_orcamento(int num_ref){
+        if(orcamentos.containsKey(num_ref)){
+            orcamentos.get(num_ref).confirma();
+        }
     }
 
 }

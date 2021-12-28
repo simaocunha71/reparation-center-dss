@@ -3,18 +3,21 @@ package model;
 import model.interfaces.IPedido;
 import model.interfaces.Carregavel;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 public class PlanoDeTrabalho implements Carregavel {
-    IPedido pedidoAssociado;
-    List<Passo> passos;
-    float custoEstimado;
-    float custoReal;
-    float duracaoEstimada; //em minutos
-    float duracaoReal; //em minutos
-    boolean realizado;
+    private IPedido pedidoAssociado;
+    private List<Passo> passos;
+    private float custoEstimado;
+    private float custoReal;
+    private float duracaoEstimada; //em minutos
+    private float duracaoReal; //em minutos
+    private boolean realizado;
 
+
+    //TODO: ver o clone
     public PlanoDeTrabalho(IPedido pedidoAssociado){
         this.pedidoAssociado = pedidoAssociado; //Nao sei se tem de fazer clone. mby yes
         this.custoEstimado = -1;
@@ -85,6 +88,17 @@ public class PlanoDeTrabalho implements Carregavel {
         }
     }
 
+    public IPedido get_pedido(){
+        return pedidoAssociado.clone();
+    }
+
+    public float getCustoEstimado() {
+        return custoEstimado;
+    }
+
+    public float getDuracaoEstimada() {
+        return duracaoEstimada;
+    }
 
     //TODO: valida
     public boolean valida() {
@@ -106,8 +120,7 @@ public class PlanoDeTrabalho implements Carregavel {
     //Passos: Passo1->Passo2->Passo3...
     public String toString(){
         StringBuilder sb = new StringBuilder();
-        sb.append(pedidoAssociado.getNumeroRegistoEquipamento()).append("#")
-                .append(custoEstimado).append(";")
+        sb.append(custoEstimado).append(";")
                 .append(custoReal).append(";")
                 .append(duracaoEstimada).append(";")
                 .append(duracaoReal).append(";");
@@ -120,6 +133,11 @@ public class PlanoDeTrabalho implements Carregavel {
         }
         if(passos.size() != 0) sb.append(passos.get(passos.size()-1).toString());
         return sb.toString();
+    }
+
+    //TODO: meter um clone direito
+    public PlanoDeTrabalho clone(){
+        return this;
     }
 
 }
