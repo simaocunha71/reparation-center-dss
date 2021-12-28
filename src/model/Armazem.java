@@ -60,9 +60,9 @@ public class Armazem {
 
     public void adicionar_equipamento(Equipamento equipamento,int local) throws IOException {
         switch (local){
-            case 1: adicionar_equipamento_para_orcamento(equipamento);
-            case 2: adicionar_equipamento_para_reparacao(equipamento);
-            case 3: adicionar_equipamento_pronto_a_entregar(equipamento);
+            case 1 -> adicionar_equipamento_para_orcamento(equipamento);
+            case 2 -> adicionar_equipamento_para_reparacao(equipamento);
+            case 3 -> adicionar_equipamento_pronto_a_entregar(equipamento);
 
         }
     }
@@ -70,9 +70,9 @@ public class Armazem {
 
     public void regista_equipamento(Equipamento e, int local) {
         switch (local){
-            case 1: regista_para_orcamento(e);
-            case 2: regista_para_reparacao(e);
-            case 3: regista_prontos_entregar(e);
+            case 1 -> regista_para_orcamento(e);
+            case 2 -> regista_para_reparacao(e);
+            case 3 -> regista_prontos_entregar(e);
         }
     }
 
@@ -87,7 +87,6 @@ public class Armazem {
         prontosAEntregar.forEach((k,v)->sb.append(v.toString()).append("@3\n"));
         return sb.toString();
     }
-
 
 
     public void transferencia_seccao(int num_referencia) {
@@ -108,7 +107,6 @@ public class Armazem {
             System.out.println("DEBUG: TIROU "+num_referencia+" DA SECÇÃO 3");
         }
     }
-
 
 }
 

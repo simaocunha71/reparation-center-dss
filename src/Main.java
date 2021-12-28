@@ -1,21 +1,18 @@
 import controller.CRController;
-import model.CRFacade;
-import model.excecoes.JaExistenteExcecao;
-import model.interfaces.IUtilizador;
-import model.utilizadores.Funcionario;
-import model.utilizadores.Tecnico;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 public class Main {
 
-    public static void main(String[] args) throws IOException, JaExistenteExcecao, ClassNotFoundException {
+    public static void main(String[] args) throws IOException, ClassNotFoundException {
 
         CRController controller = new CRController();
         controller.run();
+
+
     }
 
 }
