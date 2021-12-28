@@ -1,5 +1,7 @@
 package model.pedidos;
 
+import model.PlanoDeTrabalho;
+import model.interfaces.ICliente;
 import model.interfaces.IPedido;
 
 import java.time.LocalDateTime;
@@ -64,6 +66,7 @@ public class PedidoOrcamento implements IPedido {
     }
 
     //tipoPedido@nifCliente;dataRegisto;numeroRegistoEquipamento;descricaoPedido
+
     public String toString(){
         StringBuilder sb = new StringBuilder();
         sb.append("1@").append(nifCliente).append(";").append(dataRegisto.toString()).append(";");

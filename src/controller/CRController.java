@@ -1,9 +1,7 @@
 package controller;
 
 import model.CRFacade;
-import model.Passo;
 import model.PlanoDeTrabalho;
-import model.SubPasso;
 import model.excecoes.JaExistenteExcecao;
 import model.interfaces.ICentroReparacoes;
 import model.interfaces.IPedido;
@@ -103,24 +101,13 @@ public class CRController {
 
     private final String[] menuPlano = new String[]{
             "Adicionar Passo",
-            "Apresentar Plano",
             "Guardar e sair"
     };
 
     private final String[] menuPasso = new String[]{
+            "Preco estimado",
+            "Duracao estimada",
             "Adicionar subpasso",
-            "Apresentar passo",
-            "Preco estimado",
-            "Duracao estimada",
-            "Descrição",
-            "Guardar e sair"
-    };
-
-    private final String[] menuSubPasso = new String[]{
-            "Apresentar subpasso",
-            "Preco estimado",
-            "Duracao estimada",
-            "Descrição",
             "Guardar e sair"
     };
 
@@ -211,10 +198,9 @@ public class CRController {
     private void listaDePedidosOrcamento() throws IOException, ClassNotFoundException {
         List<String> pedidos = centro.get_pedidos_orcamento();
         CRView menu = new CRView("Pedidos de orçamento",pedidos.toArray(new String[0]));
-        AtomicInteger i = new AtomicInteger(1);
-        for(; i.get() <= pedidos.size();i.incrementAndGet()){
-            int posicao = i.get();
-            menu.setHandler(i.get(),()->{fazerPlano(posicao);menu.returnMenu();});
+        AtomicInteger i = new AtomicInteger(0);
+        for(; i.get() < pedidos.size();i.incrementAndGet()){
+            menu.setHandler(i.get(),()->fazerPlano(i.get()));
         }
         menu.simpleRun();
     }
@@ -225,112 +211,19 @@ public class CRController {
         //TODO:Apresentar plano
         //TODO:Gravar
         IPedido pedido = centro.get_pedido(i);
-        PlanoDeTrabalho plano = new PlanoDeTrabalho(pedido);
+        AtomicReference<PlanoDeTrabalho> plano = new AtomicReference<>(new PlanoDeTrabalho(pedido));
         CRView menu = new CRView("Registar Plano",menuPlano);
+        auxView.normalMessage("Equipamento #" + pedido.getNumeroRegistoEquipamento());
 
-        menu.setHandler(1,()->{
-            Passo p = adicionarPasso();
-            if(p!= null && p.valida()) plano.adicionar_passo(p);
-        });
-
+        menu.setHandler(1,()->adicionarPasso(plano));
         menu.setHandler(2,()->{
-            auxView.apresentarPlano(plano.toString());
-        });
-
-        menu.setHandler(3,()->{
-            if(plano.valida()) centro.adicionar_plano(plano);
+            if(plano.get()!=null) centro.adicionar_plano(plano.get());
             menu.returnMenu();
         });
         menu.simpleRun();
     }
 
-    private Passo adicionarPasso() throws IOException, ClassNotFoundException {
-        Passo p = new Passo();
-        AtomicBoolean guardar = new AtomicBoolean(false);
-        CRView menu = new CRView("Adicionar Passo",menuPasso);
-
-        menu.setSamePreCondition(new int[]{3,4}, ()-> !p.temSubPassos());
-
-        menu.setHandler(1,()->{
-            SubPasso sp = adicionarSubPasso();
-            if(sp!=null && sp.valida()) p.adicionar_subpasso(sp);
-        });
-
-        menu.setHandler(2,()->{
-            auxView.apresentarPasso(p.toString());
-        });
-
-        menu.setHandler(3,()->{
-            float custoEstimado = scanFloat("Custo estimado: ");
-            p.setCustoEstimado(custoEstimado);
-        });
-
-        menu.setHandler(4,()->{
-            float duracaoEstimado = scanFloat("Tempo estimado: ");
-            p.setDuracaoEstimada(duracaoEstimado);
-        });
-
-        menu.setHandler(5,()->{
-            auxView.normalMessage("Descrição: ");
-            String string = scanner.nextLine();
-            if(verifLength(string,25)) p.setDescricao(string);
-        });
-
-        menu.setHandler(6,()->{
-            guardar.set(true);
-            menu.returnMenu();
-        });
-
-        menu.simpleRun();
-        if(guardar.get()) return p;
-        return null;
-    }
-
-    private float scanFloat(String message) {
-        auxView.normalMessage(message);
-        boolean valida = false;
-        float result = 0;
-        while(!valida) {
-            String linha = scanner.nextLine();
-            try{
-                result = Float.parseFloat(linha);
-                valida = true;
-            }
-            catch (NumberFormatException ignored){
-            }
-        }
-        return result;
-    }
-
-    private SubPasso adicionarSubPasso() throws IOException, ClassNotFoundException {
-        SubPasso sp = new SubPasso();
-        AtomicBoolean guardar = new AtomicBoolean(false);
-        CRView menu = new CRView("Adicionar SubPasso",menuSubPasso);
-        menu.setHandler(1,()->{
-            auxView.apresentarSubPasso(sp.toString());
-        });
-        menu.setHandler(2,()->{
-            float custoEstimado = scanFloat("Custo estimado: ");
-            sp.setCustoEstimado(custoEstimado);
-        });
-        menu.setHandler(3,()->{
-            float duracaoEstimado = scanFloat("Tempo estimado: ");
-            sp.setDuracaoEstimada(duracaoEstimado);
-        });
-        menu.setHandler(4,()->{
-            auxView.normalMessage("Descrição: ");
-            String string = scanner.nextLine();
-            if(verifLength(string,25)) sp.setDescricao(string);
-        });
-
-        menu.setHandler(5,()->{
-            guardar.set(true);
-            menu.returnMenu();
-        });
-
-        menu.simpleRun();
-        if(guardar.get()) return sp;
-        return null;
+    private void adicionarPasso(AtomicReference<PlanoDeTrabalho> plano) {
     }
 
 

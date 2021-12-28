@@ -42,10 +42,6 @@ public class AuxiliarView implements ANSIICores {
         System.out.println("Email do cliente: ");
     }
 
-    public void apresentarPlano(String string){
-        System.out.println(string);
-    }
-
     /**
      * Imprime mensagens na cor natural do terminal
      * @param message mensagem a imprimir
@@ -54,11 +50,4 @@ public class AuxiliarView implements ANSIICores {
         System.out.println(message);
     }
 
-    public void apresentarPasso(String string) {
-        System.out.println(string);
-    }
-
-    public void apresentarSubPasso(String string) {
-        System.out.println(string);
-    }
 }
