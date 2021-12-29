@@ -33,8 +33,8 @@ public class CRFacade implements ICentroReparacoes {
     private Map<Integer, Orcamento> orcamentos; //numero de registo do equipamento é a key
     private Armazem armazem;
     private IUtilizador logado;
-    private List<LogTecnico> logsTecnicos;
-    private List<LogFuncionario> logsFuncionarios;
+    private Map<String,LogTecnico> logsTecnicos;
+    private Map<String,LogFuncionario> logsFuncionarios;
 
     private static final String DATE_FORMATTER= "yyyy-MM-dd HH:mm:ss";
 
@@ -47,7 +47,8 @@ public class CRFacade implements ICentroReparacoes {
         this.orcamentos = new HashMap<>();
         this.pedidosJaPlaneados = new HashMap<>();
         this.pedidosCompletos = new HashMap<>();
-        this.logsTecnicos = new ArrayList<>();
+        this.logsTecnicos = new HashMap<>();
+        this.logsFuncionarios = new HashMap<>();
     }
 
     /**
@@ -229,6 +230,29 @@ public class CRFacade implements ICentroReparacoes {
     private void adicionar_pedido_completo(IPedido pedido) {
         if(!pedidosCompletos.containsKey(pedido.getNumeroRegistoEquipamento())){
             pedidosCompletos.put(pedido.getNumeroRegistoEquipamento(),pedido);
+        }
+    }
+
+    public void adicionar_log(String log, String user_id) throws IOException {
+        IUtilizador u = get_utilizador_by_ID(user_id);
+        if(u.getClass().equals(Tecnico.class)){
+            if(logsTecnicos.containsKey(user_id)){
+                logsTecnicos.get(user_id).addIntervencao(log);
+            }else{
+                LogTecnico l = new LogTecnico(user_id);
+                l.addIntervencao(log);
+                logsTecnicos.put(user_id,l);
+            }
+            gravar_todos_logs();
+        }else if(u.getClass().equals(Funcionario.class)){
+            if(logsFuncionarios.containsKey(user_id)){
+                logsFuncionarios.get(user_id).addOperacao(log);
+            }else{
+                LogFuncionario l = new LogFuncionario(user_id);
+                l.addOperacao(log);
+                logsFuncionarios.put(user_id,l);
+            }
+            gravar_todos_logs();
         }
     }
 
@@ -447,6 +471,37 @@ public class CRFacade implements ICentroReparacoes {
     }
 
 
+    private void carregar_logs(String filename) throws IOException {
+        BufferedReader br = new BufferedReader(new FileReader(filename));
+        String linha;
+        String[] split;
+        while((linha = br.readLine()) != null){
+            split = linha.split("@");
+            if(split.length == 2) {
+                try {
+                    int permissao = Integer.parseInt(split[0]);
+                    if (permissao == 2) {
+                        LogFuncionario log = new LogFuncionario();
+                        log.carregar(split[1]);
+                        if(log.valida()) {
+                            logsFuncionarios.put(log.getUserId(),log);
+                        }
+                    } else if (permissao == 3) {
+                        LogTecnico log = new LogTecnico();
+                        log.carregar(split[1]);
+                        if(log.valida()) {
+                            logsTecnicos.put(log.getUserId(),log);
+                        }
+                    }
+                } catch (NumberFormatException ignored) {
+                }
+            }
+        }
+        br.close();
+    }
+
+
+
 
     private boolean valida_pedido(IPedido pedido, int tipo) {
         switch (tipo){
@@ -466,12 +521,13 @@ public class CRFacade implements ICentroReparacoes {
     }
 
 
-    public void carregar_cp(String utilizadoresFN,String clientesFN,String armazemFN,String pedidosFN,String orcamentosFN) throws IOException, JaExistenteExcecao {
+    public void carregar_cp(String utilizadoresFN,String clientesFN,String armazemFN,String pedidosFN,String orcamentosFN,String logFN) throws IOException, JaExistenteExcecao {
         carregar_utilizadores(utilizadoresFN);
         carregar_clientes(clientesFN);
         carregar_armazem(armazemFN);
         carregar_pedidos(pedidosFN);
         carregar_orcamentos(orcamentosFN);
+        carregar_logs(logFN);
     }
 
 
@@ -619,6 +675,27 @@ public class CRFacade implements ICentroReparacoes {
     private void gravar_todos_orcamentos() throws IOException {
         FileWriter w = new FileWriter("cp/orcamentos.csv");
         orcamentos.forEach((k,v)-> {
+            try {
+                w.write(v.toString()+"\n");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+        w.close();
+    }
+
+
+
+    private void gravar_todos_logs() throws IOException {
+        FileWriter w = new FileWriter("cp/logs.txt");
+        logsTecnicos.forEach((k,v)-> {
+            try {
+                w.write(v.toString()+"\n");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+        logsFuncionarios.forEach((k,v)-> {
             try {
                 w.write(v.toString()+"\n");
             } catch (IOException e) {

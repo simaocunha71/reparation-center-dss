@@ -1,0 +1,13 @@
+nivelPermissao@id%intervencao1->intervencao2
+
+intervencao:
+    expresso -> 0;numeroRegisto;Modelo;Descricao;Data_Completo
+    normal-Passo    -> 1;numeroRegisto;Modelo;DescricaoPasso;Data_Completo;tempo_esperado;tempo_real
+    normal-Subpasso -> 2;numeroRegisto;Modelo;DescricaoSubpasso;Data_Completo;tempo_esperado;tempo_real
+    concluir-reparacao -> 3;numeroRegisto;Modelo;Descricao;Data_Completo
+
+nivelPermissao@id%operacao1->operacao2
+
+operacao:
+    rececao -> 0;Data_Pedido
+    entrega -> 1;Data_Entrega

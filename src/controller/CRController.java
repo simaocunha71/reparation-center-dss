@@ -169,7 +169,7 @@ public class CRController {
 
     public void run() throws IOException, ClassNotFoundException {
         try {
-            centro.carregar_cp("cp/utilizadores.csv", "cp/clientes.csv","cp/armazem.csv", "cp/pedidos.csv","cp/orcamentos.csv");
+            centro.carregar_cp("cp/utilizadores.csv", "cp/clientes.csv","cp/armazem.csv", "cp/pedidos.csv","cp/orcamentos.csv","cp/logs.txt");
         }
         catch (JaExistenteExcecao ignored){
         }

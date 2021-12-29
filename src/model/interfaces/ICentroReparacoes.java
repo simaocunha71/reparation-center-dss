@@ -25,7 +25,7 @@ public interface ICentroReparacoes {
 
     void carregar_utilizadores(String filename) throws IOException, JaExistenteExcecao;
 
-    void carregar_cp(String utilizadoresFN,String clientesFN,String armazemFN,String pedidosFN, String planosFN) throws IOException, JaExistenteExcecao;
+    void carregar_cp(String utilizadoresFN,String clientesFN,String armazemFN,String pedidosFN, String planosFN, String logFN) throws IOException, JaExistenteExcecao;
 
     void adicionar_pedido_orcamento(String nifCliente, String modelo, String descricaoEquipamento, String descricaoPedido) throws IOException;
 
