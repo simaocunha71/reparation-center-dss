@@ -53,7 +53,7 @@ public class LogFuncionario implements Carregavel {
         return conta;
     }
 
-    public int get_numero_entreagas(){
+    public int get_numero_entregas(){
         int conta = 0;
         for(String i: operacoes){
             if(tipo_operacao(i)  == 1) conta++;

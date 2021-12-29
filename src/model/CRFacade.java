@@ -5,7 +5,6 @@ import model.armazem.Equipamento;
 import model.comparators.IOrcamentoComparator;
 import model.comparators.IPedidoComparator;
 import model.excecoes.JaExistenteExcecao;
-import model.excecoes.NaoExisteExcecao;
 import model.interfaces.*;
 import model.orcamento.Orcamento;
 import model.pedidos.PedidoExpresso;
@@ -186,8 +185,18 @@ public class CRFacade implements ICentroReparacoes {
         return set.stream().toList();
     }
 
-    public List<IOrcamento> get_orcamentos_completos() {
-        return orcamentos.values().stream().filter(k->k.getConfirmado() && pedidosCompletos.containsKey(k.get_num_ref())).map(IOrcamento::clone).collect(Collectors.toList());
+    public List<IPedido> get_orcamentos_completos() {
+        List<IPedido> pedidos_completos = new ArrayList<>();
+        pedidosCompletos.forEach((k,v)->{
+            System.out.println(v.getClass());
+            if(v.getClass().equals(PedidoExpresso.class)){
+                pedidos_completos.add(v);
+            }
+            else if(orcamentos.containsKey(k)){
+                if(orcamentos.get(k).getConfirmado())  pedidos_completos.add(v);
+            }
+        });
+        return pedidos_completos;
     }
 
 
@@ -246,14 +255,13 @@ public class CRFacade implements ICentroReparacoes {
 
 
     private void adicionar_pedido_ja_planeado(IPedido pedido) {
-        System.out.println("DEBUG A ADICIONAR PEDIDO PLANEADO");
         if(!pedidosJaPlaneados.containsKey(pedido.getNumeroRegistoEquipamento())){
-            System.out.println("DEBUG ADIONADO PEDIDO PLANEADO: "+pedido.getNumeroRegistoEquipamento());
             pedidosJaPlaneados.put(pedido.getNumeroRegistoEquipamento(),pedido);
         }
     }
 
     private void adicionar_pedido_completo(IPedido pedido) {
+        System.out.println("DEBUG: "+  pedido.getClass());
         if(!pedidosCompletos.containsKey(pedido.getNumeroRegistoEquipamento())){
             pedidosCompletos.put(pedido.getNumeroRegistoEquipamento(),pedido);
         }
@@ -805,6 +813,35 @@ public class CRFacade implements ICentroReparacoes {
 
     public IEquipamento get_equipamento(int num_ref){
         return armazem.getEquipamento(num_ref);
+    }
+
+    public String get_logs_tecnicos_simples(){
+        StringBuilder sb = new StringBuilder();
+        logsTecnicos.forEach((k,v)->{
+            sb.append(v.getUserId()).append("-> Passos [").append(v.get_numero_passos_completos()).append("] ")
+                    .append("Pedidos Expresso [").append(v.get_numero_reparacoes_expresso()).append("] ")
+                    .append("Duracao Media [").append(v.get_media_duracao_real()).append("] ")
+                    .append("Desvio Duracao Media [").append(v.get_media_duracao_esperada()-v.get_media_duracao_real()).append("]\n");
+        });
+        return sb.toString();
+    }
+
+
+    public String get_logs_funcionarios(){
+        StringBuilder sb = new StringBuilder();
+        logsFuncionarios.forEach((k,v)->{
+            sb.append(v.getUserId()).append("-> Rececoes [").append(v.get_numero_rececoes()).append("] ")
+                    .append("Entregas [").append(v.get_numero_entregas()).append("]\n");
+        });
+        return sb.toString();
+    }
+
+    public List<LogTecnico> get_logs_tecnicos_simples_extensivos(){
+        List<LogTecnico> tecnicos = new ArrayList<>();
+        logsTecnicos.forEach((k,v)->{
+            if(exists_user(v.getUserId())) tecnicos.add(v);
+        });
+        return tecnicos;
     }
 
 }

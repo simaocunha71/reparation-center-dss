@@ -203,4 +203,21 @@ public class PlanoDeTrabalho implements IPlanoDeTrabalho {
         }
         return realizado;
     }
+
+    public String toString(){
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(pedidoAssociado.toString() + "\n");
+        if(passos.isEmpty())
+            sb.append("Não existem passos associados ao plano\n");
+        else{
+            sb.append("Passos:\n");
+            sb.append(passos.toString()).append("\n");
+        }
+        if(realizado)
+            sb.append("Realizado: Sim");
+        else
+            sb.append("Realizado: Não");
+        return sb.toString();
+    }
 }

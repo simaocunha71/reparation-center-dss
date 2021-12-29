@@ -2,7 +2,7 @@ package model.interfaces;
 
 import model.orcamento.Passo;
 
-public interface Planeavel {
+public interface Planeavel extends Carregavel{
 
     float orcamento_gasto();
 

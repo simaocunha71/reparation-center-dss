@@ -1,5 +1,6 @@
 package model.interfaces;
 
+import model.LogTecnico;
 import model.excecoes.JaExistenteExcecao;
 
 import java.io.IOException;
@@ -46,7 +47,7 @@ public interface ICentroReparacoes {
 
     List<String> get_pedidos_orcamento();
 
-    List<IOrcamento> get_orcamentos_completos();
+    List<IPedido> get_orcamentos_completos();
 
     IPedido get_pedido_orcamento(int posicao);
 
@@ -78,4 +79,10 @@ public interface ICentroReparacoes {
 
     IPedido get_pedido_expresso();
     void completa_pedido_expresso() throws IOException;
+
+    String get_logs_tecnicos_simples();
+
+    String get_logs_funcionarios();
+
+    List<LogTecnico> get_logs_tecnicos_simples_extensivos();
 }

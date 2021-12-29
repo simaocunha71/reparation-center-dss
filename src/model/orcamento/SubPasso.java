@@ -182,6 +182,24 @@ public class SubPasso implements Carregavel {
         return new SubPasso(this.descricao,this.custoEstimado,this.duracaoEstimada,this.custoReal,this.duracaoReal,this.realizado,this.idTecnico, this.numero_subpasso);
     }
 
+    //Subpasso
+    public String toString(){
+        StringBuilder sb = new StringBuilder();
+        sb.append("  ID do técnico associado: ").append(idTecnico).append("\n");
+        sb.append("  Descrição do passo: ").append(descricao).append("\n");
+        sb.append("  Estimativas: ").append("\n");
+        sb.append("   > Custo: ").append(custoEstimado).append(" €\n");
+        sb.append("   > Duração: ").append(duracaoEstimada).append(" min\n");
+        sb.append("  Realidade: ").append("\n");
+        sb.append("   > Custo: ").append(custoReal).append(" €\n");
+        sb.append("   > Duração: ").append(duracaoReal).append(" min\n");
+        sb.append("  SubPasso #").append(numero_subpasso).append("\n\n");
+        if(realizado)
+            sb.append("  Realizado: Sim");
+        else
+            sb.append("  Realizado: Não");
+        return sb.toString();
+    }
 
 }
 

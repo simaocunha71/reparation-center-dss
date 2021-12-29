@@ -185,5 +185,53 @@ public class LogTecnico implements Carregavel {
         return sb.toString();
     }
 
+    public String estatisticas_extensivas(){
+        StringBuilder sb = new StringBuilder();
+        intervencoes.forEach(k->{
+            sb.append(intervencaoToString(k));
+        });
+        return sb.toString();
+    }
+
+    public String intervencaoToString(String string) {
+        String[] info = string.split(";");
+        StringBuilder intervencao = new StringBuilder();
+        int tipo = tipo_intervencao(string);
+        if(intervencao_valida(string)) {
+            switch (tipo) {
+                case 0, 3 -> {
+                    if (tipo == 0) intervencao.append("Servico expresso : ");
+                    else intervencao.append("Reparacao Normal Completa : ");
+                    int numReg = Integer.parseInt(info[1]);
+                    String modelo = info[2];
+                    String descricao = info[3];
+                    LocalDateTime data = LocalDateTime.parse(info[4]);
+                    intervencao.append("[# " + numReg + "]")
+                            .append(" Modelo [" + modelo + "]")
+                            .append(" Descricao [" + descricao + "]")
+                            .append(" Data [" + data + "]");
+                }
+
+                case 1, 2 -> {
+                    if (tipo == 1) intervencao.append("Passo : ");
+                    else intervencao.append("SubPasso : ");
+                    int numReg = Integer.parseInt(info[1]);
+                    String modelo = info[2];
+                    String descricao = info[3];
+                    LocalDateTime data = LocalDateTime.parse(info[4]);
+                    float tempo_esperado = Float.parseFloat(info[5]);
+                    float tempo_real = Float.parseFloat(info[6]);
+                    intervencao.append("[# " + numReg + "]")
+                            .append(" Modelo [" + modelo + "]")
+                            .append(" Descricao [" + descricao + "]")
+                            .append(" Tempo_Esperado [" + tempo_esperado + "]")
+                            .append(" Tempo_Real [" + tempo_real + "]")
+                            .append(" Data [" + data + "]");
+                }
+            }
+        }
+        intervencao.append("\n");
+        return intervencao.toString();
+    }
 
 }

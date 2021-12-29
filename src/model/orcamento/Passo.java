@@ -373,4 +373,31 @@ public class Passo implements Carregavel {
         }else duracao_estimada = duracaoEstimada;
         return duracao_estimada;
     }
+
+    public String toString(){
+        StringBuilder sb = new StringBuilder();
+        sb.append("ID do técnico associado: ").append(idTecnicoRealizou).append("\n");
+        sb.append("Descrição do passo: ").append(descricao).append("\n");
+        if(subpassos.isEmpty())
+            sb.append("Subpassos: não existem\n");
+        else{
+            sb.append("SubPassos: "+ subpassos.size() +"\n");
+        }
+
+        sb.append("Estimativas: ").append("\n");
+        sb.append(" > Custo: ").append(custoEstimado).append(" €\n");
+        sb.append(" > Duração: ").append(duracaoEstimada).append(" min\n");
+        sb.append("Realidade: ").append("\n");
+        sb.append(" > Custo: ").append(custoReal).append(" €\n");
+        sb.append(" > Duração: ").append(duracaoReal).append(" min\n");
+        sb.append("Passo #").append(numero_passo).append("\n");
+        if(realizado)
+            sb.append("Realizado: Sim\n\n");
+        else
+            sb.append("Realizado: Não\n\n");
+
+        return sb.toString();
+
+    }
+
 }

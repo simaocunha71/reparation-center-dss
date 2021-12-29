@@ -50,6 +50,7 @@ public class CRController {
             "Lista de funcionários",
             "Lista de técnicos",
             "Registar utilizador",
+            "Estatisticas de utilizadores",
             "Logout",
     };
 
@@ -155,12 +156,6 @@ public class CRController {
             "Guardar e voltar"
     };
 
-    private final String[] menuAtualizarUtilizador = new String[]{
-            "Nome",
-            "Password",
-            "Remover e voltar",
-            "Guardar e voltar"
-    };
 
     private final String[] pedidosExpressos = new String[]{
            "Trocar ecrã [Custo 50€]",
@@ -168,6 +163,14 @@ public class CRController {
            "Trocar bateria [Custo 25€]",
            "Limpar equipamento [Custo 10€]",
     };
+
+    private final String[] menuEstatisticas = new String[]{
+            "Tecnicos Simples",
+            "Funcionarios",
+            "Tecnicos Extenso",
+    };
+
+
 
 
     private boolean logged = false;
@@ -257,11 +260,13 @@ public class CRController {
         menu.setHandler(9,()->listaDeUsuarios(centro.get_utilizadores().values().stream().filter(v->v.getClass().equals(Tecnico.class)).collect(Collectors.toMap(IUtilizador::getId, Function.identity())),"Lista de Tecnicos"));
 
         menu.setHandler(10,this::registarUtilizador);
-        menu.setHandler(11,()->{menu.returnMenu();logout();});
+
+        menu.setHandler(11,this::estatisticasUtilizadores);
+
+        menu.setHandler(12,()->{menu.returnMenu();logout();});
 
         menu.simpleRun();
     }
-
 
 
 
@@ -409,7 +414,6 @@ public class CRController {
     private void realizarPedidoExpresso() throws IOException, ClassNotFoundException {
         IPedido p = centro.get_pedido_expresso();
         if(p!=null) {
-            System.out.println("DEBUG p!=NULL");
             int tipo = 0;
             if (p.getClass().equals(PedidoExpresso.class)) {
                 tipo = ((PedidoExpresso) p).getTipo();
@@ -418,6 +422,12 @@ public class CRController {
             menu.setHandler(1, () -> {
                 centro.completa_pedido_expresso();
                 ICliente cliente = centro.get_cliente(p.getNifCliente());
+                IEquipamento e = centro.get_equipamento(p.getNumeroRegistoEquipamento());
+                String log = "0;"+p.getNumeroRegistoEquipamento()+";"
+                            +e.getModelo()+";"
+                            +e.getDescricao()+";"
+                            +LocalDateTime.now();
+                centro.adicionar_log(log, centro.get_logged_id());
                 menu.showInfo("Cliente notificado para "+cliente.getNumTelemovel());
                 menu.returnMenu();
             });
@@ -621,13 +631,12 @@ public class CRController {
     }
 
     private void concluir_pedido() throws IOException, ClassNotFoundException {
-        List<IOrcamento> orcamentos = centro.get_orcamentos_completos();
+        List<IPedido> orcamentos = centro.get_orcamentos_completos();
         String[] orcamentosString = new String[orcamentos.size()];
         for(int i =0; i < orcamentos.size() && i < 10 ;i++){
-            IOrcamento orcamento = orcamentos.get(i);
-            IPedido pedido = orcamento.get_pedido();
+            IPedido pedido = orcamentos.get(i);
             ICliente cliente = centro.get_cliente(pedido.getNifCliente());
-            String sb = "Equipamento [#" + orcamento.get_num_ref() + "]|" +
+            String sb = "Equipamento [#" + pedido.getNumeroRegistoEquipamento() + "]|" +
                     "Cliente [" + cliente.getNome() + "]" +
                     "Nif [" + cliente.getNif() + "]" +
                     "Email [" + cliente.getEmail() + "]" +
@@ -638,7 +647,7 @@ public class CRController {
         AtomicInteger i = new AtomicInteger(1);
         for(; i.get() <= orcamentosString.length;i.incrementAndGet()){
             int posicao = i.get();
-            int num_ref = orcamentos.get(posicao-1).get_num_ref();
+            int num_ref = orcamentos.get(posicao-1).getNumeroRegistoEquipamento();
             menu.setHandler(i.get(),()->{centro.remover_orcamento(num_ref);menu.returnMenu();});
         }
         menu.simpleRun();
@@ -1061,9 +1070,46 @@ public class CRController {
         }
     }
 
+    private void estatisticasUtilizadores() throws IOException, ClassNotFoundException {
+        CRView menu = new CRView("Estatisticas de utilizadores",menuEstatisticas);
+
+        menu.setHandler(1,this::estatisticasTecnicosSimples);
+        menu.setHandler(2,this::estatisticasFuncionarios);
+        menu.setHandler(3,this::estatisticasTecnicosExtensivo);
+        menu.simpleRun();
+    }
+
+    private void estatisticasTecnicosSimples() {
+        String estatisticas = centro.get_logs_tecnicos_simples();
+        CRView menu = new CRView("",new String[]{});
+        menu.showInfo(estatisticas);
+    }
 
 
 
+    private void estatisticasFuncionarios() {
+        String estatisticas = centro.get_logs_funcionarios();
+        CRView menu = new CRView("",new String[]{});
+        menu.showInfo(estatisticas);
+    }
+
+    private void estatisticasTecnicosExtensivo() throws IOException, ClassNotFoundException {
+        List<LogTecnico> tecnicosLogs = centro.get_logs_tecnicos_simples_extensivos();
+        String[] tecnicos = new String[tecnicosLogs.size()];
+        for(int i =0; i < tecnicosLogs.size() && i < 10 ;i++){
+            String sb = "Tecnico [" + tecnicosLogs.get(i).getUserId() + "]";
+            tecnicos[i] = sb;
+        }
+        CRView menu = new CRView("Lista de Tecnicosr",tecnicos);
+        AtomicInteger i = new AtomicInteger(1);
+        for(; i.get() <= tecnicos.length;i.incrementAndGet()){
+            int posicao = i.get() - 1;
+            menu.setHandler(i.get(),()->{menu.showInfo(tecnicosLogs.get(posicao).estatisticas_extensivas());menu.returnMenu();});
+        }
+
+        menu.simpleRun();
+
+    }
 
 
 }
