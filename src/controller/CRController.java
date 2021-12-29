@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 
 public class CRController {
 
-    private final ICentroReparacoes centro = new CRFacade();
+    private final ICentroReparacoes centro = new CRFacade("cp/utilizadores.csv", "cp/clientes.csv","cp/armazem.csv", "cp/pedidos.csv","cp/orcamentos.csv","cp/logs.txt");
     private final AuxiliarView auxView = new AuxiliarView();
     private final Scanner scanner = new Scanner(System.in);
 
@@ -172,14 +172,11 @@ public class CRController {
 
     private boolean logged = false;
 
+    public CRController() throws IOException {
+    }
 
 
     public void run() throws IOException, ClassNotFoundException {
-        try {
-            centro.carregar_cp("cp/utilizadores.csv", "cp/clientes.csv","cp/armazem.csv", "cp/pedidos.csv","cp/orcamentos.csv","cp/logs.txt");
-        }
-        catch (JaExistenteExcecao ignored){
-        }
 
         //centro.debug();
 
@@ -551,7 +548,7 @@ public class CRController {
 
         });
         menu.setHandler(4,()->{
-                String l = executarSubpasso(clone.getProximoSubPasso(),total_subpassos,orcamento);
+                String l = executarSubpasso(clone.get_proximo_subpasso(),total_subpassos,orcamento);
                 if(l!=null) logsTemporarios.add(l);
         });
         menu.setHandler(5,()->{

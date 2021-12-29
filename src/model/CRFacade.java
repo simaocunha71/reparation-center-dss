@@ -35,10 +35,17 @@ public class CRFacade implements ICentroReparacoes {
     private Map<String,LogTecnico> logsTecnicos;
     private Map<String,LogFuncionario> logsFuncionarios;
 
+    private String utilizadoresFN;
+    private String clientesFN;
+    private String armazemFN;
+    private String pedidosFN;
+    private String orcamentosFN;
+    private String logsFN;
+
     private static final String DATE_FORMATTER= "yyyy-MM-dd HH:mm:ss";
 
 
-    public CRFacade(){
+    public CRFacade(String utilizadoresFN, String clientesFN, String armazemFN, String pedidosFN, String orcamentosFN, String logsFN) throws IOException {
         this.utilizadores = new HashMap<>();
         this.clientes = new HashMap<>();
         this.pedidosPendentes = new TreeSet<IPedido>(new IPedidoComparator());
@@ -48,6 +55,18 @@ public class CRFacade implements ICentroReparacoes {
         this.pedidosCompletos = new HashMap<>();
         this.logsTecnicos = new HashMap<>();
         this.logsFuncionarios = new HashMap<>();
+
+        this.utilizadoresFN = utilizadoresFN;
+        this.clientesFN = clientesFN;
+        this.armazemFN = armazemFN;
+        this.pedidosFN = pedidosFN;
+        this.orcamentosFN = orcamentosFN;
+        this.logsFN = logsFN;
+
+        try{
+            carregar_cp();
+        }
+        catch(JaExistenteExcecao ignored){}
     }
 
     /**
@@ -62,19 +81,6 @@ public class CRFacade implements ICentroReparacoes {
     public String get_logged_id(){
         return logado.getId();
     }
-
-    /**
-     * Procura cliente no map de clientes
-     * @param id id
-     * @return ICliente
-     */
-    public ICliente getClientesById(String id){
-        return clientes.get(id);
-    }
-
-    //public void debug(){
-    //    //
-    //}
 
     public void adicionar_utilizador(String id,String nome,String password,int permissao) throws JaExistenteExcecao, IOException {
         IUtilizador utilizador = null;
@@ -277,32 +283,13 @@ public class CRFacade implements ICentroReparacoes {
     }
 
 
-    public void fazer_pedido(String idCLiente){
-
-    }
-
-    /**
-     * Remove cliente do map de clientes
-     * @param nif nif
-     * @throws NaoExisteExcecao exceção
-     */
-    public void remover_cliente(String nif) throws NaoExisteExcecao {
-        if(!clientes.containsKey(nif)){
-            throw  new NaoExisteExcecao("Cliente não existe no sistema");
-        }else{clientes.remove(nif);}
-    }
-
-
-    /* state loaders */
-
     /**
      * Carrega utilizadores para o estado do sistema
-     * @param filename path para  ficheiro
      * @throws FileNotFoundException execão
      */
 
-    public void carregar_utilizadores(String filename) throws IOException, JaExistenteExcecao {
-        BufferedReader br = new BufferedReader(new FileReader(filename));
+    private void carregar_utilizadores() throws IOException, JaExistenteExcecao {
+        BufferedReader br = new BufferedReader(new FileReader(this.utilizadoresFN));
         String linha;
         String[] split;
         while((linha = br.readLine()) != null){
@@ -370,11 +357,10 @@ public class CRFacade implements ICentroReparacoes {
 
     /**
      * Carrega clientes para o estado do sistema
-     * @param filename path para o ficheiro
      * @throws FileNotFoundException  execão
      */
-    public void carregar_clientes(String filename) throws IOException, JaExistenteExcecao {
-        BufferedReader br = new BufferedReader(new FileReader(filename));
+    private void carregar_clientes() throws IOException, JaExistenteExcecao {
+        BufferedReader br = new BufferedReader(new FileReader(this.clientesFN));
         String linha;
         while((linha = br.readLine()) != null){
             ICliente cliente = new Cliente();
@@ -384,8 +370,8 @@ public class CRFacade implements ICentroReparacoes {
         br.close();
     }
 
-    private void carregar_armazem(String filename) throws IOException {
-        BufferedReader br = new BufferedReader(new FileReader(filename));
+    private void carregar_armazem() throws IOException {
+        BufferedReader br = new BufferedReader(new FileReader(this.armazemFN));
         String linha;
         String[] split;
         while((linha = br.readLine()) != null){
@@ -402,8 +388,8 @@ public class CRFacade implements ICentroReparacoes {
         br.close();
     }
 
-    private void carregar_pedidos(String filename) throws IOException {
-        BufferedReader br = new BufferedReader(new FileReader(filename));
+    private void carregar_pedidos() throws IOException {
+        BufferedReader br = new BufferedReader(new FileReader(this.pedidosFN));
         String linha;
         String[] split;
         while((linha = br.readLine()) != null){
@@ -441,8 +427,8 @@ public class CRFacade implements ICentroReparacoes {
         }
     }
 
-    private void carregar_orcamentos(String filename) throws IOException {
-        BufferedReader br = new BufferedReader(new FileReader(filename));
+    private void carregar_orcamentos() throws IOException {
+        BufferedReader br = new BufferedReader(new FileReader(orcamentosFN));
         String linha;
         String[] split;
         boolean valido = false;
@@ -485,8 +471,8 @@ public class CRFacade implements ICentroReparacoes {
     }
 
 
-    private void carregar_logs(String filename) throws IOException {
-        BufferedReader br = new BufferedReader(new FileReader(filename));
+    private void carregar_logs() throws IOException {
+        BufferedReader br = new BufferedReader(new FileReader(logsFN));
         String linha;
         String[] split;
         while((linha = br.readLine()) != null){
@@ -535,13 +521,13 @@ public class CRFacade implements ICentroReparacoes {
     }
 
 
-    public void carregar_cp(String utilizadoresFN,String clientesFN,String armazemFN,String pedidosFN,String orcamentosFN,String logFN) throws IOException, JaExistenteExcecao {
-        carregar_utilizadores(utilizadoresFN);
-        carregar_clientes(clientesFN);
-        carregar_armazem(armazemFN);
-        carregar_pedidos(pedidosFN);
-        carregar_orcamentos(orcamentosFN);
-        carregar_logs(logFN);
+    public void carregar_cp() throws IOException, JaExistenteExcecao {
+        carregar_utilizadores();
+        carregar_clientes();
+        carregar_armazem();
+        carregar_pedidos();
+        carregar_orcamentos();
+        carregar_logs();
     }
 
 
@@ -626,14 +612,14 @@ public class CRFacade implements ICentroReparacoes {
         return armazem.get_ultimo_numero_de_registo_equipamento();
     }
 
-    public void gravar_cliente (ICliente cliente) throws IOException {
-        FileWriter w = new FileWriter("cp/clientes.csv",true);
+    private void gravar_cliente (ICliente cliente) throws IOException {
+        FileWriter w = new FileWriter(this.clientesFN,true);
         w.write(cliente.salvar()+"\n");
         w.close();
     }
 
-    public void gravar_todos_clientes () throws IOException {
-        FileWriter w = new FileWriter("cp/clientes.csv");
+    private void gravar_todos_clientes () throws IOException {
+        FileWriter w = new FileWriter(this.clientesFN);
         clientes.forEach((k,v)-> {
             try {
                 w.write(v.salvar()+"\n");
@@ -644,14 +630,14 @@ public class CRFacade implements ICentroReparacoes {
         w.close();
     }
 
-    public void gravar_utilizador (IUtilizador utilizador) throws IOException {
-        FileWriter w = new FileWriter("cp/utilizadores.csv",true);
+    private void gravar_utilizador (IUtilizador utilizador) throws IOException {
+        FileWriter w = new FileWriter(this.utilizadoresFN,true);
         w.write(utilizador.salvar()+"\n");
         w.close();
     }
 
-    public void gravar_todos_utilizadores () throws IOException {
-        FileWriter w = new FileWriter("cp/utilizadores.csv");
+    private void gravar_todos_utilizadores () throws IOException {
+        FileWriter w = new FileWriter(this.utilizadoresFN);
         utilizadores.forEach((k,v)-> {
             try {
                 w.write(v.salvar()+"\n");
@@ -663,13 +649,13 @@ public class CRFacade implements ICentroReparacoes {
     }
 
     private void gravar_equipamento(IEquipamento equipamento, int local) throws IOException {
-        FileWriter w = new FileWriter("cp/armazem.csv",true);
+        FileWriter w = new FileWriter(this.armazemFN,true);
         w.write(equipamento.salvar()+"@"+local+"\n");
         w.close();
     }
 
     private void gravar_pedido(IPedido pedido) throws IOException {
-        FileWriter w = new FileWriter("cp/pedidos.csv",true);
+        FileWriter w = new FileWriter(this.pedidosFN,true);
         int tipo = 1;
         if(pedido.getClass().equals(PedidoExpresso.class))
             tipo = 2;
@@ -678,13 +664,13 @@ public class CRFacade implements ICentroReparacoes {
     }
 
     private void gravar_orcamento(IOrcamento orcamento) throws IOException {
-        FileWriter w = new FileWriter("cp/orcamentos.csv",true);
+        FileWriter w = new FileWriter(this.orcamentosFN,true);
         w.write(orcamento.salvar()+"\n");
         w.close();
     }
 
     private void gravar_todos_pedidos() throws IOException {
-        FileWriter w = new FileWriter("cp/pedidos.csv");
+        FileWriter w = new FileWriter(this.pedidosFN);
         pedidosPendentes.forEach(k-> {
             int tipo = 1;
             if(k.getClass().equals(PedidoExpresso.class))
@@ -716,13 +702,13 @@ public class CRFacade implements ICentroReparacoes {
     }
 
     private void gravar_todos_equipamento() throws IOException {
-        FileWriter w = new FileWriter("cp/armazem.csv");
+        FileWriter w = new FileWriter(this.armazemFN);
         w.write(armazem.salvar());
         w.close();
     }
 
     private void gravar_todos_orcamentos() throws IOException {
-        FileWriter w = new FileWriter("cp/orcamentos.csv");
+        FileWriter w = new FileWriter(this.orcamentosFN);
         orcamentos.forEach((k,v)-> {
             try {
                 w.write(v.salvar()+"\n");
@@ -736,8 +722,7 @@ public class CRFacade implements ICentroReparacoes {
 
 
     private void gravar_todos_logs() throws IOException {
-        System.out.println("gravar logs");
-        FileWriter w = new FileWriter("cp/logs.txt");
+        FileWriter w = new FileWriter(this.logsFN);
         logsTecnicos.forEach((k,v)-> {
             try {
                 w.write(v.salvar()+"\n");

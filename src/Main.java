@@ -1,4 +1,5 @@
 import controller.CRController;
+import model.excecoes.JaExistenteExcecao;
 
 import java.io.IOException;
 import java.util.HashSet;

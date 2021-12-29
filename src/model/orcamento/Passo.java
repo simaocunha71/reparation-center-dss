@@ -1,6 +1,7 @@
 package model.orcamento;
 
 import model.interfaces.Carregavel;
+import model.interfaces.Planeavel;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -319,7 +320,7 @@ public class Passo implements Carregavel {
 
 
 
-    public SubPasso getProximoSubPasso(){
+    public SubPasso get_proximo_subpasso(){
         boolean stop = false;
         SubPasso prox = null;
         if(existe_proximo_subpasso()){
