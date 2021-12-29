@@ -1,8 +1,5 @@
 package model.interfaces;
 
-import model.armazem.Equipamento;
-import model.orcamento.Orcamento;
-import model.orcamento.PlanoDeTrabalho;
 import model.excecoes.JaExistenteExcecao;
 
 import java.io.IOException;
@@ -10,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 
 public interface ICentroReparacoes {
+
+    //void debug();
 
     IUtilizador get_utilizador_by_ID(String id);
 
@@ -19,13 +18,11 @@ public interface ICentroReparacoes {
 
     void adicionar_cliente(String nif, String nome, String numTelemovel, String email) throws JaExistenteExcecao, IOException;
 
-    void adicionar_orcamento(Orcamento orcamento) throws IOException; //**
+    void adicionar_orcamento(IOrcamento orcamento) throws IOException; //**
 
-    void concluir_reparacao(Orcamento orcamento) throws IOException; //**
+    void concluir_reparacao(IOrcamento orcamento) throws IOException; //**
 
-    void carregar_utilizadores(String filename) throws IOException, JaExistenteExcecao;
-
-    void carregar_cp(String utilizadoresFN,String clientesFN,String armazemFN,String pedidosFN, String planosFN, String logFN) throws IOException, JaExistenteExcecao;
+    void carregar_cp() throws IOException, JaExistenteExcecao;
 
     void adicionar_pedido_orcamento(String nifCliente, String modelo, String descricaoEquipamento, String descricaoPedido) throws IOException;
 
@@ -49,21 +46,21 @@ public interface ICentroReparacoes {
 
     List<String> get_pedidos_orcamento();
 
-    List<Orcamento> get_orcamentos_completos();
+    List<IOrcamento> get_orcamentos_completos();
 
-    IPedido get_pedido(int posicao);
+    IPedido get_pedido_orcamento(int posicao);
 
-    void gerar_orcamento(PlanoDeTrabalho plano) throws IOException; //**
+    void gerar_orcamento(IPlanoDeTrabalho plano) throws IOException; //**
 
-    List<Orcamento> get_orcamentos_por_confirmar();
+    List<IOrcamento> get_orcamentos_por_confirmar();
 
     ICliente get_cliente(String nif);
 
     void confirmar_orcamento(int num_ref) throws IOException; //**
 
-    List<Orcamento> get_orcamentos_confirmados();
+    List<IOrcamento> get_orcamentos_confirmados();
 
-    Orcamento get_orcamento(int num_ref);
+    IOrcamento get_orcamento(int num_ref);
 
     IEquipamento getEquipamento(int num_ref);
 
@@ -74,4 +71,11 @@ public interface ICentroReparacoes {
     void remover_utilizador(String id) throws IOException;
 
     IEquipamento get_equipamento(int num_ref);
+
+    boolean disponibilidade_pedido_expresso();
+
+    void adicionar_pedido_expresso(String nifCliente, String modelo, String descricaoEquipamento, int tipo) throws IOException;
+
+    IPedido get_pedido_expresso();
+    void completa_pedido_expresso() throws IOException;
 }

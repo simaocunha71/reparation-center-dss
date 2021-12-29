@@ -94,7 +94,7 @@ public class LogFuncionario implements Carregavel {
     }
 
 
-    public String toString(){
+    public String salvar(){
         StringBuilder sb = new StringBuilder();
         sb.append("2").append("@").append(userId).append("%");
         operacoes.forEach(k->sb.append(k).append("->"));

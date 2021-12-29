@@ -1,6 +1,7 @@
 package model.orcamento;
 
 import model.interfaces.Carregavel;
+import model.interfaces.Planeavel;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -246,7 +247,7 @@ public class Passo implements Carregavel {
 
     //descriçao;custoEstimado;custoReal;duracaoEstimada;duracaoReal;booleanoRealizado;idTecnico;numeroSP%subPassos
     //subPassos: subpasso1/subpasso2/subpass3...
-    public String toString(){
+    public String salvar(){
         StringBuilder sb = new StringBuilder();
         sb.append(descricao).append(";").append(custoEstimado).append(";").append(custoReal).append(";");
         sb.append(duracaoEstimada).append(";").append(duracaoReal).append(";");
@@ -319,7 +320,7 @@ public class Passo implements Carregavel {
 
 
 
-    public SubPasso getProximoSubPasso(){
+    public SubPasso get_proximo_subpasso(){
         boolean stop = false;
         SubPasso prox = null;
         if(existe_proximo_subpasso()){

@@ -1,12 +1,12 @@
 package model.comparators;
 
-import model.orcamento.Orcamento;
+import model.interfaces.IOrcamento;
 
 import java.util.Comparator;
 
-public class IOrcamentoComparator implements Comparator<Orcamento>  {
+public class IOrcamentoComparator implements Comparator<IOrcamento>  {
 
-    public int compare(Orcamento o1, Orcamento o2) {
+    public int compare(IOrcamento o1, IOrcamento o2) {
         return o1.getDataConfirmacao().compareTo(o2.getDataConfirmacao());
     }
 }

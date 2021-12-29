@@ -136,7 +136,7 @@ public class SubPasso implements Carregavel {
         return descricao.length()>0 && custoEstimado >= 0 && duracaoEstimada >= 0 && ((!realizado && idTecnico == null)||(realizado && idTecnico != null));
     }
 
-    public String toString(){
+    public String salvar(){
         StringBuilder sb = new StringBuilder();
         sb.append(descricao).append(";").append(custoEstimado).append(";").append(custoReal).append(";");
         sb.append(duracaoEstimada).append(";").append(duracaoReal).append(";");

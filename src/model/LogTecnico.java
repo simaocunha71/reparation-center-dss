@@ -178,7 +178,7 @@ public class LogTecnico implements Carregavel {
         return valido;
     }
 
-    public String toString(){
+    public String salvar(){
         StringBuilder sb = new StringBuilder();
         sb.append("3").append("@").append(userId).append("%");
         intervencoes.forEach(k->sb.append(k).append("->"));

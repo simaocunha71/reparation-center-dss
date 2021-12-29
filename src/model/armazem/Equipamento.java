@@ -74,7 +74,7 @@ public class Equipamento implements IEquipamento {
     }
 
 
-    public String toString(){
+    public String salvar(){
         StringBuilder sb = new StringBuilder();
         sb.append(nifCliente).append(";")
                 .append(numeroRegisto).append(";")
@@ -83,7 +83,7 @@ public class Equipamento implements IEquipamento {
         return sb.toString();
     }
 
-    public Equipamento clone(){
+    public IEquipamento clone(){
         return new Equipamento(this.nifCliente,this.numeroRegisto,this.modelo,this.descricao);
     }
 

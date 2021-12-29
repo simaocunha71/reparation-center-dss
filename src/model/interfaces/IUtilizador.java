@@ -8,8 +8,6 @@ public interface IUtilizador extends Carregavel {
 
     String getPassword();
 
-    String toString();
-
     IUtilizador clone();
 
 }

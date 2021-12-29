@@ -1,12 +1,12 @@
 package model.orcamento;
 
 import model.interfaces.IPedido;
-import model.interfaces.Carregavel;
+import model.interfaces.IPlanoDeTrabalho;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class PlanoDeTrabalho implements Carregavel {
+public class PlanoDeTrabalho implements IPlanoDeTrabalho {
     private IPedido pedidoAssociado;
     private List<Passo> passos;
     private boolean realizado;
@@ -31,7 +31,7 @@ public class PlanoDeTrabalho implements Carregavel {
         return realizado;
     }
 
-    public int get_num_referencia(){
+    public int get_num_ref(){
         return pedidoAssociado.getNumeroRegistoEquipamento();
     }
 
@@ -96,7 +96,7 @@ public class PlanoDeTrabalho implements Carregavel {
     //custoEstimado;custoReal;tempoEstimado;tempoReal;booleanoRealizado;numeroPassos@Passos
 
     //Passos: Passo1->Passo2->Passo3...
-    public String toString(){
+    public String salvar(){
         StringBuilder sb = new StringBuilder();
         if(realizado) sb.append("1;");
         else sb.append("0;");
@@ -109,7 +109,7 @@ public class PlanoDeTrabalho implements Carregavel {
         return sb.toString();
     }
 
-    public PlanoDeTrabalho clone(){
+    public IPlanoDeTrabalho clone(){
         return new PlanoDeTrabalho(this.pedidoAssociado,this.realizado,this.passos);
     }
 
@@ -151,7 +151,7 @@ public class PlanoDeTrabalho implements Carregavel {
         return tempo_gasto;
     }
 
-    public boolean ultrapassou120PorCentoOrcamento(){
+    public boolean ultrapassou_120porcento_orcamento(){
         return calcula_gasto_estimado()*1.2 < calcula_custo_gasto();
     }
 
@@ -159,7 +159,7 @@ public class PlanoDeTrabalho implements Carregavel {
         return calcula_custo_gasto()*100/calcula_gasto_estimado();
     }
 
-    public Passo getProximoPasso(){
+    public Passo get_proximo_passo(){
         boolean stop = false;
         Passo prox = null;
         if(existe_proximo_passo()) {

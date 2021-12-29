@@ -2,14 +2,11 @@ package controller;
 
 import model.*;
 import model.excecoes.JaExistenteExcecao;
-import model.interfaces.ICentroReparacoes;
-import model.interfaces.ICliente;
-import model.interfaces.IPedido;
-import model.interfaces.IUtilizador;
-import model.orcamento.Orcamento;
+import model.interfaces.*;
 import model.orcamento.Passo;
 import model.orcamento.PlanoDeTrabalho;
 import model.orcamento.SubPasso;
+import model.pedidos.PedidoExpresso;
 import model.utilizadores.Funcionario;
 import model.utilizadores.Tecnico;
 import view.CRView;
@@ -27,7 +24,7 @@ import java.util.stream.Collectors;
 
 public class CRController {
 
-    private final ICentroReparacoes centro = new CRFacade();
+    private final ICentroReparacoes centro = new CRFacade("cp/utilizadores.csv", "cp/clientes.csv","cp/armazem.csv", "cp/pedidos.csv","cp/orcamentos.csv","cp/logs.txt");
     private final AuxiliarView auxView = new AuxiliarView();
     private final Scanner scanner = new Scanner(System.in);
 
@@ -47,6 +44,7 @@ public class CRController {
             "Registar pedido",
             "Gerar orçamento/Criar plano",
             "Confirmar orcamento",
+            "Realizar pedido expresso",
             "Processar reparação",
             "Concluir pedido",
             "Lista de funcionários",
@@ -56,8 +54,9 @@ public class CRController {
     };
 
     private final String[] menuPrincipalTecnico = new String[]{
-            "Lista de pedidos de orçamento",
-            "Lista de equipamentos para reparação",
+            "Gerar orçamento/Criar plano",
+            "Realizar pedido expresso",
+            "Processar reparação",
             "Logout",
     };
 
@@ -163,17 +162,24 @@ public class CRController {
             "Guardar e voltar"
     };
 
+    private final String[] pedidosExpressos = new String[]{
+           "Trocar ecrã [Custo 50€]",
+           "Instalar sistema operativo [Custo 20€]",
+           "Trocar bateria [Custo 25€]",
+           "Limpar equipamento [Custo 10€]",
+    };
+
 
     private boolean logged = false;
 
+    public CRController() throws IOException {
+    }
 
 
     public void run() throws IOException, ClassNotFoundException {
-        try {
-            centro.carregar_cp("cp/utilizadores.csv", "cp/clientes.csv","cp/armazem.csv", "cp/pedidos.csv","cp/orcamentos.csv","cp/logs.txt");
-        }
-        catch (JaExistenteExcecao ignored){
-        }
+
+        //centro.debug();
+
         CRView menu = new CRView("Centro de Reparações",menuInicial);
         menu.setHandler(1, this::login);
         menu.simpleRun();
@@ -196,7 +202,7 @@ public class CRController {
             password.set(scanner.nextLine());
             StringBuilder credentials = new StringBuilder();
             for(int i = 0; i<password.get().length();i++) credentials.append("*");
-            menu.changeOption(2,"Password: "+ credentials.toString());
+            menu.changeOption(2,"Password: "+ credentials);
             credenciais.set(true);
         });
         menu.setHandler(3, ()->{
@@ -231,6 +237,9 @@ public class CRController {
     private void menuInicialGestor() throws IOException, ClassNotFoundException {
         CRView menu = new CRView("Menu Inicial", menuPrincipalGestor);
 
+        menu.setPreCondition(5,()->!centro.disponibilidade_pedido_expresso());
+        menu.setPreCondition(6, centro::disponibilidade_pedido_expresso);
+
         menu.setHandler(1,this::registarCliente);
 
         menu.setHandler(2,this::registarPedido);
@@ -238,16 +247,17 @@ public class CRController {
         menu.setHandler(3,this::listaDePedidosOrcamento);
 
         menu.setHandler(4,this::confirmarOrcamento);
+        menu.setHandler(5,this::realizarPedidoExpresso);
 
-        menu.setHandler(5,this::listaDeEquipamentosReparacao);
-        menu.setHandler(6,this::concluir_pedido);
+        menu.setHandler(6,this::listaDeEquipamentosReparacao);
+        menu.setHandler(7,this::concluir_pedido);
 
-        menu.setHandler(7,()->listaDeUsuarios(centro.get_utilizadores().values().stream().filter(v->v.getClass().equals(Funcionario.class)).collect(Collectors.toMap(IUtilizador::getId, Function.identity())),"Lista de Funcionarios"));
+        menu.setHandler(8,()->listaDeUsuarios(centro.get_utilizadores().values().stream().filter(v->v.getClass().equals(Funcionario.class)).collect(Collectors.toMap(IUtilizador::getId, Function.identity())),"Lista de Funcionarios"));
 
-        menu.setHandler(8,()->listaDeUsuarios(centro.get_utilizadores().values().stream().filter(v->v.getClass().equals(Tecnico.class)).collect(Collectors.toMap(IUtilizador::getId, Function.identity())),"Lista de Tecnicos"));
+        menu.setHandler(9,()->listaDeUsuarios(centro.get_utilizadores().values().stream().filter(v->v.getClass().equals(Tecnico.class)).collect(Collectors.toMap(IUtilizador::getId, Function.identity())),"Lista de Tecnicos"));
 
-        menu.setHandler(9,this::registarUtilizador);
-        menu.setHandler(10,()->{menu.returnMenu();logout();});
+        menu.setHandler(10,this::registarUtilizador);
+        menu.setHandler(11,()->{menu.returnMenu();logout();});
 
         menu.simpleRun();
     }
@@ -267,8 +277,8 @@ public class CRController {
     }
 
     private void fazerPlano(int i) throws IOException, ClassNotFoundException {
-        IPedido pedido = centro.get_pedido(i);
-        PlanoDeTrabalho plano = new PlanoDeTrabalho(pedido);
+        IPedido pedido = centro.get_pedido_orcamento(i);
+        IPlanoDeTrabalho plano = new PlanoDeTrabalho(pedido);
         CRView menu = new CRView("Registar Plano",menuPlano);
         menu.setPreCondition(3, plano::valida);
 
@@ -385,26 +395,49 @@ public class CRController {
     private void menuInicialTecnico() throws IOException, ClassNotFoundException {
         CRView menu = new CRView("Menu Inicial", menuPrincipalTecnico);
 
-        menu.setHandler(1,this::listaDePedidosOrcamento);
+        menu.setPreCondition(2,()->!centro.disponibilidade_pedido_expresso());
+        menu.setPreCondition(3, centro::disponibilidade_pedido_expresso);
 
-        menu.setHandler(2,this::listaDeEquipamentosReparacao);
-        menu.setHandler(3,()->{menu.returnMenu();logout();});
+        menu.setHandler(1,this::listaDePedidosOrcamento);
+        menu.setHandler(2,this::realizarPedidoExpresso);
+        menu.setHandler(3,this::listaDeEquipamentosReparacao);
+        menu.setHandler(4,()->{menu.returnMenu();logout();});
 
         menu.simpleRun();
     }
 
+    private void realizarPedidoExpresso() throws IOException, ClassNotFoundException {
+        IPedido p = centro.get_pedido_expresso();
+        if(p!=null) {
+            System.out.println("DEBUG p!=NULL");
+            int tipo = 0;
+            if (p.getClass().equals(PedidoExpresso.class)) {
+                tipo = ((PedidoExpresso) p).getTipo();
+            }
+            CRView menu = new CRView("Cliente: [" + p.getNifCliente() + "] Data de Registo: [" + p.getTempoRegisto() + "] Equipamento :[#" + p.getNumeroRegistoEquipamento() + "] Tipo: [" + tipo + "]", new String[]{"Concluir"});
+            menu.setHandler(1, () -> {
+                centro.completa_pedido_expresso();
+                ICliente cliente = centro.get_cliente(p.getNifCliente());
+                menu.showInfo("Cliente notificado para "+cliente.getNumTelemovel());
+                menu.returnMenu();
+            });
+
+            menu.simpleRun();
+        }
+    }
+
 
     private void listaDeEquipamentosReparacao() throws IOException, ClassNotFoundException {
-        List<Orcamento> orcamentos = centro.get_orcamentos_confirmados();
+        List<IOrcamento> orcamentos = centro.get_orcamentos_confirmados();
         String[] orcamentosString = new String[orcamentos.size()];
         for(int i =0; i < orcamentos.size() && i < 10 ;i++){
-            Orcamento orcamento = orcamentos.get(i);
-            IPedido pedido = orcamento.get_pedido_plano();
+            IOrcamento orcamento = orcamentos.get(i);
+            IPedido pedido = orcamento.get_pedido();
             String sb = "Equipamento [#" + orcamento.get_num_ref() + "]|" +
                     "Data de Registo [" + pedido.getTempoRegisto().format(formatter) + "]|" +
                     "Data de Confirmação [" + orcamento.getDataConfirmacao().format(formatter) + "]|" +
-                    "Preco estimado [" + orcamento.getCustoEstimado() + "]|" +
-                    "Tempo estimado [" + orcamento.getDuracaoEstimada() + "]";
+                    "Preco estimado [" + orcamento.calcula_gasto_estimado() + "]|" +
+                    "Tempo estimado [" + orcamento.calcula_duracao_estimada() + "]";
             orcamentosString[i] = sb;
         }
         CRView menu = new CRView("Lista de Equipamentos a reparar",orcamentosString);
@@ -419,27 +452,27 @@ public class CRController {
 
 
     private void processar_reparacao(int num_ref) throws IOException, ClassNotFoundException {
-        Orcamento orcamento = centro.get_orcamento(num_ref);
-        Orcamento clone = orcamento.clone();
+        IOrcamento orcamento = centro.get_orcamento(num_ref);
+        IOrcamento clone = orcamento.clone();
         List<String> logs = new ArrayList<>();
         List<String> logsTemporarios = new ArrayList<>();
         CRView menu = new CRView("Processar Reparacao",menuProcessarReparacao);
         if(clone!=null) {
-            menu.setPreCondition(2,()->!clone.ultrapassou120PorCentoOrcamento() && !clone.concluido() && clone.get_next_passo()!=null);
-            menu.setPreCondition(3, clone::ultrapassou120PorCentoOrcamento);
+            menu.setPreCondition(2,()->!clone.ultrapassou_120porcento_orcamento() && !clone.concluido() && clone.get_proximo_passo()!=null);
+            menu.setPreCondition(3, clone::ultrapassou_120porcento_orcamento);
             menu.setPreCondition(4, ()-> clone.valida() && !clone.concluido());
-            menu.setPreCondition(5, ()-> clone.concluido() && !clone.ultrapassou120PorCentoOrcamento() );
+            menu.setPreCondition(5, ()-> clone.concluido() && !clone.ultrapassou_120porcento_orcamento() );
 
 
             menu.setHandler(1, () -> {
                 StringBuilder sb = new StringBuilder();
                 sb.append("Equipamento [#" + num_ref +"]\n")
-                        .append("Custo Estimado [" + clone.getCustoEstimado() + "]\n")
-                        .append("Custo Real [" + clone.get_custo_gasto() + "]\n")
+                        .append("Custo Estimado [" + clone.calcula_gasto_estimado() + "]\n")
+                        .append("Custo Real [" + clone.calcula_custo_gasto() + "]\n")
                         .append("Percentagem gasta [" + clone.orcamento_gasto() + "]\n")
-                        .append("Tempo Estimado [" + clone.getDuracaoEstimada() + "]\n")
-                        .append("Tempo Real [" + clone.get_tempo_gasto() + "]\n")
-                        .append("Orcamento excedido [" + clone.ultrapassou120PorCentoOrcamento() +"]");
+                        .append("Tempo Estimado [" + clone.calcula_duracao_estimada() + "]\n")
+                        .append("Tempo Real [" + clone.calcula_tempo_gasto() + "]\n")
+                        .append("Orcamento excedido [" + clone.ultrapassou_120porcento_orcamento() +"]");
                 menu.showInfo(sb);
             });
             menu.setHandler(2,()->{
@@ -476,23 +509,23 @@ public class CRController {
         }
     }
 
-    private List<String> executarPasso(Orcamento orcamento) throws IOException, ClassNotFoundException {
-        Passo passo = orcamento.get_next_passo();
+    private List<String> executarPasso(IOrcamento orcamento) throws IOException, ClassNotFoundException {
+        Passo passo = orcamento.get_proximo_passo();
         Passo clone = passo.clone();
         List<String> logs = new ArrayList<>();
         List<String> logsTemporarios = new ArrayList<>();
-        int total_passos = orcamento.get_num_total_passos();
+        int total_passos = orcamento.get_total_passos();
         String title = "Executar Passo ["+clone.getNumero_passo()+"/"+total_passos+"]";
         CRView menu = new CRView(title,menuExecutarPasso);
         menu.setSamePreCondition(new int[]{2,3}, ()-> !clone.temSubPassos());
-        menu.setPreCondition(4, ()-> clone.existe_proximo_subpasso() && orcamento.getCustoEstimado()*1.2 >= orcamento.get_custo_gasto()+clone.calcula_custo_gasto());
+        menu.setPreCondition(4, ()-> clone.existe_proximo_subpasso() && orcamento.calcula_gasto_estimado()*1.2 >= orcamento.calcula_custo_gasto()+clone.calcula_custo_gasto());
         menu.setPreCondition(5, clone::valida);
         int total_subpassos = clone.get_total_subpassos();
-        float percentagem_orcamento = (orcamento.get_custo_gasto())*100/orcamento.getCustoEstimado();
+        float percentagem_orcamento = (orcamento.calcula_custo_gasto())*100/orcamento.calcula_gasto_estimado();
 
         menu.setHandler(1, () -> {
             float percentagem_gasta = percentagem_orcamento;
-            percentagem_gasta += clone.calcula_custo_gasto()*100/orcamento.getCustoEstimado();
+            percentagem_gasta += clone.calcula_custo_gasto()*100/orcamento.calcula_gasto_estimado();
             StringBuilder sb = new StringBuilder();
             sb.append("Descricao [#" + clone.getDescricao() +"]\n")
                     .append("Custo Estimado [" + clone.getCustoEstimado() + "]\n")
@@ -515,7 +548,7 @@ public class CRController {
 
         });
         menu.setHandler(4,()->{
-                String l = executarSubpasso(clone.getProximoSubPasso(),total_subpassos,orcamento);
+                String l = executarSubpasso(clone.get_proximo_subpasso(),total_subpassos,orcamento);
                 if(l!=null) logsTemporarios.add(l);
         });
         menu.setHandler(5,()->{
@@ -542,8 +575,10 @@ public class CRController {
         return logs;
     }
 
-    private String executarSubpasso(SubPasso subPasso, int total_subpassos,Orcamento orcamento) throws IOException, ClassNotFoundException {
+
+    private String executarSubpasso(SubPasso subPasso, int total_subpassos,IOrcamento orcamento) throws IOException, ClassNotFoundException {
         AtomicReference<String> log = new AtomicReference<>(null);
+
         String title = "Executar SubPasso ["+subPasso.getNumero_subpasso()+"/"+total_subpassos+"]";
         CRView menu = new CRView(title,menuExecutarSubPasso);
         SubPasso clone = subPasso.clone();
@@ -586,11 +621,11 @@ public class CRController {
     }
 
     private void concluir_pedido() throws IOException, ClassNotFoundException {
-        List<Orcamento> orcamentos = centro.get_orcamentos_completos();
+        List<IOrcamento> orcamentos = centro.get_orcamentos_completos();
         String[] orcamentosString = new String[orcamentos.size()];
         for(int i =0; i < orcamentos.size() && i < 10 ;i++){
-            Orcamento orcamento = orcamentos.get(i);
-            IPedido pedido = orcamento.get_pedido_plano();
+            IOrcamento orcamento = orcamentos.get(i);
+            IPedido pedido = orcamento.get_pedido();
             ICliente cliente = centro.get_cliente(pedido.getNifCliente());
             String sb = "Equipamento [#" + orcamento.get_num_ref() + "]|" +
                     "Cliente [" + cliente.getNome() + "]" +
@@ -629,16 +664,16 @@ public class CRController {
     }
 
     private void confirmarOrcamento() throws IOException, ClassNotFoundException {
-        List<Orcamento> orcamentos = centro.get_orcamentos_por_confirmar();
+        List<IOrcamento> orcamentos = centro.get_orcamentos_por_confirmar();
         String[] orcamentosString = new String[orcamentos.size()];
         for(int i =0; i<orcamentos.size();i++){
-            Orcamento orcamento = orcamentos.get(i);
-            IPedido pedido = orcamento.get_pedido_plano();
+            IOrcamento orcamento = orcamentos.get(i);
+            IPedido pedido = orcamento.get_pedido();
             ICliente cliente = centro.get_cliente(pedido.getNifCliente());
             String sb = "Equipamento [#" + orcamento.get_num_ref() + "]" +
                     "Data [" + pedido.getTempoRegisto().format(formatter) + "]" +
-                    "Preco estimado [" + orcamento.getCustoEstimado() + "]" +
-                    "Tempo estimado [" + orcamento.getDuracaoEstimada() + "]" +
+                    "Preco estimado [" + orcamento.calcula_gasto_estimado() + "]" +
+                    "Tempo estimado [" + orcamento.calcula_duracao_estimada() + "]" +
                     "Cliente [" + cliente.getNif() + "]" +
                     "Email [" + cliente.getEmail() + "]";
             orcamentosString[i] = sb;
@@ -793,7 +828,7 @@ public class CRController {
             password.set(scanner.nextLine());
             StringBuilder credentials = new StringBuilder();
             for(int i = 0; i<password.get().length();i++) credentials.append("*");
-            menu.changeOption(3,"Password: "+ credentials.toString());
+            menu.changeOption(3,"Password: "+ credentials);
             condicao.get(2).set(1);
         });
 
@@ -826,10 +861,68 @@ public class CRController {
 
     private void registarPedido() throws IOException, ClassNotFoundException {
         CRView menu = new CRView("Registo Pedido", menuRegistoPedido);
-        //TODO: fazer
-        //menu.setHandler(1,()->{pedidoExpress();menu.returnMenu();});
+        menu.setPreCondition(1, centro::disponibilidade_pedido_expresso);
+
+        menu.setHandler(1,()->{pedidoExpress();menu.returnMenu();});
         menu.setHandler(2,()->{registarPedidoOrcamento();menu.returnMenu();});
 
+
+        menu.simpleRun();
+    }
+
+    private void pedidoExpress() throws IOException, ClassNotFoundException {
+        CRView menu = new CRView("Pedido Expresso", menuPedido);
+        AtomicReference<String> nif = new AtomicReference<>();
+        AtomicInteger tipo = new AtomicInteger(0);
+        AtomicReference<String> modelo = new AtomicReference<>();
+        AtomicReference<String> descricaoEquipamento = new AtomicReference<>();
+        List<AtomicInteger> condicao = new ArrayList<>(3);
+        for(int i = 0; i < 3; i++){
+            condicao.add(i,new AtomicInteger(0));
+        }
+
+        menu.setPreCondition(4,()-> condicao.stream().noneMatch(k -> k.get() == 0));
+
+        menu.setHandler(1,()->{
+            auxView.perguntaNIFCliente();
+            String auxNif = nif.get();
+            nif.set(scanner.nextLine());
+            if(verifInt(nif.get()) && verifSameLength(nif.get(),9)) {
+                if(centro.exists_cliente(nif.get())) {
+                    menu.changeOption(1, "NIF do cliente: " + nif.get());
+                    condicao.get(0).set(1);
+                }
+                else{
+                    auxView.errorMessage("Cliente não registado!");
+                }
+            }
+            else{
+                auxView.errorMessage("Nif inválido!");
+                nif.set(auxNif);
+            }
+        });
+        menu.setHandler(2, ()->{
+            equipamentoInfo(modelo,descricaoEquipamento);
+
+            if(modelo.get() == null){
+                menu.changeOption(2,"Equipamento");
+                condicao.get(1).set(0);
+            }
+            else {
+                condicao.get(1).set(1);
+                menu.changeOption(2,"Equipamento [Registado #"+(centro.get_ultimo_numero_de_registo_equipamento()+1)+"]");
+            }
+        });
+        menu.setHandler(3, ()->{
+            auxView.normalMessage("Tipo de Pedido Expresso: ");;
+            tipo.set(menu.readOptionBetween(1,4,pedidosExpressos));
+            menu.changeOption(3,"Tipo: "+tipo.get());
+            condicao.get(2).set(1);
+        });
+        menu.setHandler(4, ()->{
+            centro.adicionar_pedido_expresso(nif.get(),modelo.get(),descricaoEquipamento.get(),tipo.get());
+            menu.returnMenu();
+        });
 
         menu.simpleRun();
     }
