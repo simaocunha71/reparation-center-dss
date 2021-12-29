@@ -543,7 +543,7 @@ public class CRController {
     }
 
     private String executarSubpasso(SubPasso subPasso, int total_subpassos,Orcamento orcamento) throws IOException, ClassNotFoundException {
-        AtomicReference<String> log = null;
+        AtomicReference<String> log = new AtomicReference<>(null);
         String title = "Executar SubPasso ["+subPasso.getNumero_subpasso()+"/"+total_subpassos+"]";
         CRView menu = new CRView(title,menuExecutarSubPasso);
         SubPasso clone = subPasso.clone();
