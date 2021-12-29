@@ -41,4 +41,8 @@ public class Funcionario implements IUtilizador {
         sb.append("2@").append(id).append(";").append(nome).append(";").append(password);
         return sb.toString();
     }
+
+    public IUtilizador clone(){
+        return new Funcionario(id,nome,password);
+    }
 }

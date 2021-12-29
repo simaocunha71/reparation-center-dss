@@ -41,4 +41,8 @@ public class Tecnico implements IUtilizador {
         sb.append("3@").append(id).append(";").append(nome).append(";").append(password);
         return sb.toString();
     }
+
+    public IUtilizador clone(){
+        return new Tecnico(id,nome,password);
+    }
 }

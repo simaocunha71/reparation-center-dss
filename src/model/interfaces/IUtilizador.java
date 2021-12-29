@@ -10,4 +10,6 @@ public interface IUtilizador extends Carregavel {
 
     String toString();
 
+    IUtilizador clone();
+
 }

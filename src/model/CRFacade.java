@@ -537,11 +537,11 @@ public class CRFacade implements ICentroReparacoes {
         clientes.forEach((k,v)-> {
             try {
                 w.write(v.toString()+"\n");
-                w.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         });
+        w.close();
     }
 
     public void gravar_utilizador (IUtilizador utilizador) throws IOException {
@@ -555,11 +555,11 @@ public class CRFacade implements ICentroReparacoes {
         utilizadores.forEach((k,v)-> {
             try {
                 w.write(v.toString()+"\n");
-                w.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         });
+        w.close();
     }
 
     private void gravar_equipamento(Equipamento equipamento, int local) throws IOException {
@@ -665,6 +665,21 @@ public class CRFacade implements ICentroReparacoes {
         pedidosCompletos.remove(num_ref);
         gravar_todos_orcamentos();
         gravar_todos_pedidos();
+    }
+
+    public Map<String,IUtilizador> get_utilizadores(){
+        Map<String,IUtilizador> users = new HashMap<>();
+        if(logged_gestor()){
+            utilizadores.forEach((k,v)-> users.put(k,v.clone()));
+        }
+        return users;
+    }
+
+    public void remover_utilizador(String id) throws IOException {
+        if(logged_gestor()){
+            utilizadores.remove(id);
+            gravar_todos_utilizadores();
+        }
     }
 
 }

@@ -58,6 +58,7 @@ public class Orcamento implements Carregavel {
     public void desconfirma(){
         this.confirmado = false;
         this.dataConfirmacao = null;
+        recalcula_orcamento();
     }
 
     private void recalcula_orcamento(){

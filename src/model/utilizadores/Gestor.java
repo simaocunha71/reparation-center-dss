@@ -41,4 +41,8 @@ public class Gestor implements IUtilizador {
         sb.append("1@").append(id).append(";").append(nome).append(";").append(password);
         return sb.toString();
     }
+
+    public IUtilizador clone(){
+        return new Gestor(id,nome,password);
+    }
 }

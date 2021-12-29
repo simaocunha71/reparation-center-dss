@@ -5,27 +5,30 @@ import model.excecoes.JaExistenteExcecao;
 import model.interfaces.ICentroReparacoes;
 import model.interfaces.ICliente;
 import model.interfaces.IPedido;
+import model.interfaces.IUtilizador;
 import model.orcamento.Orcamento;
 import model.orcamento.Passo;
 import model.orcamento.PlanoDeTrabalho;
 import model.orcamento.SubPasso;
+import model.utilizadores.Funcionario;
+import model.utilizadores.Tecnico;
 import view.CRView;
 import view.AuxiliarView;
 
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class CRController {
 
-    private ICentroReparacoes centro = new CRFacade();
-    private AuxiliarView auxView = new AuxiliarView();
-    private Scanner scanner = new Scanner(System.in);
+    private final ICentroReparacoes centro = new CRFacade();
+    private final AuxiliarView auxView = new AuxiliarView();
+    private final Scanner scanner = new Scanner(System.in);
 
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private final String[] menuInicial = new String[]{
@@ -152,6 +155,13 @@ public class CRController {
             "Guardar e voltar"
     };
 
+    private final String[] menuAtualizarUtilizador = new String[]{
+            "Nome",
+            "Password",
+            "Remover e voltar",
+            "Guardar e voltar"
+    };
+
 
     private boolean logged = false;
 
@@ -161,7 +171,7 @@ public class CRController {
         try {
             centro.carregar_cp("cp/utilizadores.csv", "cp/clientes.csv","cp/armazem.csv", "cp/pedidos.csv","cp/orcamentos.csv");
         }
-        catch (JaExistenteExcecao e){
+        catch (JaExistenteExcecao ignored){
         }
         CRView menu = new CRView("Centro de Reparações",menuInicial);
         menu.setHandler(1, this::login);
@@ -230,14 +240,18 @@ public class CRController {
 
         menu.setHandler(5,this::listaDeEquipamentosReparacao);
         menu.setHandler(6,this::concluir_pedido);
-        //menu.setHandler(7,this::listaDeFuncionarios);
-        //menu.setHandler(8,this::listaDeTecnicos);
+
+        menu.setHandler(7,()->listaDeUsuarios(centro.get_utilizadores().values().stream().filter(v->v.getClass().equals(Funcionario.class)).collect(Collectors.toMap(IUtilizador::getId, Function.identity())),"Lista de Funcionarios"));
+
+        menu.setHandler(8,()->listaDeUsuarios(centro.get_utilizadores().values().stream().filter(v->v.getClass().equals(Tecnico.class)).collect(Collectors.toMap(IUtilizador::getId, Function.identity())),"Lista de Tecnicos"));
 
         menu.setHandler(9,this::registarUtilizador);
         menu.setHandler(10,()->{menu.returnMenu();logout();});
 
         menu.simpleRun();
     }
+
+
 
 
     private void listaDePedidosOrcamento() throws IOException, ClassNotFoundException {
@@ -385,27 +399,25 @@ public class CRController {
         for(int i =0; i < orcamentos.size() && i < 10 ;i++){
             Orcamento orcamento = orcamentos.get(i);
             IPedido pedido = orcamento.get_pedido_plano();
-            StringBuilder sb = new StringBuilder();
-            sb.append("Equipamento [#" + orcamento.get_num_ref() + "]|")
-                    .append("Data de Registo [" + pedido.getTempoRegisto().format(formatter) + "]|")
-                    .append("Data de Confirmação [" + orcamento.getDataConfirmacao().format(formatter) + "]|")
-                    .append("Preco estimado [" + orcamento.getCustoEstimado() + "]|")
-                    .append("Tempo estimado [" + orcamento.getDuracaoEstimada() + "]");
-            orcamentosString[i] = sb.toString();
+            String sb = "Equipamento [#" + orcamento.get_num_ref() + "]|" +
+                    "Data de Registo [" + pedido.getTempoRegisto().format(formatter) + "]|" +
+                    "Data de Confirmação [" + orcamento.getDataConfirmacao().format(formatter) + "]|" +
+                    "Preco estimado [" + orcamento.getCustoEstimado() + "]|" +
+                    "Tempo estimado [" + orcamento.getDuracaoEstimada() + "]";
+            orcamentosString[i] = sb;
         }
         CRView menu = new CRView("Lista de Equipamentos a reparar",orcamentosString);
         AtomicInteger i = new AtomicInteger(1);
         for(; i.get() <= orcamentosString.length;i.incrementAndGet()){
             int posicao = i.get();
             int num_ref = orcamentos.get(posicao-1).get_num_ref();
-            menu.setHandler(i.get(),()->{processar_reparaçao(num_ref);menu.returnMenu();});
+            menu.setHandler(i.get(),()->{processar_reparacao(num_ref);menu.returnMenu();});
         }
         menu.simpleRun();
     }
-    //TODO: ver o problema de estar o custo estimado e tempo estimado a zero
-    //TODO: ver o problema de percentagem de orçamento estar a NAN
-    //TODO: ver se depois de exceder o budget e voltar a ser confirmado se ele recalcula a estimativa
-    private void processar_reparaçao(int num_ref) throws IOException, ClassNotFoundException {
+
+
+    private void processar_reparacao(int num_ref) throws IOException, ClassNotFoundException {
         Orcamento orcamento = centro.get_orcamento(num_ref);
         Orcamento clone = orcamento.clone();
         CRView menu = new CRView("Processar Reparacao",menuProcessarReparacao);
@@ -413,7 +425,7 @@ public class CRController {
             menu.setPreCondition(2,()->!clone.ultrapassou120PorCentoOrcamento() && !clone.concluido() && clone.get_next_passo()!=null);
             menu.setPreCondition(3, clone::ultrapassou120PorCentoOrcamento);
             menu.setPreCondition(4, ()-> clone.valida() && !clone.concluido());
-            menu.setPreCondition(5, clone::concluido);
+            menu.setPreCondition(5, ()-> clone.concluido() && !clone.ultrapassou120PorCentoOrcamento() );
 
 
             menu.setHandler(1, () -> {
@@ -493,12 +505,13 @@ public class CRController {
         menu.setHandler(5,()->{
             if(passo.temSubPassos()){
                 passo.carrega(clone);
-                if(passo.concluido()){
+                if(clone.concluido()){
                     menu.returnMenu();
                 }
             }else{
                 clone.concluir(centro.get_logged_id(),clone.getCustoReal(),clone.getDuracaoReal());
                 passo.carrega(clone);
+                menu.returnMenu();
             }
         });
 
@@ -547,13 +560,12 @@ public class CRController {
             Orcamento orcamento = orcamentos.get(i);
             IPedido pedido = orcamento.get_pedido_plano();
             ICliente cliente = centro.get_cliente(pedido.getNifCliente());
-            StringBuilder sb = new StringBuilder();
-            sb.append("Equipamento [#" + orcamento.get_num_ref() + "]|")
-                    .append("Cliente [" + cliente.getNome() +"]")
-                    .append("Nif [" + cliente.getNif() + "]")
-                    .append("Email [" + cliente.getEmail() +"]")
-                    .append("Telemovel [" + cliente.getNumTelemovel() +"]");
-            orcamentosString[i] = sb.toString();
+            String sb = "Equipamento [#" + orcamento.get_num_ref() + "]|" +
+                    "Cliente [" + cliente.getNome() + "]" +
+                    "Nif [" + cliente.getNif() + "]" +
+                    "Email [" + cliente.getEmail() + "]" +
+                    "Telemovel [" + cliente.getNumTelemovel() + "]";
+            orcamentosString[i] = sb;
         }
         CRView menu = new CRView("Lista de pedidos completos",orcamentosString);
         AtomicInteger i = new AtomicInteger(1);
@@ -589,14 +601,13 @@ public class CRController {
             Orcamento orcamento = orcamentos.get(i);
             IPedido pedido = orcamento.get_pedido_plano();
             ICliente cliente = centro.get_cliente(pedido.getNifCliente());
-            StringBuilder sb = new StringBuilder();
-            sb.append("Equipamento [#" + orcamento.get_num_ref() + "]")
-                    .append("Data [" + pedido.getTempoRegisto().format(formatter) + "]")
-                    .append("Preco estimado [" + orcamento.getCustoEstimado() + "]")
-                    .append("Tempo estimado [" + orcamento.getDuracaoEstimada() + "]")
-                    .append("Cliente [" + cliente.getNif() + "]")
-                    .append("Email [" + cliente.getEmail() +"]");
-            orcamentosString[i] = sb.toString();
+            String sb = "Equipamento [#" + orcamento.get_num_ref() + "]" +
+                    "Data [" + pedido.getTempoRegisto().format(formatter) + "]" +
+                    "Preco estimado [" + orcamento.getCustoEstimado() + "]" +
+                    "Tempo estimado [" + orcamento.getDuracaoEstimada() + "]" +
+                    "Cliente [" + cliente.getNif() + "]" +
+                    "Email [" + cliente.getEmail() + "]";
+            orcamentosString[i] = sb;
         }
         CRView menu = new CRView("Lista de Orcamentos por confirmar",orcamentosString);
         AtomicInteger i = new AtomicInteger(1);
@@ -607,8 +618,41 @@ public class CRController {
         }
         menu.simpleRun();
 
+    }
+
+
+    private void listaDeUsuarios(Map<String, IUtilizador> utilizadores, String titulo) throws IOException, ClassNotFoundException {
+        String[] utilizadoresString = new String[utilizadores.size()];
+        Iterator<IUtilizador> iterator = utilizadores.values().iterator();
+
+        for(int i =0; i<utilizadores.size() && iterator.hasNext();i++){
+                IUtilizador f = iterator.next();
+                String sb = "User [#" + f.getId() + "]" +
+                        "Nome [" + f.getName() + "]";
+                utilizadoresString[i] = sb;
+        }
+        CRView menu = new CRView(titulo,utilizadoresString);
+        AtomicInteger i = new AtomicInteger(1);
+        iterator = utilizadores.values().iterator();
+        for(; i.get() <= utilizadores.size() && iterator.hasNext();i.incrementAndGet()){
+            String id = iterator.next().getId();
+            menu.setHandler(i.get(),()-> {
+                        int option = menu.readOptionBetween(1, 2, new String[]{"Remover user", "Voltar"});
+                        if (option == 1) {
+                            auxView.normalMessage("Confirme a operecao [Y/N]:");
+                            String line = scanner.nextLine();
+                            if (line.equals("y") || line.equals("Y")) {
+                                centro.remover_utilizador(id);
+                                menu.returnMenu();
+                            }
+                        }
+                    }
+            );
+        }
+        menu.simpleRun();
 
     }
+
 
     private void registarCliente() throws IOException, ClassNotFoundException {
         CRView menu = new CRView("Registar Cliente", menuRegistoCliente);
@@ -891,8 +935,6 @@ public class CRController {
     }
 
 
-    private void mostraPlanos() {
-    }
 
 
 

@@ -7,6 +7,7 @@ import model.excecoes.JaExistenteExcecao;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 public interface ICentroReparacoes {
 
@@ -66,4 +67,8 @@ public interface ICentroReparacoes {
     Equipamento getEquipamento(int num_ref);
 
     void remover_orcamento(int num_ref) throws IOException;
+
+    Map<String,IUtilizador> get_utilizadores();
+
+    void remover_utilizador(String id) throws IOException;
 }
