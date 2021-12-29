@@ -29,6 +29,7 @@ public class CRFacade implements ICentroReparacoes {
     private Map<String, ICliente> clientes;//map com clientes do sistema
     private Set<IPedido> pedidosOrcamentos;
     private Map<Integer, IPedido> pedidosJaPlaneados;
+    private Map<Integer, IPedido> pedidosCompletos;
     private Map<Integer, Orcamento> orcamentos; //numero de registo do equipamento é a key
     private Armazem armazem;
     private IUtilizador logado;
@@ -43,6 +44,7 @@ public class CRFacade implements ICentroReparacoes {
         this.armazem = new Armazem();
         this.orcamentos = new HashMap<>();
         this.pedidosJaPlaneados = new HashMap<>();
+        this.pedidosCompletos = new HashMap<>();
     }
 
     /**
@@ -156,6 +158,10 @@ public class CRFacade implements ICentroReparacoes {
         return set.stream().toList();
     }
 
+    public List<Orcamento> get_orcamentos_completos() {
+        return orcamentos.values().stream().filter(k->k.getConfirmado()).map(Orcamento::clone).collect(Collectors.toList());
+    }
+
 
     public Orcamento get_orcamento(int num_ref) {
         Orcamento orcamento = null;
@@ -166,6 +172,9 @@ public class CRFacade implements ICentroReparacoes {
     public Equipamento getEquipamento(int num_ref) {
         return armazem.getEquipamento(num_ref).clone();
     }
+
+
+
 
     private void transferencia_seccao(int num_referencia) throws IOException {
         armazem.transferencia_seccao(num_referencia);
@@ -211,6 +220,12 @@ public class CRFacade implements ICentroReparacoes {
         if(!pedidosJaPlaneados.containsKey(pedido.getNumeroRegistoEquipamento())){
             System.out.println("DEBUG ADIONADO PEDIDO PLANEADO: "+pedido.getNumeroRegistoEquipamento());
             pedidosJaPlaneados.put(pedido.getNumeroRegistoEquipamento(),pedido);
+        }
+    }
+
+    private void adicionar_pedido_completo(IPedido pedido) {
+        if(!pedidosCompletos.containsKey(pedido.getNumeroRegistoEquipamento())){
+            pedidosCompletos.put(pedido.getNumeroRegistoEquipamento(),pedido);
         }
     }
 
@@ -352,7 +367,7 @@ public class CRFacade implements ICentroReparacoes {
                     System.out.println("DEBUG TIPO: "+tipo);
                     IPedido pedido = null;
                     switch (tipo){
-                        case 1, 3 -> pedido = new PedidoOrcamento();
+                        case 1, 3,4 -> pedido = new PedidoOrcamento();
                         case 2 -> pedido = new PedidoExpresso();
                     }
                     if(pedido != null) {
@@ -376,6 +391,7 @@ public class CRFacade implements ICentroReparacoes {
             case 1-> pedidosOrcamentos.add(pedido);
             //TODO: case 2 -> pedidos expresso;
             case 3-> adicionar_pedido_ja_planeado(pedido);
+            case 4-> adicionar_pedido_completo(pedido);
         }
     }
 
@@ -406,6 +422,9 @@ public class CRFacade implements ICentroReparacoes {
                         if (pedidosJaPlaneados.containsKey(numRegisto)) {
                             System.out.println("DEBUG existe chave");
                             pedido = pedidosJaPlaneados.get(numRegisto);
+                        }else if (pedidosCompletos.containsKey(numRegisto)) {
+                            System.out.println("DEBUG existe chave");
+                            pedido = pedidosCompletos.get(numRegisto);
                         }else valido = false;
                         if(valido) {
                             System.out.println("DEBUG: IF1");
@@ -432,6 +451,9 @@ public class CRFacade implements ICentroReparacoes {
                 return clientes.containsKey(pedido.getNifCliente()) && armazem.contem_equipamento_para_orcamento(pedido.getNumeroRegistoEquipamento());}
             case 3 -> {
                 return clientes.containsKey(pedido.getNifCliente()) && armazem.contem_equipamento_para_reparacao(pedido.getNumeroRegistoEquipamento());}
+            case 4 -> {
+                return true;
+            }
             default -> {
                 return false;
             }
@@ -575,6 +597,13 @@ public class CRFacade implements ICentroReparacoes {
                 e.printStackTrace();
             }
         });
+        pedidosCompletos.forEach((v,k)-> {
+            try {
+                w.write("4@"+k.toString()+"\n");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
         w.close();
     }
 
@@ -629,6 +658,13 @@ public class CRFacade implements ICentroReparacoes {
             orcamentos.get(num_ref).confirma();
             gravar_todos_orcamentos();
         }
+    }
+
+    public void remover_orcamento(int num_ref) throws IOException {
+        orcamentos.remove(num_ref);
+        pedidosCompletos.remove(num_ref);
+        gravar_todos_orcamentos();
+        gravar_todos_pedidos();
     }
 
 }

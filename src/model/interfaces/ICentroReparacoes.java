@@ -28,6 +28,7 @@ public interface ICentroReparacoes {
 
     void adicionar_pedido_orcamento(String nifCliente, String modelo, String descricaoEquipamento, String descricaoPedido) throws IOException;
 
+
     boolean exists_plan();
 
     boolean login (String id, String password);
@@ -46,6 +47,8 @@ public interface ICentroReparacoes {
 
     List<String> get_pedidos_orcamento();
 
+    List<Orcamento> get_orcamentos_completos();
+
     IPedido get_pedido(int posicao);
 
     void gerar_orcamento(PlanoDeTrabalho plano) throws IOException;
@@ -61,4 +64,6 @@ public interface ICentroReparacoes {
     Orcamento get_orcamento(int num_ref);
 
     Equipamento getEquipamento(int num_ref);
+
+    void remover_orcamento(int num_ref) throws IOException;
 }

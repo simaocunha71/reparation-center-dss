@@ -44,6 +44,7 @@ public class CRController {
             "Confirmar orcamento",
             "Gerar orçamento/Criar plano",
             "Processar reparação",
+            "Concluir pedido",
             "Lista de funcionários",
             "Lista de técnicos",
             "Registar utilizador",
@@ -60,6 +61,7 @@ public class CRController {
             "Registar cliente",
             "Registar pedido",
             "Confirmar orcamento",
+            "Concluir pedido",
             "Logout",
     };
 
@@ -228,17 +230,18 @@ public class CRController {
         menu.setHandler(3,this::confirmarOrcamento);
 
         menu.setHandler(4,this::listaDePedidosOrcamento);
-//
+
         menu.setHandler(5,this::listaDeEquipamentosReparacao);
-//
-        //menu.setHandler(6,this::listaDeFuncionarios);
-        //menu.setHandler(7,this::listaDeTecnicos);
-//
-        menu.setHandler(8,this::registarUtilizador);
-        menu.setHandler(9,()->{menu.returnMenu();logout();});
+        menu.setHandler(6,this::concluir_pedido);
+        //menu.setHandler(7,this::listaDeFuncionarios);
+        //menu.setHandler(8,this::listaDeTecnicos);
+
+        menu.setHandler(9,this::registarUtilizador);
+        menu.setHandler(10,()->{menu.returnMenu();logout();});
 
         menu.simpleRun();
     }
+
 
     private void listaDePedidosOrcamento() throws IOException, ClassNotFoundException {
         List<String> pedidos = centro.get_pedidos_orcamento();
@@ -537,6 +540,32 @@ public class CRController {
 
         menu.simpleRun();
     }
+
+    private void concluir_pedido() throws IOException, ClassNotFoundException {
+        List<Orcamento> orcamentos = centro.get_orcamentos_completos();
+        String[] orcamentosString = new String[orcamentos.size()];
+        for(int i =0; i < orcamentos.size() && i < 10 ;i++){
+            Orcamento orcamento = orcamentos.get(i);
+            IPedido pedido = orcamento.get_pedido_plano();
+            ICliente cliente = centro.get_cliente(pedido.getNifCliente());
+            StringBuilder sb = new StringBuilder();
+            sb.append("Equipamento [#" + orcamento.get_num_ref() + "]|")
+                    .append("Cliente [" + cliente.getNome() +"]")
+                    .append("Nif [" + cliente.getNif() + "]")
+                    .append("Email [" + cliente.getEmail() +"]")
+                    .append("Telemovel [" + cliente.getNumTelemovel() +"]");
+            orcamentosString[i] = sb.toString();
+        }
+        CRView menu = new CRView("Lista de pedidos completos",orcamentosString);
+        AtomicInteger i = new AtomicInteger(1);
+        for(; i.get() <= orcamentosString.length;i.incrementAndGet()){
+            int posicao = i.get();
+            int num_ref = orcamentos.get(posicao-1).get_num_ref();
+            menu.setHandler(i.get(),()->{centro.remover_orcamento(num_ref);menu.returnMenu();});
+        }
+        menu.simpleRun();
+    }
+
 
 
 
