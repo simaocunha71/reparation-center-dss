@@ -96,6 +96,7 @@ public class Orcamento implements Carregavel {
         return sb.toString();
     }
 
+
     public float get_custo_gasto(){
         return planoDeTrabalho.calcula_custo_gasto();
     }

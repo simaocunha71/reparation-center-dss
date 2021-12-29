@@ -182,5 +182,6 @@ public class SubPasso implements Carregavel {
         return new SubPasso(this.descricao,this.custoEstimado,this.duracaoEstimada,this.custoReal,this.duracaoReal,this.realizado,this.idTecnico, this.numero_subpasso);
     }
 
+
 }
 

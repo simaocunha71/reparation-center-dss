@@ -185,6 +185,7 @@ public class PlanoDeTrabalho implements Carregavel {
         return existe;
     }
 
+
     public int get_total_passos(){
         return passos.size();
     }
