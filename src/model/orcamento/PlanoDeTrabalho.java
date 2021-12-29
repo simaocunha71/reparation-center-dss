@@ -114,9 +114,9 @@ public class PlanoDeTrabalho implements Carregavel {
     }
 
     public void recalcula_estimativas() {
-            for (Passo p : passos) {
-                p.recalcula_estimativas();
-            }
+        for (Passo p : passos) {
+            p.recalcula_estimativas();
+        }
     }
 
     public float calcula_custo_gasto(){

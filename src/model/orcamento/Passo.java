@@ -355,17 +355,21 @@ public class Passo implements Carregavel {
 
     public float calcula_gasto_estimado() {
         float gasto_estimado = 0;
-        for(SubPasso sp : subpassos){
-            gasto_estimado += sp.getCustoEstimado();
-        }
+        if(temSubPassos()) {
+            for (SubPasso sp : subpassos) {
+                gasto_estimado += sp.getCustoEstimado();
+            }
+        }else gasto_estimado = custoEstimado;
         return gasto_estimado;
     }
 
     public float calcula_duracao_estimada() {
         float duracao_estimada = 0;
-        for(SubPasso sp : subpassos){
-            duracao_estimada += sp.getDuracaoEstimada();
-        }
+        if(temSubPassos()) {
+            for (SubPasso sp : subpassos) {
+                duracao_estimada += sp.getDuracaoEstimada();
+            }
+        }else duracao_estimada = duracaoEstimada;
         return duracao_estimada;
     }
 }

@@ -41,8 +41,8 @@ public class CRController {
     private final String[] menuPrincipalGestor = new String[]{
             "Registar cliente",
             "Registar pedido",
-            "Confirmar orcamento",
             "Gerar orçamento/Criar plano",
+            "Confirmar orcamento",
             "Processar reparação",
             "Concluir pedido",
             "Lista de funcionários",
@@ -224,9 +224,9 @@ public class CRController {
 
         menu.setHandler(2,this::registarPedido);
 
-        menu.setHandler(3,this::confirmarOrcamento);
+        menu.setHandler(3,this::listaDePedidosOrcamento);
 
-        menu.setHandler(4,this::listaDePedidosOrcamento);
+        menu.setHandler(4,this::confirmarOrcamento);
 
         menu.setHandler(5,this::listaDeEquipamentosReparacao);
         menu.setHandler(6,this::concluir_pedido);
@@ -402,9 +402,9 @@ public class CRController {
         }
         menu.simpleRun();
     }
-//TODO: ver o problema de estar o custo estimado e tempo estimado a zero
-//TODO: ver o problema de percentagem de orçamento estar a NAN
-//TODO: ver se depois de exceder o budget e voltar a ser confirmado se ele recalcula a estimativa
+    //TODO: ver o problema de estar o custo estimado e tempo estimado a zero
+    //TODO: ver o problema de percentagem de orçamento estar a NAN
+    //TODO: ver se depois de exceder o budget e voltar a ser confirmado se ele recalcula a estimativa
     private void processar_reparaçao(int num_ref) throws IOException, ClassNotFoundException {
         Orcamento orcamento = centro.get_orcamento(num_ref);
         Orcamento clone = orcamento.clone();
