@@ -83,15 +83,13 @@ public class LogFuncionario implements Carregavel {
         try{
             int tipo = Integer.parseInt(info[0]);
             if(info.length == 2 && tipo >=0 && tipo <=1){
-                System.out.println("DEBUG LOG1");
                 LocalDateTime data = LocalDateTime.parse(info[1]);
                 LocalDateTime thirtyDaysAgo = LocalDateTime.now().plusDays(-30);
                 if(!data.isBefore(thirtyDaysAgo)) {
                     valido = true;
-                    System.out.println("DEBUG LOG2");
                 }
             }
-        }catch (NumberFormatException | DateTimeParseException ignored){System.out.println("DEBUG LOG3");}
+        }catch (NumberFormatException | DateTimeParseException ignored){}
         return valido;
     }
 

@@ -2,6 +2,7 @@ package model;
 
 import model.interfaces.Carregavel;
 
+import java.sql.SQLOutput;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
@@ -129,6 +130,7 @@ public class LogTecnico implements Carregavel {
     private boolean intervencao_valida(String intervencao) {
         boolean valido = false;
         String []info = intervencao.split(";");
+
         try{
             int tipo = Integer.parseInt(info[0]);
             switch(tipo){
@@ -145,18 +147,15 @@ public class LogTecnico implements Carregavel {
         System.out.println("DEBUG LOG1");
         if(info.length == 5){
             try {
-                System.out.println("DEBUG LOG2");
                 int numReg = Integer.parseInt(info[1]);
                 String modelo = info[2];
                 String descricao = info[3];
                 LocalDateTime data = LocalDateTime.parse(info[4]);
                 LocalDateTime thirtyDaysAgo = LocalDateTime.now().plusDays(-30);
-                System.out.println("DEBUG LOG3");
                 if(modelo.length() > 0 && descricao.length() > 0 && !data.isBefore(thirtyDaysAgo)) {
-                    System.out.println("DEBUG LOG4");
                     valido = true;
                 }
-            }catch (NumberFormatException | DateTimeParseException ignored){System.out.println("DEBUG LOG5");}
+            }catch (NumberFormatException | DateTimeParseException ignored){}
         }
         return valido;
     }
@@ -172,7 +171,7 @@ public class LogTecnico implements Carregavel {
                 LocalDateTime thirtyDaysAgo = LocalDateTime.now().plusDays(-30);
                 float tempo_esperado = Float.parseFloat(info[5]);
                 float tempo_real = Float.parseFloat(info[6]);
-                if(modelo.length() > 0 && descricao.length() > 0 && data.isBefore(thirtyDaysAgo))
+                if(modelo.length() > 0 && descricao.length() > 0 && !data.isBefore(thirtyDaysAgo))
                     valido = true;
             }catch (NumberFormatException | DateTimeParseException ignored){}
         }
