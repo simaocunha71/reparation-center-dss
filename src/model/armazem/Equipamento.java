@@ -1,6 +1,8 @@
 package model.armazem;
 
-public class Equipamento {
+import model.interfaces.IEquipamento;
+
+public class Equipamento implements IEquipamento {
     private String nifCliente;
     private int numeroRegisto;
     private String modelo;
@@ -35,7 +37,7 @@ public class Equipamento {
     }
 
 
-    public void load_equipamento(String linha) {
+    public void carregar(String linha) {
         String []string = linha.split(";");
         if(string.length == 4){
             this.nifCliente = string[0];
@@ -49,7 +51,7 @@ public class Equipamento {
         }
     }
 
-    public boolean valida_equipamento() {
+    public boolean valida() {
         return valida_nif() && valida_numero_registo() && valida_length(modelo,25) && valida_length(descricao,25);
     }
 

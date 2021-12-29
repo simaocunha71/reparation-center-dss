@@ -64,7 +64,7 @@ public interface ICentroReparacoes {
 
     Orcamento get_orcamento(int num_ref);
 
-    Equipamento getEquipamento(int num_ref);
+    IEquipamento getEquipamento(int num_ref);
 
     void remover_orcamento(int num_ref) throws IOException;
 

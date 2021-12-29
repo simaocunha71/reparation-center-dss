@@ -169,7 +169,7 @@ public class CRFacade implements ICentroReparacoes {
         return orcamento.clone();
     }
 
-    public Equipamento getEquipamento(int num_ref) {
+    public IEquipamento getEquipamento(int num_ref) {
         return armazem.getEquipamento(num_ref).clone();
     }
 
@@ -344,11 +344,11 @@ public class CRFacade implements ICentroReparacoes {
         while((linha = br.readLine()) != null){
             split = linha.split("@");
             if(split.length == 2){
-                Equipamento equipamento = new Equipamento();
-                equipamento.load_equipamento(split[0]);
+                IEquipamento equipamento = new Equipamento();
+                equipamento.carregar(split[0]);
                 try {
                     int local = Integer.parseInt(split[1]);
-                    if (equipamento.valida_equipamento()) armazem.adicionar_equipamento(equipamento,local);
+                    if (equipamento.valida()) armazem.adicionar_equipamento(equipamento,local);
                 }catch (NumberFormatException ignored){}
             }
         }
@@ -474,7 +474,7 @@ public class CRFacade implements ICentroReparacoes {
 
     public void adicionar_pedido_orcamento(String nifCliente, String modelo, String descricaoEquipamento, String descricaoPedido) throws IOException {
         if(clientes.containsKey(nifCliente)){
-            Equipamento e = new Equipamento(nifCliente, armazem.get_ultimo_numero_de_registo_equipamento()+1,modelo,descricaoEquipamento );
+            IEquipamento e = new Equipamento(nifCliente, armazem.get_ultimo_numero_de_registo_equipamento()+1,modelo,descricaoEquipamento );
             armazem.regista_equipamento(e,1);
             IPedido pedido = new PedidoOrcamento(nifCliente, e.getNumeroRegisto(), descricaoPedido);
             pedidosOrcamentos.add(pedido);
@@ -562,7 +562,7 @@ public class CRFacade implements ICentroReparacoes {
         w.close();
     }
 
-    private void gravar_equipamento(Equipamento equipamento, int local) throws IOException {
+    private void gravar_equipamento(IEquipamento equipamento, int local) throws IOException {
         FileWriter w = new FileWriter("cp/armazem.csv",true);
         w.write(equipamento.toString()+"@"+local+"\n");
         w.close();
