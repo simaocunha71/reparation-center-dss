@@ -96,7 +96,7 @@ public class PlanoDeTrabalho implements IPlanoDeTrabalho {
     //custoEstimado;custoReal;tempoEstimado;tempoReal;booleanoRealizado;numeroPassos@Passos
 
     //Passos: Passo1->Passo2->Passo3...
-    public String toString(){
+    public String salvar(){
         StringBuilder sb = new StringBuilder();
         if(realizado) sb.append("1;");
         else sb.append("0;");

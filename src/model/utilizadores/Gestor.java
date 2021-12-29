@@ -36,7 +36,7 @@ public class Gestor implements IUtilizador {
         return id.length()>0 && nome.length()>0 && password.length()>0;
     }
 
-    public String toString(){
+    public String salvar(){
         StringBuilder sb = new StringBuilder();
         sb.append("1@").append(id).append(";").append(nome).append(";").append(password);
         return sb.toString();

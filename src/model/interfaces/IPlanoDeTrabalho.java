@@ -4,8 +4,6 @@ import model.orcamento.Passo;
 
 public interface IPlanoDeTrabalho extends Carregavel, Planeavel{
 
-
-
     IPlanoDeTrabalho clone();
 
     void recalcula_estimativas();

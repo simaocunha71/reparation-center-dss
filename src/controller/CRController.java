@@ -205,7 +205,7 @@ public class CRController {
             password.set(scanner.nextLine());
             StringBuilder credentials = new StringBuilder();
             for(int i = 0; i<password.get().length();i++) credentials.append("*");
-            menu.changeOption(2,"Password: "+ credentials.toString());
+            menu.changeOption(2,"Password: "+ credentials);
             credenciais.set(true);
         });
         menu.setHandler(3, ()->{
@@ -829,7 +829,7 @@ public class CRController {
             password.set(scanner.nextLine());
             StringBuilder credentials = new StringBuilder();
             for(int i = 0; i<password.get().length();i++) credentials.append("*");
-            menu.changeOption(3,"Password: "+ credentials.toString());
+            menu.changeOption(3,"Password: "+ credentials);
             condicao.get(2).set(1);
         });
 

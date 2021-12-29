@@ -91,7 +91,7 @@ public class Orcamento implements IOrcamento {
         return planoDeTrabalho.valida();
     }
 
-    public String toString(){
+    public String salvar(){
         StringBuilder sb = new StringBuilder();
         sb.append(num_ref).append(";");
         if(confirmado) sb.append(1 + ";");

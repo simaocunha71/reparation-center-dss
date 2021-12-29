@@ -70,7 +70,7 @@ public class PedidoExpresso implements IPedido {
         }
     }
 
-    public String toString(){
+    public String salvar(){
         StringBuilder sb = new StringBuilder();
         sb.append(nifCliente).append(";").append(dataRegisto.toString()).append(";");
         sb.append(numeroRegistoEquipamento).append(";").append(tipo);

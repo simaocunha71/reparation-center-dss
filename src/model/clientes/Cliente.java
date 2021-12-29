@@ -87,7 +87,7 @@ public class Cliente implements ICliente {
         return valida_nif() && valida_telemovel() && valida_email() && valida_nome();
     }
 
-    public String toString(){
+    public String salvar(){
         StringBuilder sb = new StringBuilder();
         sb.append(nif).append(";").append(nome).append(";").append(numTelemovel).append(";").append(email);
         return sb.toString();

@@ -246,7 +246,7 @@ public class Passo implements Carregavel {
 
     //descriçao;custoEstimado;custoReal;duracaoEstimada;duracaoReal;booleanoRealizado;idTecnico;numeroSP%subPassos
     //subPassos: subpasso1/subpasso2/subpass3...
-    public String toString(){
+    public String salvar(){
         StringBuilder sb = new StringBuilder();
         sb.append(descricao).append(";").append(custoEstimado).append(";").append(custoReal).append(";");
         sb.append(duracaoEstimada).append(";").append(duracaoReal).append(";");

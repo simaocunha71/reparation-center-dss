@@ -74,7 +74,7 @@ public class Equipamento implements IEquipamento {
     }
 
 
-    public String toString(){
+    public String salvar(){
         StringBuilder sb = new StringBuilder();
         sb.append(nifCliente).append(";")
                 .append(numeroRegisto).append(";")

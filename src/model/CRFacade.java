@@ -628,7 +628,7 @@ public class CRFacade implements ICentroReparacoes {
 
     public void gravar_cliente (ICliente cliente) throws IOException {
         FileWriter w = new FileWriter("cp/clientes.csv",true);
-        w.write(cliente.toString()+"\n");
+        w.write(cliente.salvar()+"\n");
         w.close();
     }
 
@@ -636,7 +636,7 @@ public class CRFacade implements ICentroReparacoes {
         FileWriter w = new FileWriter("cp/clientes.csv");
         clientes.forEach((k,v)-> {
             try {
-                w.write(v.toString()+"\n");
+                w.write(v.salvar()+"\n");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -646,7 +646,7 @@ public class CRFacade implements ICentroReparacoes {
 
     public void gravar_utilizador (IUtilizador utilizador) throws IOException {
         FileWriter w = new FileWriter("cp/utilizadores.csv",true);
-        w.write(utilizador.toString()+"\n");
+        w.write(utilizador.salvar()+"\n");
         w.close();
     }
 
@@ -654,7 +654,7 @@ public class CRFacade implements ICentroReparacoes {
         FileWriter w = new FileWriter("cp/utilizadores.csv");
         utilizadores.forEach((k,v)-> {
             try {
-                w.write(v.toString()+"\n");
+                w.write(v.salvar()+"\n");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -664,7 +664,7 @@ public class CRFacade implements ICentroReparacoes {
 
     private void gravar_equipamento(IEquipamento equipamento, int local) throws IOException {
         FileWriter w = new FileWriter("cp/armazem.csv",true);
-        w.write(equipamento.toString()+"@"+local+"\n");
+        w.write(equipamento.salvar()+"@"+local+"\n");
         w.close();
     }
 
@@ -673,13 +673,13 @@ public class CRFacade implements ICentroReparacoes {
         int tipo = 1;
         if(pedido.getClass().equals(PedidoExpresso.class))
             tipo = 2;
-        w.write(tipo+"@"+pedido.toString()+"\n");
+        w.write(tipo+"@"+pedido.salvar()+"\n");
         w.close();
     }
 
     private void gravar_orcamento(IOrcamento orcamento) throws IOException {
         FileWriter w = new FileWriter("cp/orcamentos.csv",true);
-        w.write(orcamento.toString()+"\n");
+        w.write(orcamento.salvar()+"\n");
         w.close();
     }
 
@@ -690,14 +690,14 @@ public class CRFacade implements ICentroReparacoes {
             if(k.getClass().equals(PedidoExpresso.class))
                 tipo = 2;
             try {
-                w.write(tipo+"@"+k.toString()+"\n");
+                w.write(tipo+"@"+k.salvar()+"\n");
             } catch (IOException e) {
                 e.printStackTrace();
             }
         });
         pedidosJaPlaneados.forEach((v,k)-> {
             try {
-                w.write("3@"+k.toString()+"\n");
+                w.write("3@"+k.salvar()+"\n");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -707,7 +707,7 @@ public class CRFacade implements ICentroReparacoes {
             if(k.getClass().equals(PedidoExpresso.class))
                 tipo = 5;
             try {
-                w.write(tipo+"@"+k.toString()+"\n");
+                w.write(tipo+"@"+k.salvar()+"\n");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -717,7 +717,7 @@ public class CRFacade implements ICentroReparacoes {
 
     private void gravar_todos_equipamento() throws IOException {
         FileWriter w = new FileWriter("cp/armazem.csv");
-        w.write(armazem.toString());
+        w.write(armazem.salvar());
         w.close();
     }
 
@@ -725,7 +725,7 @@ public class CRFacade implements ICentroReparacoes {
         FileWriter w = new FileWriter("cp/orcamentos.csv");
         orcamentos.forEach((k,v)-> {
             try {
-                w.write(v.toString()+"\n");
+                w.write(v.salvar()+"\n");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -740,14 +740,14 @@ public class CRFacade implements ICentroReparacoes {
         FileWriter w = new FileWriter("cp/logs.txt");
         logsTecnicos.forEach((k,v)-> {
             try {
-                w.write(v.toString()+"\n");
+                w.write(v.salvar()+"\n");
             } catch (IOException e) {
                 e.printStackTrace();
             }
         });
         logsFuncionarios.forEach((k,v)-> {
             try {
-                w.write(v.toString()+"\n");
+                w.write(v.salvar()+"\n");
             } catch (IOException e) {
                 e.printStackTrace();
             }

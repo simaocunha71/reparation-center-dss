@@ -85,11 +85,11 @@ public class Armazem {
         }
     }
 
-    public String toString(){
+    public String salvar(){
         StringBuilder sb = new StringBuilder();
-        paraOrcamento.forEach((k,v)->sb.append(v.toString()).append("@1\n"));
-        paraReparacao.forEach((k,v)->sb.append(v.toString()).append("@2\n"));
-        prontosAEntregar.forEach((k,v)->sb.append(v.toString()).append("@3\n"));
+        paraOrcamento.forEach((k,v)->sb.append(v.salvar()).append("@1\n"));
+        paraReparacao.forEach((k,v)->sb.append(v.salvar()).append("@2\n"));
+        prontosAEntregar.forEach((k,v)->sb.append(v.salvar()).append("@3\n"));
         return sb.toString();
     }
 
