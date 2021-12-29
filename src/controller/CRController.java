@@ -2,11 +2,7 @@ package controller;
 
 import model.*;
 import model.excecoes.JaExistenteExcecao;
-import model.interfaces.ICentroReparacoes;
-import model.interfaces.ICliente;
-import model.interfaces.IPedido;
-import model.interfaces.IUtilizador;
-import model.orcamento.Orcamento;
+import model.interfaces.*;
 import model.orcamento.Passo;
 import model.orcamento.PlanoDeTrabalho;
 import model.orcamento.SubPasso;
@@ -268,7 +264,7 @@ public class CRController {
 
     private void fazerPlano(int i) throws IOException, ClassNotFoundException {
         IPedido pedido = centro.get_pedido(i);
-        PlanoDeTrabalho plano = new PlanoDeTrabalho(pedido);
+        IPlanoDeTrabalho plano = new PlanoDeTrabalho(pedido);
         CRView menu = new CRView("Registar Plano",menuPlano);
         menu.setPreCondition(3, plano::valida);
 
@@ -395,16 +391,16 @@ public class CRController {
 
 
     private void listaDeEquipamentosReparacao() throws IOException, ClassNotFoundException {
-        List<Orcamento> orcamentos = centro.get_orcamentos_confirmados();
+        List<IOrcamento> orcamentos = centro.get_orcamentos_confirmados();
         String[] orcamentosString = new String[orcamentos.size()];
         for(int i =0; i < orcamentos.size() && i < 10 ;i++){
-            Orcamento orcamento = orcamentos.get(i);
-            IPedido pedido = orcamento.get_pedido_plano();
+            IOrcamento orcamento = orcamentos.get(i);
+            IPedido pedido = orcamento.get_pedido();
             String sb = "Equipamento [#" + orcamento.get_num_ref() + "]|" +
                     "Data de Registo [" + pedido.getTempoRegisto().format(formatter) + "]|" +
                     "Data de Confirmação [" + orcamento.getDataConfirmacao().format(formatter) + "]|" +
-                    "Preco estimado [" + orcamento.getCustoEstimado() + "]|" +
-                    "Tempo estimado [" + orcamento.getDuracaoEstimada() + "]";
+                    "Preco estimado [" + orcamento.calcula_gasto_estimado() + "]|" +
+                    "Tempo estimado [" + orcamento.calcula_duracao_estimada() + "]";
             orcamentosString[i] = sb;
         }
         CRView menu = new CRView("Lista de Equipamentos a reparar",orcamentosString);
@@ -419,27 +415,27 @@ public class CRController {
 
 
     private void processar_reparacao(int num_ref) throws IOException, ClassNotFoundException {
-        Orcamento orcamento = centro.get_orcamento(num_ref);
-        Orcamento clone = orcamento.clone();
+        IOrcamento orcamento = centro.get_orcamento(num_ref);
+        IOrcamento clone = orcamento.clone();
         List<String> logs = new ArrayList<>();
         List<String> logsTemporarios = new ArrayList<>();
         CRView menu = new CRView("Processar Reparacao",menuProcessarReparacao);
         if(clone!=null) {
-            menu.setPreCondition(2,()->!clone.ultrapassou120PorCentoOrcamento() && !clone.concluido() && clone.get_next_passo()!=null);
-            menu.setPreCondition(3, clone::ultrapassou120PorCentoOrcamento);
+            menu.setPreCondition(2,()->!clone.ultrapassou_120porcento_orcamento() && !clone.concluido() && clone.get_proximo_passo()!=null);
+            menu.setPreCondition(3, clone::ultrapassou_120porcento_orcamento);
             menu.setPreCondition(4, ()-> clone.valida() && !clone.concluido());
-            menu.setPreCondition(5, ()-> clone.concluido() && !clone.ultrapassou120PorCentoOrcamento() );
+            menu.setPreCondition(5, ()-> clone.concluido() && !clone.ultrapassou_120porcento_orcamento() );
 
 
             menu.setHandler(1, () -> {
                 StringBuilder sb = new StringBuilder();
                 sb.append("Equipamento [#" + num_ref +"]\n")
-                        .append("Custo Estimado [" + clone.getCustoEstimado() + "]\n")
-                        .append("Custo Real [" + clone.get_custo_gasto() + "]\n")
+                        .append("Custo Estimado [" + clone.calcula_gasto_estimado() + "]\n")
+                        .append("Custo Real [" + clone.calcula_custo_gasto() + "]\n")
                         .append("Percentagem gasta [" + clone.orcamento_gasto() + "]\n")
-                        .append("Tempo Estimado [" + clone.getDuracaoEstimada() + "]\n")
-                        .append("Tempo Real [" + clone.get_tempo_gasto() + "]\n")
-                        .append("Orcamento excedido [" + clone.ultrapassou120PorCentoOrcamento() +"]");
+                        .append("Tempo Estimado [" + clone.calcula_duracao_estimada() + "]\n")
+                        .append("Tempo Real [" + clone.calcula_tempo_gasto() + "]\n")
+                        .append("Orcamento excedido [" + clone.ultrapassou_120porcento_orcamento() +"]");
                 menu.showInfo(sb);
             });
             menu.setHandler(2,()->{
@@ -476,23 +472,23 @@ public class CRController {
         }
     }
 
-    private List<String> executarPasso(Orcamento orcamento) throws IOException, ClassNotFoundException {
-        Passo passo = orcamento.get_next_passo();
+    private List<String> executarPasso(IOrcamento orcamento) throws IOException, ClassNotFoundException {
+        Passo passo = orcamento.get_proximo_passo();
         Passo clone = passo.clone();
         List<String> logs = new ArrayList<>();
         List<String> logsTemporarios = new ArrayList<>();
-        int total_passos = orcamento.get_num_total_passos();
+        int total_passos = orcamento.get_total_passos();
         String title = "Executar Passo ["+clone.getNumero_passo()+"/"+total_passos+"]";
         CRView menu = new CRView(title,menuExecutarPasso);
         menu.setSamePreCondition(new int[]{2,3}, ()-> !clone.temSubPassos());
-        menu.setPreCondition(4, ()-> clone.existe_proximo_subpasso() && orcamento.getCustoEstimado()*1.2 >= orcamento.get_custo_gasto()+clone.calcula_custo_gasto());
+        menu.setPreCondition(4, ()-> clone.existe_proximo_subpasso() && orcamento.calcula_gasto_estimado()*1.2 >= orcamento.calcula_custo_gasto()+clone.calcula_custo_gasto());
         menu.setPreCondition(5, clone::valida);
         int total_subpassos = clone.get_total_subpassos();
-        float percentagem_orcamento = (orcamento.get_custo_gasto())*100/orcamento.getCustoEstimado();
+        float percentagem_orcamento = (orcamento.calcula_custo_gasto())*100/orcamento.calcula_gasto_estimado();
 
         menu.setHandler(1, () -> {
             float percentagem_gasta = percentagem_orcamento;
-            percentagem_gasta += clone.calcula_custo_gasto()*100/orcamento.getCustoEstimado();
+            percentagem_gasta += clone.calcula_custo_gasto()*100/orcamento.calcula_gasto_estimado();
             StringBuilder sb = new StringBuilder();
             sb.append("Descricao [#" + clone.getDescricao() +"]\n")
                     .append("Custo Estimado [" + clone.getCustoEstimado() + "]\n")
@@ -542,7 +538,7 @@ public class CRController {
         return logs;
     }
 
-    private String executarSubpasso(SubPasso subPasso, int total_subpassos,Orcamento orcamento) throws IOException, ClassNotFoundException {
+    private String executarSubpasso(SubPasso subPasso, int total_subpassos,IOrcamento orcamento) throws IOException, ClassNotFoundException {
         AtomicReference<String> log = null;
         String title = "Executar SubPasso ["+subPasso.getNumero_subpasso()+"/"+total_subpassos+"]";
         CRView menu = new CRView(title,menuExecutarSubPasso);
@@ -586,11 +582,11 @@ public class CRController {
     }
 
     private void concluir_pedido() throws IOException, ClassNotFoundException {
-        List<Orcamento> orcamentos = centro.get_orcamentos_completos();
+        List<IOrcamento> orcamentos = centro.get_orcamentos_completos();
         String[] orcamentosString = new String[orcamentos.size()];
         for(int i =0; i < orcamentos.size() && i < 10 ;i++){
-            Orcamento orcamento = orcamentos.get(i);
-            IPedido pedido = orcamento.get_pedido_plano();
+            IOrcamento orcamento = orcamentos.get(i);
+            IPedido pedido = orcamento.get_pedido();
             ICliente cliente = centro.get_cliente(pedido.getNifCliente());
             String sb = "Equipamento [#" + orcamento.get_num_ref() + "]|" +
                     "Cliente [" + cliente.getNome() + "]" +
@@ -629,16 +625,16 @@ public class CRController {
     }
 
     private void confirmarOrcamento() throws IOException, ClassNotFoundException {
-        List<Orcamento> orcamentos = centro.get_orcamentos_por_confirmar();
+        List<IOrcamento> orcamentos = centro.get_orcamentos_por_confirmar();
         String[] orcamentosString = new String[orcamentos.size()];
         for(int i =0; i<orcamentos.size();i++){
-            Orcamento orcamento = orcamentos.get(i);
-            IPedido pedido = orcamento.get_pedido_plano();
+            IOrcamento orcamento = orcamentos.get(i);
+            IPedido pedido = orcamento.get_pedido();
             ICliente cliente = centro.get_cliente(pedido.getNifCliente());
             String sb = "Equipamento [#" + orcamento.get_num_ref() + "]" +
                     "Data [" + pedido.getTempoRegisto().format(formatter) + "]" +
-                    "Preco estimado [" + orcamento.getCustoEstimado() + "]" +
-                    "Tempo estimado [" + orcamento.getDuracaoEstimada() + "]" +
+                    "Preco estimado [" + orcamento.calcula_gasto_estimado() + "]" +
+                    "Tempo estimado [" + orcamento.calcula_duracao_estimada() + "]" +
                     "Cliente [" + cliente.getNif() + "]" +
                     "Email [" + cliente.getEmail() + "]";
             orcamentosString[i] = sb;

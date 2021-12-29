@@ -8,7 +8,6 @@ import model.excecoes.JaExistenteExcecao;
 import model.excecoes.NaoExisteExcecao;
 import model.interfaces.*;
 import model.orcamento.Orcamento;
-import model.orcamento.PlanoDeTrabalho;
 import model.pedidos.PedidoExpresso;
 import model.pedidos.PedidoOrcamento;
 import model.utilizadores.Funcionario;
@@ -30,7 +29,7 @@ public class CRFacade implements ICentroReparacoes {
     private Set<IPedido> pedidosOrcamentos;
     private Map<Integer, IPedido> pedidosJaPlaneados;
     private Map<Integer, IPedido> pedidosCompletos;
-    private Map<Integer, Orcamento> orcamentos; //numero de registo do equipamento é a key
+    private Map<Integer, IOrcamento> orcamentos; //numero de registo do equipamento é a key
     private Armazem armazem;
     private IUtilizador logado;
     private Map<String,LogTecnico> logsTecnicos;
@@ -127,7 +126,7 @@ public class CRFacade implements ICentroReparacoes {
         }
     }
 
-    public void adicionar_orcamento(Orcamento orcamento) throws IOException {
+    public void adicionar_orcamento(IOrcamento orcamento) throws IOException {
         int num_ref = orcamento.get_num_ref();
         if(!orcamentos.containsKey(num_ref)){
             orcamentos.put(num_ref,orcamento.clone());
@@ -140,37 +139,38 @@ public class CRFacade implements ICentroReparacoes {
     }
 
 
-    public void gerar_orcamento(PlanoDeTrabalho plano) throws IOException {
-        int num_referencia = plano.get_num_referencia();
+    public void gerar_orcamento(IPlanoDeTrabalho plano) throws IOException {
+        int num_referencia = plano.get_num_ref();
         remove_pedido_orcamento(num_referencia);
         transferencia_seccao(num_referencia);
         if(!orcamentos.containsKey(num_referencia)){
-            Orcamento orcamento = new Orcamento(plano);
+            IOrcamento orcamento = new Orcamento(plano);
             orcamentos.put(num_referencia,orcamento);
             gravar_orcamento(orcamento);
         }
     }
 
 
-    public List<Orcamento> get_orcamentos_por_confirmar() {
-        return orcamentos.values().stream().filter(k->!k.getConfirmado()).map(Orcamento::clone).collect(Collectors.toList());
+    public List<IOrcamento> get_orcamentos_por_confirmar() {
+        return orcamentos.values().stream().filter(k->!k.getConfirmado()).map(IOrcamento::clone).collect(Collectors.toList());
     }
 
-    public List<Orcamento> get_orcamentos_confirmados() {
-        Set<Orcamento> set = new TreeSet<Orcamento>(new IOrcamentoComparator());
-        orcamentos.values().stream().filter(k -> k.getConfirmado() && pedidosJaPlaneados.containsKey(k.get_num_ref())).map(Orcamento::clone).forEach(set::add);
+    public List<IOrcamento> get_orcamentos_confirmados() {
+        Set<IOrcamento> set = new TreeSet<IOrcamento>(new IOrcamentoComparator());
+        orcamentos.values().stream().filter(k -> k.getConfirmado() && pedidosJaPlaneados.containsKey(k.get_num_ref())).map(IOrcamento::clone).forEach(set::add);
         return set.stream().toList();
     }
 
-    public List<Orcamento> get_orcamentos_completos() {
-        return orcamentos.values().stream().filter(k->k.getConfirmado() && pedidosCompletos.containsKey(k.get_num_ref())).map(Orcamento::clone).collect(Collectors.toList());
+    public List<IOrcamento> get_orcamentos_completos() {
+        return orcamentos.values().stream().filter(k->k.getConfirmado() && pedidosCompletos.containsKey(k.get_num_ref())).map(IOrcamento::clone).collect(Collectors.toList());
     }
 
 
-    public Orcamento get_orcamento(int num_ref) {
-        Orcamento orcamento = null;
+    public IOrcamento get_orcamento(int num_ref) {
+        IOrcamento orcamento = null;
         if(orcamentos.containsKey(num_ref)) orcamento= orcamentos.get(num_ref);
-        return orcamento.clone();
+        if(orcamento != null )return orcamento.clone();
+        else return null;
     }
 
     public IEquipamento getEquipamento(int num_ref) {
@@ -206,7 +206,7 @@ public class CRFacade implements ICentroReparacoes {
         }
     }
 
-    public void concluir_reparacao(Orcamento orcamento) throws IOException {
+    public void concluir_reparacao(IOrcamento orcamento) throws IOException {
         int num_ref = orcamento.get_num_ref();
         if(orcamentos.containsKey(num_ref)){
             orcamentos.remove(num_ref);
@@ -342,7 +342,7 @@ public class CRFacade implements ICentroReparacoes {
         }
     }
 
-    private void carregar_orcamento(Orcamento orcamento) throws JaExistenteExcecao {
+    private void carregar_orcamento(IOrcamento orcamento) throws JaExistenteExcecao {
         int num_referencia = orcamento.get_num_ref();
         if(!orcamentos.containsKey(num_referencia)){
             orcamentos.put(num_referencia,orcamento);
@@ -456,7 +456,7 @@ public class CRFacade implements ICentroReparacoes {
                         }else valido = false;
                         if(valido) {
                             System.out.println("DEBUG: IF1");
-                            Orcamento orcamento = new Orcamento(numRegisto, pedido,confirmacao,dataRegisto);
+                            IOrcamento orcamento = new Orcamento(numRegisto, pedido,confirmacao,dataRegisto);
                             orcamento.carregar(split[1]);
                             if (orcamento.valida()) {
                                 System.out.println("DEBUG: IF2");
@@ -636,7 +636,7 @@ public class CRFacade implements ICentroReparacoes {
         w.close();
     }
 
-    private void gravar_orcamento(Orcamento orcamento) throws IOException {
+    private void gravar_orcamento(IOrcamento orcamento) throws IOException {
         FileWriter w = new FileWriter("cp/orcamentos.csv",true);
         w.write(orcamento.toString()+"\n");
         w.close();

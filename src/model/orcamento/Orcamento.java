@@ -1,20 +1,21 @@
 package model.orcamento;
 
-import model.interfaces.Carregavel;
+import model.interfaces.IOrcamento;
 import model.interfaces.IPedido;
+import model.interfaces.IPlanoDeTrabalho;
 
 import java.time.LocalDateTime;
 
-public class Orcamento implements Carregavel {
+public class Orcamento implements IOrcamento {
     private int num_ref;
     private boolean confirmado = false;
-    private PlanoDeTrabalho planoDeTrabalho;
+    private IPlanoDeTrabalho planoDeTrabalho;
     private LocalDateTime dataConfirmacao;
 
 
 
-    public Orcamento(PlanoDeTrabalho planoDeTrabalho){
-        this.num_ref = planoDeTrabalho.get_num_referencia();
+    public Orcamento(IPlanoDeTrabalho planoDeTrabalho){
+        this.num_ref = planoDeTrabalho.get_num_ref();
         this.planoDeTrabalho = planoDeTrabalho.clone();
         this.dataConfirmacao = null;
     }
@@ -26,25 +27,29 @@ public class Orcamento implements Carregavel {
         this.dataConfirmacao = dataConfirmacao;
     }
 
-    public Orcamento(int num_ref, PlanoDeTrabalho plano, boolean confirmado, LocalDateTime dataConfirmacao){
+    public Orcamento(int num_ref, IPlanoDeTrabalho plano, boolean confirmado, LocalDateTime dataConfirmacao){
         this.num_ref = num_ref;
         this.planoDeTrabalho = plano.clone();
         this.confirmado = confirmado;
         this.dataConfirmacao = dataConfirmacao;
     }
 
-    public void carregar(Orcamento orcamento){
-        this.num_ref = orcamento.num_ref;
-        this.planoDeTrabalho = orcamento.planoDeTrabalho.clone();
-        this.confirmado = orcamento.confirmado;
-        this.dataConfirmacao = orcamento.dataConfirmacao;
+    public void carregar(IOrcamento orcamento){
+        this.num_ref = orcamento.get_num_ref();
+        this.planoDeTrabalho = orcamento.getPlanoDeTrabalho();
+        this.confirmado = orcamento.getConfirmado();
+        this.dataConfirmacao = orcamento.getDataConfirmacao();
+    }
+
+    public IPlanoDeTrabalho getPlanoDeTrabalho() {
+        return planoDeTrabalho.clone();
     }
 
     public int get_num_ref(){
         return num_ref;
     }
 
-    public IPedido get_pedido_plano(){
+    public IPedido get_pedido(){
         return planoDeTrabalho.get_pedido();
     }
 
@@ -67,11 +72,11 @@ public class Orcamento implements Carregavel {
 
     public boolean getConfirmado(){return this.confirmado;}
 
-    public float getCustoEstimado() {
+    public float calcula_gasto_estimado() {
         return planoDeTrabalho.calcula_gasto_estimado();
     }
 
-    public float getDuracaoEstimada() {
+    public float calcula_duracao_estimada() {
         return planoDeTrabalho.calcula_duracao_estimada();
     }
 
@@ -97,11 +102,11 @@ public class Orcamento implements Carregavel {
     }
 
 
-    public float get_custo_gasto(){
+    public float calcula_custo_gasto(){
         return planoDeTrabalho.calcula_custo_gasto();
     }
 
-    public float get_tempo_gasto(){
+    public float calcula_tempo_gasto(){
         return planoDeTrabalho.calcula_tempo_gasto();
     }
 
@@ -109,27 +114,27 @@ public class Orcamento implements Carregavel {
         return planoDeTrabalho.orcamento_gasto();
     }
 
-    public boolean ultrapassou120PorCentoOrcamento(){
-        return planoDeTrabalho.ultrapassou120PorCentoOrcamento();
+    public boolean ultrapassou_120porcento_orcamento(){
+        return planoDeTrabalho.ultrapassou_120porcento_orcamento();
     }
 
     public LocalDateTime getDataConfirmacao() {
         return dataConfirmacao;
     }
 
-    public Orcamento clone(){
+    public IOrcamento clone(){
         return new Orcamento(this.num_ref,this.planoDeTrabalho,this.confirmado,this.dataConfirmacao);
     }
 
-    public Passo get_next_passo(){
-        return planoDeTrabalho.getProximoPasso();
+    public Passo get_proximo_passo(){
+        return planoDeTrabalho.get_proximo_passo();
     }
 
     public boolean concluido(){
         return this.planoDeTrabalho.concluido();
     }
 
-    public int get_num_total_passos() {
+    public int get_total_passos() {
         return this.planoDeTrabalho.get_total_passos();
     }
 }
