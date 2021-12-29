@@ -33,6 +33,8 @@ public class CRFacade implements ICentroReparacoes {
     private Map<Integer, Orcamento> orcamentos; //numero de registo do equipamento é a key
     private Armazem armazem;
     private IUtilizador logado;
+    private List<LogTecnico> logsTecnicos;
+    private List<LogFuncionario> logsFuncionarios;
 
     private static final String DATE_FORMATTER= "yyyy-MM-dd HH:mm:ss";
 
@@ -45,6 +47,7 @@ public class CRFacade implements ICentroReparacoes {
         this.orcamentos = new HashMap<>();
         this.pedidosJaPlaneados = new HashMap<>();
         this.pedidosCompletos = new HashMap<>();
+        this.logsTecnicos = new ArrayList<>();
     }
 
     /**
@@ -159,7 +162,7 @@ public class CRFacade implements ICentroReparacoes {
     }
 
     public List<Orcamento> get_orcamentos_completos() {
-        return orcamentos.values().stream().filter(k->k.getConfirmado()).map(Orcamento::clone).collect(Collectors.toList());
+        return orcamentos.values().stream().filter(k->k.getConfirmado() && pedidosCompletos.containsKey(k.get_num_ref())).map(Orcamento::clone).collect(Collectors.toList());
     }
 
 
