@@ -16,6 +16,7 @@ import view.CRView;
 import view.AuxiliarView;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -420,6 +421,8 @@ public class CRController {
     private void processar_reparacao(int num_ref) throws IOException, ClassNotFoundException {
         Orcamento orcamento = centro.get_orcamento(num_ref);
         Orcamento clone = orcamento.clone();
+        List<String> logs = new ArrayList<>();
+        List<String> logsTemporarios = new ArrayList<>();
         CRView menu = new CRView("Processar Reparacao",menuProcessarReparacao);
         if(clone!=null) {
             menu.setPreCondition(2,()->!clone.ultrapassou120PorCentoOrcamento() && !clone.concluido() && clone.get_next_passo()!=null);
@@ -440,32 +443,44 @@ public class CRController {
                 menu.showInfo(sb);
             });
             menu.setHandler(2,()->{
-                executarPasso(clone);
+                logsTemporarios.addAll(executarPasso(clone));
             });
             menu.setHandler(3,()->{
                 menu.showInfo("Cliente notificado, orcamento retornado a lista de espera.");
                 clone.desconfirma();
                 centro.adicionar_orcamento(clone);
-                menu.returnMenu();
+                logs.addAll(logsTemporarios);
             });
             menu.setHandler(4,()->{
                 orcamento.carregar(clone);
                 centro.adicionar_orcamento(orcamento);
+                logs.addAll(logsTemporarios);
             });
             menu.setHandler(5,()->{
                 orcamento.carregar(clone);
                 centro.concluir_reparacao(clone);
+                logs.addAll(logsTemporarios);
                 menu.showInfo("Reparacao concluida.");
                 menu.returnMenu();
             });
-
             menu.simpleRun();
+            System.out.println(logsTemporarios.size());
+            System.out.println(logs.size());
+            logs.forEach(v-> {
+                try {
+                    centro.adicionar_log(v, centro.get_logged_id());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
         }
     }
 
-    private void executarPasso(Orcamento orcamento) throws IOException, ClassNotFoundException {
+    private List<String> executarPasso(Orcamento orcamento) throws IOException, ClassNotFoundException {
         Passo passo = orcamento.get_next_passo();
         Passo clone = passo.clone();
+        List<String> logs = new ArrayList<>();
+        List<String> logsTemporarios = new ArrayList<>();
         int total_passos = orcamento.get_num_total_passos();
         String title = "Executar Passo ["+clone.getNumero_passo()+"/"+total_passos+"]";
         CRView menu = new CRView(title,menuExecutarPasso);
@@ -500,7 +515,8 @@ public class CRController {
 
         });
         menu.setHandler(4,()->{
-            executarSubpasso(clone.getProximoSubPasso(),total_subpassos);
+                String l = executarSubpasso(clone.getProximoSubPasso(),total_subpassos,orcamento);
+                if(l!=null) logsTemporarios.add(l);
         });
         menu.setHandler(5,()->{
             if(passo.temSubPassos()){
@@ -511,15 +527,23 @@ public class CRController {
             }else{
                 clone.concluir(centro.get_logged_id(),clone.getCustoReal(),clone.getDuracaoReal());
                 passo.carrega(clone);
+                int num_ref = orcamento.get_num_ref();
+                logs.add("1;" + num_ref + ";"
+                        + centro.get_equipamento(num_ref).getModelo() + ";"
+                        + passo.getDescricao() + ";"
+                        + LocalDateTime.now() + ";"
+                        + passo.getDuracaoEstimada() + ";"
+                        + passo.getDuracaoReal());
                 menu.returnMenu();
             }
+            logs.addAll(logsTemporarios);
         });
-
         menu.simpleRun();
+        return logs;
     }
 
-    private void executarSubpasso(SubPasso subPasso, int total_subpassos) throws IOException, ClassNotFoundException {
-
+    private String executarSubpasso(SubPasso subPasso, int total_subpassos,Orcamento orcamento) throws IOException, ClassNotFoundException {
+        AtomicReference<String> log = null;
         String title = "Executar SubPasso ["+subPasso.getNumero_subpasso()+"/"+total_subpassos+"]";
         CRView menu = new CRView(title,menuExecutarSubPasso);
         SubPasso clone = subPasso.clone();
@@ -547,10 +571,18 @@ public class CRController {
         });
         menu.setHandler(4,()->{
             clone.concluir(centro.get_logged_id(),clone.getCustoReal(),clone.getDuracaoReal());
-            subPasso.carrega(clone); menu.returnMenu();
+            subPasso.carrega(clone);
+            int num_ref = orcamento.get_num_ref();
+            log.set("2;"+num_ref+";"
+                    +centro.get_equipamento(num_ref).getModelo()+";"
+                    +subPasso.getDescricao()+";"
+                    +LocalDateTime.now()+";"
+                    +subPasso.getDuracaoEstimada()+";"
+                    +subPasso.getDuracaoReal());
+            menu.returnMenu();
         });
-
         menu.simpleRun();
+        return log.get();
     }
 
     private void concluir_pedido() throws IOException, ClassNotFoundException {
@@ -589,7 +621,9 @@ public class CRController {
 
         menu.setHandler(3,this::confirmarOrcamento);
 
-        menu.setHandler(4,()->{menu.returnMenu();logout();});
+        menu.setHandler(4, this::concluir_pedido);
+
+        menu.setHandler(5,()->{menu.returnMenu();logout();});
 
         menu.simpleRun();
     }
@@ -792,7 +826,7 @@ public class CRController {
 
     private void registarPedido() throws IOException, ClassNotFoundException {
         CRView menu = new CRView("Registo Pedido", menuRegistoPedido);
-
+        //TODO: fazer
         //menu.setHandler(1,()->{pedidoExpress();menu.returnMenu();});
         menu.setHandler(2,()->{registarPedidoOrcamento();menu.returnMenu();});
 

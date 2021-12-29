@@ -29,6 +29,7 @@ public interface ICentroReparacoes {
 
     void adicionar_pedido_orcamento(String nifCliente, String modelo, String descricaoEquipamento, String descricaoPedido) throws IOException;
 
+    void adicionar_log(String log, String user_id) throws IOException;
 
     boolean exists_plan();
 
@@ -71,4 +72,6 @@ public interface ICentroReparacoes {
     Map<String,IUtilizador> get_utilizadores();
 
     void remover_utilizador(String id) throws IOException;
+
+    IEquipamento get_equipamento(int num_ref);
 }

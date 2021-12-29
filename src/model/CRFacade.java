@@ -212,6 +212,7 @@ public class CRFacade implements ICentroReparacoes {
             orcamentos.remove(num_ref);
             orcamentos.put(num_ref,orcamento.clone());
             transferencia_seccao(num_ref);
+            adicionar_pedido_completo(pedidosJaPlaneados.get(num_ref));
             remove_pedido_ja_planeado(num_ref);
             gravar_todos_orcamentos();
             gravar_todos_equipamento();
@@ -510,7 +511,7 @@ public class CRFacade implements ICentroReparacoes {
             case 3 -> {
                 return clientes.containsKey(pedido.getNifCliente()) && armazem.contem_equipamento_para_reparacao(pedido.getNumeroRegistoEquipamento());}
             case 4 -> {
-                return true;
+                return clientes.containsKey(pedido.getNifCliente()) && armazem.contem_equipamento_pronto_a_entregar(pedido.getNumeroRegistoEquipamento());
             }
             default -> {
                 return false;
@@ -537,6 +538,8 @@ public class CRFacade implements ICentroReparacoes {
             armazem.regista_equipamento(e,1);
             IPedido pedido = new PedidoOrcamento(nifCliente, e.getNumeroRegisto(), descricaoPedido);
             pedidosOrcamentos.add(pedido);
+            String log = "0;"+pedido.getTempoRegisto();
+            adicionar_log(log,get_logged_id());
             gravar_pedido(pedido);
             gravar_equipamento(e,1);
         }
@@ -687,6 +690,7 @@ public class CRFacade implements ICentroReparacoes {
 
 
     private void gravar_todos_logs() throws IOException {
+        System.out.println("gravar logs");
         FileWriter w = new FileWriter("cp/logs.txt");
         logsTecnicos.forEach((k,v)-> {
             try {
@@ -743,6 +747,8 @@ public class CRFacade implements ICentroReparacoes {
     public void remover_orcamento(int num_ref) throws IOException {
         orcamentos.remove(num_ref);
         pedidosCompletos.remove(num_ref);
+        String log = "1;"+LocalDateTime.now();
+        adicionar_log(log,get_logged_id());
         gravar_todos_orcamentos();
         gravar_todos_pedidos();
     }
@@ -760,6 +766,10 @@ public class CRFacade implements ICentroReparacoes {
             utilizadores.remove(id);
             gravar_todos_utilizadores();
         }
+    }
+
+    public IEquipamento get_equipamento(int num_ref){
+        return armazem.getEquipamento(num_ref);
     }
 
 }

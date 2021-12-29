@@ -2,6 +2,7 @@ package model;
 
 import model.interfaces.Carregavel;
 
+import java.sql.SQLOutput;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
@@ -25,11 +26,11 @@ public class LogTecnico implements Carregavel {
     @Override
     public void carregar(String string) {
         String []split = string.split("%");
-        if(split.length <= 2 && split.length > 0){
+        if(split.length == 2){
             String[] info = split[0].split(";");
             if(info.length == 1){
                 userId = info[0];
-                String []listaIntervencoes = split[2].split("->");
+                String []listaIntervencoes = split[1].split("->");
                 for(String i: listaIntervencoes){
                     if(intervencao_valida(i))
                         intervencoes.add(i);
@@ -129,6 +130,7 @@ public class LogTecnico implements Carregavel {
     private boolean intervencao_valida(String intervencao) {
         boolean valido = false;
         String []info = intervencao.split(";");
+
         try{
             int tipo = Integer.parseInt(info[0]);
             switch(tipo){
@@ -142,6 +144,7 @@ public class LogTecnico implements Carregavel {
 
     private boolean expresso_ou_completo_valido(String[] info) {
         boolean valido = false;
+        System.out.println("DEBUG LOG1");
         if(info.length == 5){
             try {
                 int numReg = Integer.parseInt(info[1]);
@@ -149,8 +152,9 @@ public class LogTecnico implements Carregavel {
                 String descricao = info[3];
                 LocalDateTime data = LocalDateTime.parse(info[4]);
                 LocalDateTime thirtyDaysAgo = LocalDateTime.now().plusDays(-30);
-                if(modelo.length() > 0 && descricao.length() > 0 && data.isBefore(thirtyDaysAgo))
+                if(modelo.length() > 0 && descricao.length() > 0 && !data.isBefore(thirtyDaysAgo)) {
                     valido = true;
+                }
             }catch (NumberFormatException | DateTimeParseException ignored){}
         }
         return valido;
@@ -167,7 +171,7 @@ public class LogTecnico implements Carregavel {
                 LocalDateTime thirtyDaysAgo = LocalDateTime.now().plusDays(-30);
                 float tempo_esperado = Float.parseFloat(info[5]);
                 float tempo_real = Float.parseFloat(info[6]);
-                if(modelo.length() > 0 && descricao.length() > 0 && data.isBefore(thirtyDaysAgo))
+                if(modelo.length() > 0 && descricao.length() > 0 && !data.isBefore(thirtyDaysAgo))
                     valido = true;
             }catch (NumberFormatException | DateTimeParseException ignored){}
         }
@@ -176,7 +180,7 @@ public class LogTecnico implements Carregavel {
 
     public String toString(){
         StringBuilder sb = new StringBuilder();
-        sb.append(3).append("@").append(userId).append("%");
+        sb.append("3").append("@").append(userId).append("%");
         intervencoes.forEach(k->sb.append(k).append("->"));
         return sb.toString();
     }

@@ -1,13 +1,2 @@
-nivelPermissao@id%intervencao1->intervencao2
-
-intervencao:
-    expresso -> 0;numeroRegisto;Modelo;Descricao;Data_Completo
-    normal-Passo    -> 1;numeroRegisto;Modelo;DescricaoPasso;Data_Completo;tempo_esperado;tempo_real
-    normal-Subpasso -> 2;numeroRegisto;Modelo;DescricaoSubpasso;Data_Completo;tempo_esperado;tempo_real
-    concluir-reparacao -> 3;numeroRegisto;Modelo;Descricao;Data_Completo
-
-nivelPermissao@id%operacao1->operacao2
-
-operacao:
-    rececao -> 0;Data_Pedido
-    entrega -> 1;Data_Entrega
+3@gba%1;4;magalhaes;ligar o isqueiro;2021-12-29T17:10:34.044390800;25.0;1.0->
+2@cunhamore%0;2021-12-29T16:45:36.052515500->0;2021-12-29T16:46:37.062093200->

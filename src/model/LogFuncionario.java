@@ -23,11 +23,11 @@ public class LogFuncionario implements Carregavel {
 
     public void carregar(String string) {
         String []split = string.split("%");
-        if(split.length <= 2 && split.length > 0){
+        if(split.length == 2){
             String[] info = split[0].split(";");
             if(info.length == 1){
                 userId = info[0];
-                String []listaOperacoes = split[2].split("->");
+                String []listaOperacoes = split[1].split("->");
                 for(String o: listaOperacoes){
                     if(operacao_valida(o))
                         operacoes.add(o);
@@ -38,6 +38,7 @@ public class LogFuncionario implements Carregavel {
 
     public void addOperacao(String operacao){
         if(operacao_valida(operacao)) operacoes.add(operacao);
+        System.out.println(operacao + " "+operacao_valida(operacao));
     }
 
     public String getUserId() {
@@ -84,8 +85,9 @@ public class LogFuncionario implements Carregavel {
             if(info.length == 2 && tipo >=0 && tipo <=1){
                 LocalDateTime data = LocalDateTime.parse(info[1]);
                 LocalDateTime thirtyDaysAgo = LocalDateTime.now().plusDays(-30);
-                if(data.isBefore(thirtyDaysAgo))
+                if(!data.isBefore(thirtyDaysAgo)) {
                     valido = true;
+                }
             }
         }catch (NumberFormatException | DateTimeParseException ignored){}
         return valido;
@@ -94,7 +96,7 @@ public class LogFuncionario implements Carregavel {
 
     public String toString(){
         StringBuilder sb = new StringBuilder();
-        sb.append(3).append("@").append(userId).append("%");
+        sb.append("2").append("@").append(userId).append("%");
         operacoes.forEach(k->sb.append(k).append("->"));
         return sb.toString();
     }
