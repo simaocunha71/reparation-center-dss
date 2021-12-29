@@ -73,7 +73,9 @@ public class PlanoDeTrabalho implements Carregavel {
     public boolean valida() {
         boolean valido = true;
         for(Passo p : passos){
-            if(!p.valida()) valido = false;
+            if(!p.valida()) {
+                valido = false;
+            }
         }
         return valido && passos.size() > 0;
     }

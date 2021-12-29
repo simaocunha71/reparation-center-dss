@@ -149,12 +149,13 @@ public class Passo implements Carregavel {
     //subPassos: subpasso1/subpasso2/subpass3...
     public void carregar(String string) {
         String[] split = string.split("%");
-        if(split.length == 2){
+        if(split.length <= 2){
             String[] infos = split[0].split(";");
             if(infos.length == 8){
                 int nSP = 0;
                 try {
                     this.descricao = infos[0];
+                    System.out.println("DEBUG: "+descricao);
                     this.custoEstimado = Float.parseFloat(infos[1]);
                     this.custoReal = Float.parseFloat(infos[2]);
                     this.duracaoEstimada = Float.parseFloat(infos[3]);
@@ -174,8 +175,10 @@ public class Passo implements Carregavel {
                     this.realizado = false;
                     this.idTecnicoRealizou = null;
                 }
-                String[] subpassos = split[1].split("/");
-                if(subpassos.length == nSP){
+                String[] subpassos = null;
+                if(nSP > 0)
+                    subpassos = split[1].split("/");
+                if(subpassos != null && subpassos.length == nSP){
                     for(int i = 0; i < nSP; i++){
                         SubPasso sp = new SubPasso();
                         sp.carregar(subpassos[i]);
@@ -219,9 +222,10 @@ public class Passo implements Carregavel {
             if(idTecnicoRealizou==null && subpassos.size()==0) valido = false;
         }
         else{
-            if(idTecnicoRealizou!=null) valido = false;
+            if(idTecnicoRealizou!=null) {
+                valido = false;
+            }
         }
-
         return valido && descricao.length()>0 && custoEstimado >= 0 && duracaoEstimada >= 0;
     }
 

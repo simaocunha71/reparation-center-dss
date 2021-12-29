@@ -18,9 +18,9 @@ public interface ICentroReparacoes {
 
     void adicionar_cliente(String nif, String nome, String numTelemovel, String email) throws JaExistenteExcecao, IOException;
 
-    void adicionar_orcamento(Orcamento orcamento) throws IOException;
+    void adicionar_orcamento(Orcamento orcamento) throws IOException; //**
 
-    void concluir_reparacao(Orcamento orcamento) throws IOException;
+    void concluir_reparacao(Orcamento orcamento) throws IOException; //**
 
     void carregar_utilizadores(String filename) throws IOException, JaExistenteExcecao;
 
@@ -48,13 +48,13 @@ public interface ICentroReparacoes {
 
     IPedido get_pedido(int posicao);
 
-    void gerar_orcamento(PlanoDeTrabalho plano) throws IOException;
+    void gerar_orcamento(PlanoDeTrabalho plano) throws IOException; //**
 
     List<Orcamento> get_orcamentos_por_confirmar();
 
     ICliente get_cliente(String nif);
 
-    void confirmar_orcamento(int num_ref) throws IOException;
+    void confirmar_orcamento(int num_ref) throws IOException; //**
 
     List<Orcamento> get_orcamentos_confirmados();
 

@@ -5,9 +5,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Armazem {
-    private Map<Integer, Equipamento> paraOrcamento = new HashMap<>(); //0
-    private Map<Integer, Equipamento> paraReparacao = new HashMap<>(); //1
-    private Map<Integer, Equipamento> prontosAEntregar = new HashMap<>(); //2
+    private Map<Integer, Equipamento> paraOrcamento = new HashMap<>(); //0 //key -> num_reg
+    private Map<Integer, Equipamento> paraReparacao = new HashMap<>(); //1 //key -> num_reg
+    private Map<Integer, Equipamento> prontosAEntregar = new HashMap<>(); //2 //key -> num_reg
     private int ultimoNumeroDeRegisto;
 
 
@@ -21,17 +21,25 @@ public class Armazem {
     private void regista_para_orcamento(Equipamento equipamento){
         Equipamento clone = new Equipamento(equipamento.getNifCliente(), equipamento.getNumeroRegisto(), equipamento.getModelo(), equipamento.getDescricao());
         paraOrcamento.put(clone.getNumeroRegisto(),clone);
-        this.ultimoNumeroDeRegisto++;
+        regista_num_ref(equipamento.getNumeroRegisto());
     }
 
     private void regista_para_reparacao(Equipamento equipamento){
         Equipamento clone = new Equipamento(equipamento.getNifCliente(), equipamento.getNumeroRegisto(), equipamento.getModelo(), equipamento.getDescricao());
         paraReparacao.put(clone.getNumeroRegisto(),clone);
+        regista_num_ref(equipamento.getNumeroRegisto());
     }
 
     private void regista_prontos_entregar(Equipamento equipamento){
         Equipamento clone = new Equipamento(equipamento.getNifCliente(), equipamento.getNumeroRegisto(), equipamento.getModelo(), equipamento.getDescricao());
         prontosAEntregar.put(clone.getNumeroRegisto(),clone);
+        regista_num_ref(equipamento.getNumeroRegisto());
+    }
+
+    private void regista_num_ref(int num_ref){
+        if(this.ultimoNumeroDeRegisto < num_ref){
+            this.ultimoNumeroDeRegisto = num_ref;
+        }
     }
 
     public int get_ultimo_numero_de_registo_equipamento(){

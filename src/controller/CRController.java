@@ -69,7 +69,6 @@ public class CRController {
             "Telemovel",
             "Email", //Funcionar ou Técnico ou Gestor
             "Guardar e sair",
-            "Voltar"
     };
 
 
@@ -79,7 +78,6 @@ public class CRController {
             "Password",
             "Tipo de Utilizador", //Funcionar ou Técnico ou Gestor
             "Guardar e sair",
-            "Voltar"
     };
 
     private final String[] escolheTipoUtilizador = new String[]{
@@ -91,7 +89,6 @@ public class CRController {
     private final String[] menuRegistoPedido = new String[]{
             "Serviço Express",
             "Pedido de orçamento",
-            "Voltar"
     };
 
     private final String[] menuPedido = new String[]{
@@ -402,7 +399,9 @@ public class CRController {
         }
         menu.simpleRun();
     }
-
+//TODO: ver o problema de estar o custo estimado e tempo estimado a zero
+//TODO: ver o problema de percentagem de orçamento estar a NAN
+//TODO: ver se depois de exceder o budget e voltar a ser confirmado se ele recalcula a estimativa
     private void processar_reparaçao(int num_ref) throws IOException, ClassNotFoundException {
         Orcamento orcamento = centro.get_orcamento(num_ref);
         Orcamento clone = orcamento.clone();
@@ -478,11 +477,11 @@ public class CRController {
         });
         menu.setHandler(2,()->{
             clone.setCustoReal(scanFloat("Custo Real:"));
-            menu.changeOption(2,"Custo Real [" + clone.calcula_custo_gasto() + "]" );
+            menu.changeOption(2,"Custo Real [" + clone.getCustoReal() + "]" );
         });
         menu.setHandler(3,()->{
             clone.setDuracaoReal(scanFloat("Tempo Real:"));
-            menu.changeOption(3,"Tempo Real [" + clone.calcula_tempo_gasto() + "]" );
+            menu.changeOption(3,"Tempo Real [" + clone.getDuracaoReal() + "]" );
 
         });
         menu.setHandler(4,()->{
@@ -606,7 +605,7 @@ public class CRController {
             auxView.perguntaNIFCliente();
             String auxNif = nif.get();
             nif.set(scanner.nextLine());
-            if(verifInt(nif.get()) && verifLength(nif.get(),9)) {
+            if(verifInt(nif.get()) && verifSameLength(nif.get(),9)) {
                 menu.changeOption(2, "NIF do cliente: " + nif.get());
                 condicao.get(1).set(1);
             }
@@ -619,7 +618,7 @@ public class CRController {
             auxView.perguntaTelemovel();
             String auxTelemovel = telemovel.get();
             telemovel.set(scanner.nextLine());
-            if(verifInt(telemovel.get()) && verifLength(telemovel.get(),9)) {
+            if(verifInt(telemovel.get()) && verifSameLength(telemovel.get(),9)) {
                 menu.changeOption(3, "Telemóvel do cliente: " + telemovel.get());
                 condicao.get(2).set(1);
             }
@@ -723,7 +722,6 @@ public class CRController {
 
         //menu.setHandler(1,()->{pedidoExpress();menu.returnMenu();});
         menu.setHandler(2,()->{registarPedidoOrcamento();menu.returnMenu();});
-        menu.setHandler(3,menu::returnMenu);
 
 
         menu.simpleRun();
@@ -731,7 +729,7 @@ public class CRController {
 
 
     private void registarPedidoOrcamento() throws IOException, ClassNotFoundException {
-        CRView menu = new CRView("Pedido Express", menuPedido);
+        CRView menu = new CRView("Pedido Orçamento", menuPedido);
         AtomicReference<String> nif = new AtomicReference<>();
         AtomicReference<String> descricaoPedido = new AtomicReference<>();
         AtomicReference<String> modelo = new AtomicReference<>();
@@ -747,7 +745,7 @@ public class CRController {
             auxView.perguntaNIFCliente();
             String auxNif = nif.get();
             nif.set(scanner.nextLine());
-            if(verifInt(nif.get()) && verifLength(nif.get(),9)) {
+            if(verifInt(nif.get()) && verifSameLength(nif.get(),9)) {
                 if(centro.exists_cliente(nif.get())) {
                     menu.changeOption(1, "NIF do cliente: " + nif.get());
                     condicao.get(0).set(1);
@@ -770,7 +768,7 @@ public class CRController {
             }
             else {
                 condicao.get(1).set(1);
-                menu.changeOption(2,"Equipamento [Registado #"+centro.get_ultimo_numero_de_registo_equipamento()+1+"]");
+                menu.changeOption(2,"Equipamento [Registado #"+(centro.get_ultimo_numero_de_registo_equipamento()+1)+"]");
             }
         });
         menu.setHandler(3, ()->{
@@ -796,8 +794,6 @@ public class CRController {
     private void equipamentoInfo(AtomicReference<String> modelo, AtomicReference<String> descricao) throws IOException, ClassNotFoundException {
         CRView menu = new CRView("Equipamento Info", menuEquipamentoInfo);
 
-        auxView.normalMessage("#"+centro.get_ultimo_numero_de_registo_equipamento()+1+" equipamento a registar.");
-
         List<AtomicInteger> condicao = new ArrayList<>(2);
         for(int i = 0; i < 2; i++){
             condicao.add(i,new AtomicInteger(0));
@@ -822,7 +818,7 @@ public class CRController {
             String auxDescricao = descricao.get();
             descricao.set(scanner.nextLine());
             if(verifLength(descricao.get(),25)) {
-                menu.changeOption(1,"Descrição: "+descricao.get());
+                menu.changeOption(2,"Descrição: "+descricao.get());
                 condicao.get(1).set(1);
                 }
             else {
@@ -848,6 +844,10 @@ public class CRController {
 
     private boolean verifLength(String string,int limit){
         return string.length() <= limit;
+    }
+
+    private boolean verifSameLength(String string,int limit){
+        return string.length() == limit;
     }
 
     private boolean verifEmail(String email){
