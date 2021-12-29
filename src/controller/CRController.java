@@ -6,6 +6,7 @@ import model.interfaces.*;
 import model.orcamento.Passo;
 import model.orcamento.PlanoDeTrabalho;
 import model.orcamento.SubPasso;
+import model.pedidos.PedidoExpresso;
 import model.utilizadores.Funcionario;
 import model.utilizadores.Tecnico;
 import view.CRView;
@@ -43,6 +44,7 @@ public class CRController {
             "Registar pedido",
             "Gerar orçamento/Criar plano",
             "Confirmar orcamento",
+            "Realizar pedido expresso",
             "Processar reparação",
             "Concluir pedido",
             "Lista de funcionários",
@@ -52,8 +54,9 @@ public class CRController {
     };
 
     private final String[] menuPrincipalTecnico = new String[]{
-            "Lista de pedidos de orçamento",
-            "Lista de equipamentos para reparação",
+            "Gerar orçamento/Criar plano",
+            "Realizar pedido expresso",
+            "Processar reparação",
             "Logout",
     };
 
@@ -159,6 +162,13 @@ public class CRController {
             "Guardar e voltar"
     };
 
+    private final String[] pedidosExpressos = new String[]{
+           "Trocar ecrã [Custo 50€]",
+           "Instalar sistema operativo [Custo 20€]",
+           "Trocar bateria [Custo 25€]",
+           "Limpar equipamento [Custo 10€]",
+    };
+
 
     private boolean logged = false;
 
@@ -170,6 +180,9 @@ public class CRController {
         }
         catch (JaExistenteExcecao ignored){
         }
+
+        //centro.debug();
+
         CRView menu = new CRView("Centro de Reparações",menuInicial);
         menu.setHandler(1, this::login);
         menu.simpleRun();
@@ -227,6 +240,9 @@ public class CRController {
     private void menuInicialGestor() throws IOException, ClassNotFoundException {
         CRView menu = new CRView("Menu Inicial", menuPrincipalGestor);
 
+        menu.setPreCondition(5,()->!centro.disponibilidade_pedido_expresso());
+        menu.setPreCondition(6, centro::disponibilidade_pedido_expresso);
+
         menu.setHandler(1,this::registarCliente);
 
         menu.setHandler(2,this::registarPedido);
@@ -234,16 +250,17 @@ public class CRController {
         menu.setHandler(3,this::listaDePedidosOrcamento);
 
         menu.setHandler(4,this::confirmarOrcamento);
+        menu.setHandler(5,this::realizarPedidoExpresso);
 
-        menu.setHandler(5,this::listaDeEquipamentosReparacao);
-        menu.setHandler(6,this::concluir_pedido);
+        menu.setHandler(6,this::listaDeEquipamentosReparacao);
+        menu.setHandler(7,this::concluir_pedido);
 
-        menu.setHandler(7,()->listaDeUsuarios(centro.get_utilizadores().values().stream().filter(v->v.getClass().equals(Funcionario.class)).collect(Collectors.toMap(IUtilizador::getId, Function.identity())),"Lista de Funcionarios"));
+        menu.setHandler(8,()->listaDeUsuarios(centro.get_utilizadores().values().stream().filter(v->v.getClass().equals(Funcionario.class)).collect(Collectors.toMap(IUtilizador::getId, Function.identity())),"Lista de Funcionarios"));
 
-        menu.setHandler(8,()->listaDeUsuarios(centro.get_utilizadores().values().stream().filter(v->v.getClass().equals(Tecnico.class)).collect(Collectors.toMap(IUtilizador::getId, Function.identity())),"Lista de Tecnicos"));
+        menu.setHandler(9,()->listaDeUsuarios(centro.get_utilizadores().values().stream().filter(v->v.getClass().equals(Tecnico.class)).collect(Collectors.toMap(IUtilizador::getId, Function.identity())),"Lista de Tecnicos"));
 
-        menu.setHandler(9,this::registarUtilizador);
-        menu.setHandler(10,()->{menu.returnMenu();logout();});
+        menu.setHandler(10,this::registarUtilizador);
+        menu.setHandler(11,()->{menu.returnMenu();logout();});
 
         menu.simpleRun();
     }
@@ -263,7 +280,7 @@ public class CRController {
     }
 
     private void fazerPlano(int i) throws IOException, ClassNotFoundException {
-        IPedido pedido = centro.get_pedido(i);
+        IPedido pedido = centro.get_pedido_orcamento(i);
         IPlanoDeTrabalho plano = new PlanoDeTrabalho(pedido);
         CRView menu = new CRView("Registar Plano",menuPlano);
         menu.setPreCondition(3, plano::valida);
@@ -381,12 +398,35 @@ public class CRController {
     private void menuInicialTecnico() throws IOException, ClassNotFoundException {
         CRView menu = new CRView("Menu Inicial", menuPrincipalTecnico);
 
-        menu.setHandler(1,this::listaDePedidosOrcamento);
+        menu.setPreCondition(2,()->!centro.disponibilidade_pedido_expresso());
+        menu.setPreCondition(3, centro::disponibilidade_pedido_expresso);
 
-        menu.setHandler(2,this::listaDeEquipamentosReparacao);
-        menu.setHandler(3,()->{menu.returnMenu();logout();});
+        menu.setHandler(1,this::listaDePedidosOrcamento);
+        menu.setHandler(2,this::realizarPedidoExpresso);
+        menu.setHandler(3,this::listaDeEquipamentosReparacao);
+        menu.setHandler(4,()->{menu.returnMenu();logout();});
 
         menu.simpleRun();
+    }
+
+    private void realizarPedidoExpresso() throws IOException, ClassNotFoundException {
+        IPedido p = centro.get_pedido_expresso();
+        if(p!=null) {
+            System.out.println("DEBUG p!=NULL");
+            int tipo = 0;
+            if (p.getClass().equals(PedidoExpresso.class)) {
+                tipo = ((PedidoExpresso) p).getTipo();
+            }
+            CRView menu = new CRView("Cliente: [" + p.getNifCliente() + "] Data de Registo: [" + p.getTempoRegisto() + "] Equipamento :[#" + p.getNumeroRegistoEquipamento() + "] Tipo: [" + tipo + "]", new String[]{"Concluir"});
+            menu.setHandler(1, () -> {
+                centro.completa_pedido_expresso();
+                ICliente cliente = centro.get_cliente(p.getNifCliente());
+                menu.showInfo("Cliente notificado para "+cliente.getNumTelemovel());
+                menu.returnMenu();
+            });
+
+            menu.simpleRun();
+        }
     }
 
 
@@ -822,10 +862,68 @@ public class CRController {
 
     private void registarPedido() throws IOException, ClassNotFoundException {
         CRView menu = new CRView("Registo Pedido", menuRegistoPedido);
-        //TODO: fazer
-        //menu.setHandler(1,()->{pedidoExpress();menu.returnMenu();});
+        menu.setPreCondition(1, centro::disponibilidade_pedido_expresso);
+
+        menu.setHandler(1,()->{pedidoExpress();menu.returnMenu();});
         menu.setHandler(2,()->{registarPedidoOrcamento();menu.returnMenu();});
 
+
+        menu.simpleRun();
+    }
+
+    private void pedidoExpress() throws IOException, ClassNotFoundException {
+        CRView menu = new CRView("Pedido Expresso", menuPedido);
+        AtomicReference<String> nif = new AtomicReference<>();
+        AtomicInteger tipo = new AtomicInteger(0);
+        AtomicReference<String> modelo = new AtomicReference<>();
+        AtomicReference<String> descricaoEquipamento = new AtomicReference<>();
+        List<AtomicInteger> condicao = new ArrayList<>(3);
+        for(int i = 0; i < 3; i++){
+            condicao.add(i,new AtomicInteger(0));
+        }
+
+        menu.setPreCondition(4,()-> condicao.stream().noneMatch(k -> k.get() == 0));
+
+        menu.setHandler(1,()->{
+            auxView.perguntaNIFCliente();
+            String auxNif = nif.get();
+            nif.set(scanner.nextLine());
+            if(verifInt(nif.get()) && verifSameLength(nif.get(),9)) {
+                if(centro.exists_cliente(nif.get())) {
+                    menu.changeOption(1, "NIF do cliente: " + nif.get());
+                    condicao.get(0).set(1);
+                }
+                else{
+                    auxView.errorMessage("Cliente não registado!");
+                }
+            }
+            else{
+                auxView.errorMessage("Nif inválido!");
+                nif.set(auxNif);
+            }
+        });
+        menu.setHandler(2, ()->{
+            equipamentoInfo(modelo,descricaoEquipamento);
+
+            if(modelo.get() == null){
+                menu.changeOption(2,"Equipamento");
+                condicao.get(1).set(0);
+            }
+            else {
+                condicao.get(1).set(1);
+                menu.changeOption(2,"Equipamento [Registado #"+(centro.get_ultimo_numero_de_registo_equipamento()+1)+"]");
+            }
+        });
+        menu.setHandler(3, ()->{
+            auxView.normalMessage("Tipo de Pedido Expresso: ");;
+            tipo.set(menu.readOptionBetween(1,4,pedidosExpressos));
+            menu.changeOption(3,"Tipo: "+tipo.get());
+            condicao.get(2).set(1);
+        });
+        menu.setHandler(4, ()->{
+            centro.adicionar_pedido_expresso(nif.get(),modelo.get(),descricaoEquipamento.get(),tipo.get());
+            menu.returnMenu();
+        });
 
         menu.simpleRun();
     }

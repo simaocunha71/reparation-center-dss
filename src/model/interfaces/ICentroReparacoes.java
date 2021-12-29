@@ -8,6 +8,8 @@ import java.util.Map;
 
 public interface ICentroReparacoes {
 
+    //void debug();
+
     IUtilizador get_utilizador_by_ID(String id);
 
     String get_logged_id();
@@ -48,7 +50,7 @@ public interface ICentroReparacoes {
 
     List<IOrcamento> get_orcamentos_completos();
 
-    IPedido get_pedido(int posicao);
+    IPedido get_pedido_orcamento(int posicao);
 
     void gerar_orcamento(IPlanoDeTrabalho plano) throws IOException; //**
 
@@ -71,4 +73,11 @@ public interface ICentroReparacoes {
     void remover_utilizador(String id) throws IOException;
 
     IEquipamento get_equipamento(int num_ref);
+
+    boolean disponibilidade_pedido_expresso();
+
+    void adicionar_pedido_expresso(String nifCliente, String modelo, String descricaoEquipamento, int tipo) throws IOException;
+
+    IPedido get_pedido_expresso();
+    void completa_pedido_expresso() throws IOException;
 }

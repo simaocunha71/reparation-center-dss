@@ -26,7 +26,7 @@ public class CRFacade implements ICentroReparacoes {
 
     private Map<String, IUtilizador> utilizadores; //map com utilizadores do sistema
     private Map<String, ICliente> clientes;//map com clientes do sistema
-    private Set<IPedido> pedidosOrcamentos;
+    private Set<IPedido> pedidosPendentes;
     private Map<Integer, IPedido> pedidosJaPlaneados;
     private Map<Integer, IPedido> pedidosCompletos;
     private Map<Integer, IOrcamento> orcamentos; //numero de registo do equipamento é a key
@@ -41,7 +41,7 @@ public class CRFacade implements ICentroReparacoes {
     public CRFacade(){
         this.utilizadores = new HashMap<>();
         this.clientes = new HashMap<>();
-        this.pedidosOrcamentos = new TreeSet<IPedido>(new IPedidoComparator());
+        this.pedidosPendentes = new TreeSet<IPedido>(new IPedidoComparator());
         this.armazem = new Armazem();
         this.orcamentos = new HashMap<>();
         this.pedidosJaPlaneados = new HashMap<>();
@@ -72,6 +72,9 @@ public class CRFacade implements ICentroReparacoes {
         return clientes.get(id);
     }
 
+    //public void debug(){
+    //    //
+    //}
 
     public void adicionar_utilizador(String id,String nome,String password,int permissao) throws JaExistenteExcecao, IOException {
         IUtilizador utilizador = null;
@@ -100,6 +103,22 @@ public class CRFacade implements ICentroReparacoes {
         if(!clientes.containsKey(cliente.getNif())){
             clientes.put(cliente.getNif(),cliente.clone());
         }else{throw  new JaExistenteExcecao("Cliente já existe no sistema");}
+    }
+
+    public boolean disponibilidade_pedido_expresso(){
+        return pedidosPendentes.size() == 0 || pedidosPendentes.stream().findFirst().get().getClass().equals(PedidoOrcamento.class);
+    }
+
+    public void completa_pedido_expresso() throws IOException {
+        if(pedidosPendentes.size() > 0){
+            IPedido pedido = pedidosPendentes.stream().findFirst().get();
+            if(pedido.getClass().equals(PedidoExpresso.class)){
+                pedidosPendentes.remove(pedido);
+                transferencia_seccao(pedido.getNumeroRegistoEquipamento());
+                adicionar_pedido_completo(pedido);
+                gravar_todos_pedidos();
+            }
+        }
     }
 
     /**
@@ -186,7 +205,7 @@ public class CRFacade implements ICentroReparacoes {
     }
 
     private void remove_pedido_orcamento(int num_referencia) throws IOException {
-        Iterator<IPedido> iterator = pedidosOrcamentos.iterator();
+        Iterator<IPedido> iterator = pedidosPendentes.iterator();
         boolean encontrado = false;
         while(iterator.hasNext() && !encontrado){
             IPedido pedido = iterator.next();
@@ -396,7 +415,7 @@ public class CRFacade implements ICentroReparacoes {
                     IPedido pedido = null;
                     switch (tipo){
                         case 1, 3,4 -> pedido = new PedidoOrcamento();
-                        case 2 -> pedido = new PedidoExpresso();
+                        case 2, 5 -> pedido = new PedidoExpresso();
                     }
                     if(pedido != null) {
                         System.out.println("DEBUG CARREGANDO");
@@ -416,10 +435,9 @@ public class CRFacade implements ICentroReparacoes {
 
     private void carregar_pedido(IPedido pedido, int tipo) {
         switch (tipo){
-            case 1-> pedidosOrcamentos.add(pedido);
-            //TODO: case 2 -> pedidos expresso;
+            case 1,2-> pedidosPendentes.add(pedido);
             case 3-> adicionar_pedido_ja_planeado(pedido);
-            case 4-> adicionar_pedido_completo(pedido);
+            case 4,5 -> adicionar_pedido_completo(pedido);
         }
     }
 
@@ -446,20 +464,15 @@ public class CRFacade implements ICentroReparacoes {
                             dataRegisto = LocalDateTime.parse(infos[2]);
                         }
                         IPedido pedido = new PedidoExpresso();
-                        System.out.println("DEBUG: "+numRegisto);
                         if (pedidosJaPlaneados.containsKey(numRegisto)) {
-                            System.out.println("DEBUG existe chave");
                             pedido = pedidosJaPlaneados.get(numRegisto);
                         }else if (pedidosCompletos.containsKey(numRegisto)) {
-                            System.out.println("DEBUG existe chave");
                             pedido = pedidosCompletos.get(numRegisto);
                         }else valido = false;
                         if(valido) {
-                            System.out.println("DEBUG: IF1");
                             IOrcamento orcamento = new Orcamento(numRegisto, pedido,confirmacao,dataRegisto);
                             orcamento.carregar(split[1]);
                             if (orcamento.valida()) {
-                                System.out.println("DEBUG: IF2");
                                 carregar_orcamento(orcamento);
                             }
                         }
@@ -508,9 +521,9 @@ public class CRFacade implements ICentroReparacoes {
         switch (tipo){
             case 1 -> {
                 return clientes.containsKey(pedido.getNifCliente()) && armazem.contem_equipamento_para_orcamento(pedido.getNumeroRegistoEquipamento());}
-            case 3 -> {
+            case 2,3 -> {
                 return clientes.containsKey(pedido.getNifCliente()) && armazem.contem_equipamento_para_reparacao(pedido.getNumeroRegistoEquipamento());}
-            case 4 -> {
+            case 4,5 -> {
                 return clientes.containsKey(pedido.getNifCliente()) && armazem.contem_equipamento_pronto_a_entregar(pedido.getNumeroRegistoEquipamento());
             }
             default -> {
@@ -537,12 +550,37 @@ public class CRFacade implements ICentroReparacoes {
             IEquipamento e = new Equipamento(nifCliente, armazem.get_ultimo_numero_de_registo_equipamento()+1,modelo,descricaoEquipamento );
             armazem.regista_equipamento(e,1);
             IPedido pedido = new PedidoOrcamento(nifCliente, e.getNumeroRegisto(), descricaoPedido);
-            pedidosOrcamentos.add(pedido);
+            pedidosPendentes.add(pedido);
             String log = "0;"+pedido.getTempoRegisto();
             adicionar_log(log,get_logged_id());
             gravar_pedido(pedido);
             gravar_equipamento(e,1);
         }
+    }
+
+    public void adicionar_pedido_expresso(String nifCliente, String modelo, String descricaoEquipamento, int tipo) throws IOException {
+        if(clientes.containsKey(nifCliente)){
+            IEquipamento e = new Equipamento(nifCliente, armazem.get_ultimo_numero_de_registo_equipamento()+1,modelo,descricaoEquipamento );
+            armazem.regista_equipamento(e,2);
+            IPedido pedido = new PedidoExpresso(nifCliente, e.getNumeroRegisto(), tipo);
+            pedidosPendentes.add(pedido);
+            String log = "0;"+pedido.getTempoRegisto();
+            adicionar_log(log,get_logged_id());
+            gravar_pedido(pedido);
+            gravar_equipamento(e,2);
+        }
+    }
+
+    public IPedido get_pedido_expresso() {
+        if(pedidosPendentes.size() > 0){
+            System.out.println("DEBUGZAO");
+            IPedido p = pedidosPendentes.stream().findFirst().get();
+            if(p.getClass().equals(PedidoExpresso.class)){
+                System.out.println("DEBUGZAO MASTER");
+                return p.clone();
+            }
+        }
+        return null;
     }
 
 
@@ -632,7 +670,10 @@ public class CRFacade implements ICentroReparacoes {
 
     private void gravar_pedido(IPedido pedido) throws IOException {
         FileWriter w = new FileWriter("cp/pedidos.csv",true);
-        w.write(pedido.toString()+"\n");
+        int tipo = 1;
+        if(pedido.getClass().equals(PedidoExpresso.class))
+            tipo = 2;
+        w.write(tipo+"@"+pedido.toString()+"\n");
         w.close();
     }
 
@@ -642,12 +683,14 @@ public class CRFacade implements ICentroReparacoes {
         w.close();
     }
 
-    //TODO: falta os express
     private void gravar_todos_pedidos() throws IOException {
         FileWriter w = new FileWriter("cp/pedidos.csv");
-        pedidosOrcamentos.forEach(k-> {
+        pedidosPendentes.forEach(k-> {
+            int tipo = 1;
+            if(k.getClass().equals(PedidoExpresso.class))
+                tipo = 2;
             try {
-                w.write("1@"+k.toString()+"\n");
+                w.write(tipo+"@"+k.toString()+"\n");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -660,8 +703,11 @@ public class CRFacade implements ICentroReparacoes {
             }
         });
         pedidosCompletos.forEach((v,k)-> {
+            int tipo = 4;
+            if(k.getClass().equals(PedidoExpresso.class))
+                tipo = 5;
             try {
-                w.write("4@"+k.toString()+"\n");
+                w.write(tipo+"@"+k.toString()+"\n");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -710,21 +756,25 @@ public class CRFacade implements ICentroReparacoes {
     }
 
     public List<String> get_pedidos_orcamento(){
-        List<String> lista = new ArrayList<String>(pedidosOrcamentos.size());
+        List<String> lista = new ArrayList<String>(pedidosPendentes.size());
 
-        Iterator<IPedido> iterator = pedidosOrcamentos.iterator();
+        Iterator<IPedido> iterator = pedidosPendentes.iterator();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_FORMATTER);
-        for(int i = 0; i < 10 && iterator.hasNext(); i++){
+        for(int i = 0; i < 10 && iterator.hasNext();){
             IPedido p = iterator.next();
-            lista.add("DATA:["+p.getTempoRegisto().format(formatter) + "] CLIENTE:["+p.getNifCliente()+ "] EQUIPAMENTO:[#"+p.getNumeroRegistoEquipamento()+"]");
+            if(p.getClass().equals(PedidoOrcamento.class)){
+                i++;
+                lista.add("DATA:["+p.getTempoRegisto().format(formatter) + "] CLIENTE:["+p.getNifCliente()+ "] EQUIPAMENTO:[#"+p.getNumeroRegistoEquipamento()+"]");
+            }
         }
         return lista;
     }
 
-    public IPedido get_pedido(int posicao){
-        Iterator<IPedido> iterator = pedidosOrcamentos.iterator();
-        for(int i = 1; i < posicao && iterator.hasNext(); i++){
-            iterator.next();
+    public IPedido get_pedido_orcamento(int posicao){
+        Iterator<IPedido> iterator = pedidosPendentes.iterator();
+        for(int i = 1; i < posicao && iterator.hasNext();){
+            IPedido pedido = iterator.next();
+            if(pedido.getClass().equals(PedidoOrcamento.class)) i++;
         }
         IPedido pedido = null;
         if (iterator.hasNext()) pedido = iterator.next().clone();
