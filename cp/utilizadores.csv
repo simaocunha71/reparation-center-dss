@@ -1,7 +1,4 @@
-nivelPermissao@id;nome;password
-1@u;u;u
-1@surumkata;Tiago Silva;arrozdoce
-2@cunhamore;Simão Cunha;a
-3@gba;Braz Afonso;gba2001
-3@runlo;Rui Pereira;ccfornextyear
+1@gestor;Gestor;gestor
+2@tecnico;Tecnico;tecnico
+3@funcionario;Funcionario;funcionario
 
