@@ -202,7 +202,7 @@ public class CRFacade implements ICentroReparacoes {
     }
 
     public IEquipamento getEquipamento(int num_ref) {
-        return armazem.getEquipamento(num_ref).clone();
+        return armazem.get_equipamento(num_ref).clone();
     }
 
 
@@ -402,7 +402,7 @@ public class CRFacade implements ICentroReparacoes {
                 equipamento.carregar(split[0]);
                 try {
                     int local = Integer.parseInt(split[1]);
-                    if (equipamento.valida()) armazem.adicionar_equipamento(equipamento,local);
+                    if (equipamento.valida()) armazem.regista_equipamento(equipamento,local);
                 }catch (NumberFormatException ignored){}
             }
         }
@@ -829,7 +829,7 @@ public class CRFacade implements ICentroReparacoes {
     }
 
     public IEquipamento get_equipamento(int num_ref){
-        return armazem.getEquipamento(num_ref);
+        return armazem.get_equipamento(num_ref);
     }
 
     public String get_logs_tecnicos_simples(){

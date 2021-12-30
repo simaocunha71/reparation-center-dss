@@ -21,20 +21,17 @@ public class Armazem {
     }
 
     private void regista_para_orcamento(IEquipamento equipamento){
-        IEquipamento clone = new Equipamento(equipamento.getNifCliente(), equipamento.getNumeroRegisto(), equipamento.getModelo(), equipamento.getDescricao());
-        paraOrcamento.put(clone.getNumeroRegisto(),clone);
+        paraOrcamento.put(equipamento.getNumeroRegisto(),equipamento.clone());
         regista_num_ref(equipamento.getNumeroRegisto());
     }
 
     private void regista_para_reparacao(IEquipamento equipamento){
-        IEquipamento clone = new Equipamento(equipamento.getNifCliente(), equipamento.getNumeroRegisto(), equipamento.getModelo(), equipamento.getDescricao());
-        paraReparacao.put(clone.getNumeroRegisto(),clone);
+        paraReparacao.put(equipamento.getNumeroRegisto(),equipamento.clone());
         regista_num_ref(equipamento.getNumeroRegisto());
     }
 
     private void regista_prontos_entregar(IEquipamento equipamento){
-        IEquipamento clone = new Equipamento(equipamento.getNifCliente(), equipamento.getNumeroRegisto(), equipamento.getModelo(), equipamento.getDescricao());
-        prontosAEntregar.put(clone.getNumeroRegisto(),clone);
+        prontosAEntregar.put(equipamento.getNumeroRegisto(),equipamento.clone());
         regista_num_ref(equipamento.getNumeroRegisto());
     }
 
@@ -48,34 +45,6 @@ public class Armazem {
         return this.ultimoNumeroDeRegisto;
     }
 
-
-
-    private void adicionar_equipamento_para_orcamento(IEquipamento equipamento){
-        if(!paraOrcamento.containsKey(equipamento.getNumeroRegisto())){
-            regista_para_orcamento(equipamento);
-        }
-    }
-
-    private void adicionar_equipamento_para_reparacao(IEquipamento equipamento){
-        if(!paraReparacao.containsKey(equipamento.getNumeroRegisto())){
-            regista_para_reparacao(equipamento);
-        }
-    }
-
-    private void adicionar_equipamento_pronto_a_entregar(IEquipamento equipamento){
-        if(!prontosAEntregar.containsKey(equipamento.getNumeroRegisto())){
-            regista_prontos_entregar(equipamento);
-        }
-    }
-
-    public void adicionar_equipamento(IEquipamento equipamento,int local) throws IOException {
-        switch (local){
-            case 1 -> adicionar_equipamento_para_orcamento(equipamento);
-            case 2 -> adicionar_equipamento_para_reparacao(equipamento);
-            case 3 -> adicionar_equipamento_pronto_a_entregar(equipamento);
-
-        }
-    }
 
     public void regista_equipamento(IEquipamento e, int local) {
         switch (local){
@@ -123,6 +92,7 @@ public class Armazem {
     }
 
 
+    //TODO: juntar contem
     public boolean contem_equipamento_para_orcamento(int numeroRegisto){
         return paraOrcamento.containsKey(numeroRegisto);
     }
@@ -135,7 +105,7 @@ public class Armazem {
         return prontosAEntregar.containsKey(numeroRegisto);
     }
 
-    public IEquipamento getEquipamento(int num_ref) {
+    public IEquipamento get_equipamento(int num_ref) {
         IEquipamento e = null;
         e = getEquipamentoParaOrcamento(num_ref);
         if(e == null) e = getEquipamentoParaReparacao(num_ref);
