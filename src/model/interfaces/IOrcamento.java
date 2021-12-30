@@ -17,6 +17,7 @@ public interface IOrcamento extends Carregavel {
     void carregar(IOrcamento orcamento);
 
     IPlanoDeTrabalho get_plano_de_trabalho();
+    void set_plano_de_trabalho(IPlanoDeTrabalho plano_de_trabalho);
 
     int get_num_registo();
 

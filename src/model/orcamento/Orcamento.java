@@ -97,4 +97,7 @@ public class Orcamento implements IOrcamento {
         return new Orcamento(this.num_registo,this.plano_de_trabalho,this.confirmado,this.data_confirmacao);
     }
 
+    public void set_plano_de_trabalho(IPlanoDeTrabalho plano_de_trabalho) {
+        this.plano_de_trabalho = plano_de_trabalho.clone();
+    }
 }
