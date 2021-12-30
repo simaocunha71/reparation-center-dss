@@ -38,8 +38,8 @@ public class SSUtilizadores implements IGestUtilizadores {
         return utilizadores.get(id).clone();
     }
 
-    public boolean existe_utilizador(String nomeDeUtilizador) {
-        return utilizadores.containsKey(nomeDeUtilizador);
+    public boolean existe_utilizador(String id) {
+        return utilizadores.containsKey(id);
     }
 
     public void carregar(String string) {

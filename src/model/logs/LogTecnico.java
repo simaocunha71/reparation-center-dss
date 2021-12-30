@@ -1,4 +1,4 @@
-package model;
+package model.logs;
 
 import model.interfaces.Carregavel;
 

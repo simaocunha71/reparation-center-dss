@@ -1,7 +1,7 @@
 package model.interfaces;
 
-import model.LogFuncionario;
-import model.LogTecnico;
+import model.logs.LogFuncionario;
+import model.logs.LogTecnico;
 import model.utilizadores.Funcionario;
 import model.utilizadores.Tecnico;
 

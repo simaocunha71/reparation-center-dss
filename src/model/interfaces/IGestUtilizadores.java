@@ -9,7 +9,7 @@ public interface IGestUtilizadores extends Carregavel {
 
     IUtilizador get_utilizador(String id);
 
-    boolean existe_utilizador(String nomeDeUtilizador);
+    boolean existe_utilizador(String id);
 
     Map<String, IUtilizador> get_utilizadores();
 

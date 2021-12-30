@@ -3,7 +3,7 @@ package model.interfaces;
 public interface ISessao {
 
 
-    boolean login (String id, String password);
+    boolean login (String user_id, String password);
 
     void logout();
 

@@ -2,6 +2,7 @@ package controller;
 
 import model.*;
 import model.interfaces.*;
+import model.logs.LogTecnico;
 import model.orcamento.Passo;
 import model.orcamento.PlanoDeTrabalho;
 import model.orcamento.SubPasso;

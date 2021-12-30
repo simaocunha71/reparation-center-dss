@@ -1,6 +1,6 @@
 package model.interfaces;
 
-import model.LogTecnico;
+import model.logs.LogTecnico;
 import model.excecoes.JaExistenteExcecao;
 
 import java.io.IOException;

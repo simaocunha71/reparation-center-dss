@@ -9,6 +9,7 @@ import model.comparators.IOrcamentoComparator;
 import model.comparators.IPedidoComparator;
 import model.excecoes.JaExistenteExcecao;
 import model.interfaces.*;
+import model.logs.LogTecnico;
 import model.orcamento.Orcamento;
 import model.pedidos.PedidoExpresso;
 import model.pedidos.PedidoOrcamento;
@@ -459,10 +460,10 @@ public class CRFacade implements ICentroReparacoes {
     }
 
 
-    public boolean login(String nomeDeUtilizador, String password) {
-        if (utilizadores.existe_utilizador(nomeDeUtilizador)){
-            if(utilizadores.get_utilizador(nomeDeUtilizador).get_password().equals(password)) {
-                this.logado = utilizadores.get_utilizador(nomeDeUtilizador);
+    public boolean login(String user_id, String password) {
+        if (utilizadores.existe_utilizador(user_id)){
+            if(utilizadores.get_utilizador(user_id).get_password().equals(password)) {
+                this.logado = utilizadores.get_utilizador(user_id);
                 return true;
             }
         }
