@@ -488,7 +488,7 @@ public class CRFacade implements ICentroReparacoes {
                         LogTecnico log = new LogTecnico();
                         log.carregar(split[1]);
                         if(log.valida()) {
-                            logs_tecnicos.put(log.getUserId(),log);
+                            logs_tecnicos.put(log.get_user_id(),log);
                         }
                     }
                 } catch (NumberFormatException ignored) {}
@@ -849,7 +849,7 @@ public class CRFacade implements ICentroReparacoes {
 
     public String get_logs_tecnicos_simples(){
         StringBuilder sb = new StringBuilder();
-        logs_tecnicos.forEach((k, v)-> sb.append(v.getUserId()).append("-> Passos [").append(v.get_numero_passos_completos()).append("] ")
+        logs_tecnicos.forEach((k, v)-> sb.append(v.get_user_id()).append("-> Passos [").append(v.get_numero_passos_completos()).append("] ")
                 .append("Pedidos Expresso [").append(v.get_numero_reparacoes_expresso()).append("] ")
                 .append("Duracao Media [").append(v.get_media_duracao_real()).append("] ")
                 .append("Desvio Duracao Media [").append(v.get_media_duracao_esperada()-v.get_media_duracao_real()).append("]\n"));
@@ -867,7 +867,7 @@ public class CRFacade implements ICentroReparacoes {
     public List<LogTecnico> get_logs_tecnicos_extensivos(){
         List<LogTecnico> tecnicos = new ArrayList<>();
         logs_tecnicos.forEach((k, v)->{
-            if(existe_utilizador(v.getUserId())) tecnicos.add(v);
+            if(existe_utilizador(v.get_user_id())) tecnicos.add(v);
         });
         return tecnicos;
     }

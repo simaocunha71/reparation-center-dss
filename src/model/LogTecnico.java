@@ -22,7 +22,6 @@ public class LogTecnico implements Carregavel {
         this.intervencoes = new ArrayList<>();
     }
 
-    @Override
     public void carregar(String string) {
         String []split = string.split("%");
         if(split.length == 2){
@@ -42,7 +41,7 @@ public class LogTecnico implements Carregavel {
         if(intervencao_valida(intervencao)) intervencoes.add(intervencao);
     }
 
-    public String getUserId() {
+    public String get_user_id() {
         return userId;
     }
 
