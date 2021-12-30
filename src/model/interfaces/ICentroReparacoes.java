@@ -7,11 +7,10 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-public interface ICentroReparacoes {
+public interface ICentroReparacoes extends ISessao{
 
-    //void debug();
 
-    IUtilizador get_utilizador_by_ID(String id);
+    IUtilizador get_utilizador(String id);
 
     String get_logged_id();
 
@@ -29,19 +28,9 @@ public interface ICentroReparacoes {
 
     void adicionar_log(String log, String user_id) throws IOException;
 
-    boolean exists_plan();
+    boolean existe_utilizador(String id);
 
-    boolean login (String id, String password);
-
-    void logout();
-
-    boolean logged_funcionario();
-    boolean logged_tecnico();
-    boolean logged_gestor();
-
-    boolean exists_user(String id);
-
-    boolean exists_cliente(String nif);
+    boolean existe_cliente(String nif);
 
     int get_ultimo_numero_de_registo_equipamento();
 
@@ -63,7 +52,6 @@ public interface ICentroReparacoes {
 
     IOrcamento get_orcamento(int num_ref);
 
-    IEquipamento getEquipamento(int num_ref);
 
     void recusa_orcamento(int num_ref) throws IOException;
 
@@ -86,5 +74,5 @@ public interface ICentroReparacoes {
 
     String get_logs_funcionarios();
 
-    List<LogTecnico> get_logs_tecnicos_simples_extensivos();
+    List<LogTecnico> get_logs_tecnicos_extensivos();
 }

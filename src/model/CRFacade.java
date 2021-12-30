@@ -73,7 +73,7 @@ public class CRFacade implements ICentroReparacoes {
      * @param id id
      * @return  IUtilizador
      */
-    public IUtilizador get_utilizador_by_ID(String id){
+    public IUtilizador get_utilizador(String id){
         return utilizadores.get(id);
     }
 
@@ -262,7 +262,7 @@ public class CRFacade implements ICentroReparacoes {
     }
 
     public void adicionar_log(String log, String user_id) throws IOException {
-        IUtilizador u = get_utilizador_by_ID(user_id);
+        IUtilizador u = get_utilizador(user_id);
         if(u.getClass().equals(Tecnico.class)){
             if(logsTecnicos.containsKey(user_id)){
                 logsTecnicos.get(user_id).addIntervencao(log);
@@ -612,11 +612,11 @@ public class CRFacade implements ICentroReparacoes {
         return false;
     }
 
-    public boolean exists_user(String id){
+    public boolean existe_utilizador(String id){
         return utilizadores.containsKey(id);
     }
 
-    public boolean exists_cliente(String nif){
+    public boolean existe_cliente(String nif){
         return clientes.containsKey(nif);
     }
 
@@ -853,10 +853,10 @@ public class CRFacade implements ICentroReparacoes {
         return sb.toString();
     }
 
-    public List<LogTecnico> get_logs_tecnicos_simples_extensivos(){
+    public List<LogTecnico> get_logs_tecnicos_extensivos(){
         List<LogTecnico> tecnicos = new ArrayList<>();
         logsTecnicos.forEach((k,v)->{
-            if(exists_user(v.getUserId())) tecnicos.add(v);
+            if(existe_utilizador(v.getUserId())) tecnicos.add(v);
         });
         return tecnicos;
     }

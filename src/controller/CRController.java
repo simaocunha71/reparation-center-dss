@@ -824,7 +824,7 @@ public class CRController {
             auxView.perguntaId();
             String old = id.get();
             id.set(scanner.nextLine());
-            if(!centro.exists_user(id.get())){
+            if(!centro.existe_utilizador(id.get())){
                 menu.changeOption(1,"Id: " + id.get());
                 condicao.get(0).set(1);
             }else {
@@ -905,7 +905,7 @@ public class CRController {
             String auxNif = nif.get();
             nif.set(scanner.nextLine());
             if(verifInt(nif.get()) && verifSameLength(nif.get(),9)) {
-                if(centro.exists_cliente(nif.get())) {
+                if(centro.existe_cliente(nif.get())) {
                     menu.changeOption(1, "NIF do cliente: " + nif.get());
                     condicao.get(0).set(1);
                 }
@@ -963,7 +963,7 @@ public class CRController {
             String auxNif = nif.get();
             nif.set(scanner.nextLine());
             if(verifInt(nif.get()) && verifSameLength(nif.get(),9)) {
-                if(centro.exists_cliente(nif.get())) {
+                if(centro.existe_cliente(nif.get())) {
                     menu.changeOption(1, "NIF do cliente: " + nif.get());
                     condicao.get(0).set(1);
                 }
@@ -1102,7 +1102,7 @@ public class CRController {
     }
 
     private void estatisticasTecnicosExtensivo() throws IOException, ClassNotFoundException {
-        List<LogTecnico> tecnicosLogs = centro.get_logs_tecnicos_simples_extensivos();
+        List<LogTecnico> tecnicosLogs = centro.get_logs_tecnicos_extensivos();
         String[] tecnicos = new String[tecnicosLogs.size()];
         for(int i =0; i < tecnicosLogs.size() && i < 10 ;i++){
             String sb = "Tecnico [" + tecnicosLogs.get(i).getUserId() + "]";
