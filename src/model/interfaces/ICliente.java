@@ -3,13 +3,13 @@ package model.interfaces;
 public interface ICliente extends Carregavel {
 
 
-    String getNif();
+    String get_nif();
 
-    String getEmail();
-    String getNome();
+    String get_email();
+    String get_nome();
 
 
-    String getNumTelemovel();
+    String get_num_telemovel();
 
     ICliente clone();
 

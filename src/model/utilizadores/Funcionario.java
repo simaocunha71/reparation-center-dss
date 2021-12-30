@@ -19,9 +19,9 @@ public class Funcionario implements IUtilizador {
         this.password = "";
     }
 
-    public String getName(){return this.nome;}
-    public String getId(){return this.id;}
-    public String getPassword(){return this.password;}
+    public String get_nome(){return this.nome;}
+    public String get_id(){return this.id;}
+    public String get_password(){return this.password;}
 
     public void carregar(String string) {
         String[]split = string.split(";");
@@ -37,7 +37,8 @@ public class Funcionario implements IUtilizador {
     }
 
     public String salvar(){
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb;
+        sb = new StringBuilder();
         sb.append("2@").append(id).append(";").append(nome).append(";").append(password);
         return sb.toString();
     }

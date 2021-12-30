@@ -12,14 +12,14 @@ public class CRView implements ANSIICores{
      * Interface para execucao de opcoes
      */
     public interface Handler {
-        public void execute() throws IOException, ClassNotFoundException, JaExistenteExcecao;
+        void execute() throws IOException, ClassNotFoundException, JaExistenteExcecao;
     }
 
     /**
      * Interface para indicar pre-condicoes para opcoes
      */
     public interface PreCondition {
-        public boolean validate();
+        boolean validate();
     }
 
 
@@ -39,7 +39,7 @@ public class CRView implements ANSIICores{
      */
     public CRView(String title, String[] options){
         this.title = title;
-        this.options = new LinkedList<String>(Arrays.asList(options));
+        this.options = new LinkedList<>(Arrays.asList(options));
         this.available = new ArrayList<>();
         this.handlers = new ArrayList<>();
         this.options.forEach(s-> {
@@ -48,7 +48,7 @@ public class CRView implements ANSIICores{
         });
     }
 
-    public void changeOption(int opt, String option){
+    public void change_option(int opt, String option){
         if(options.size() > opt){
             this.options.remove(opt-1);
             this.options.add(opt-1,option);
@@ -61,14 +61,14 @@ public class CRView implements ANSIICores{
      * o booleano de control torne falso
      * Caso seja escolhido uma opcao valida e as pre-condicoes dessa opcao
      * sejam cumpridas, executa o handler respetivo
-     * @throws IOException
-     * @throws ClassNotFoundException
+     * @throws IOException e
+     * @throws ClassNotFoundException e
      */
-    public void simpleRun() throws IOException, ClassNotFoundException {
+    public void simple_run() throws IOException, ClassNotFoundException {
         int op;
         do {
-            simpleShow();
-            op = readOption();
+            simple_show();
+            op = read_option();
             // testar pré-condição
             if (op>0 && !this.available.get(op-1).validate()) {
                 System.out.println(RED +"Option not available"+ RESET);
@@ -89,7 +89,7 @@ public class CRView implements ANSIICores{
      * @param i índice da opção
      * @param b pré-condição a registar para a opcao
      */
-    public void setPreCondition(int i, PreCondition b) {
+    public void set_pre_condition(int i, PreCondition b) {
         this.available.set(i-1,b);
     }
 
@@ -99,7 +99,7 @@ public class CRView implements ANSIICores{
      * @param list lista das opcoes a abrangir
      * @param b pre-condicao a registar nas opcoes
      */
-    public void setSamePreCondition(int[] list, PreCondition b) {
+    public void set_same_pre_condition(int[] list, PreCondition b) {
         for(int i:list) this.available.set(i-1,b);
 
     }
@@ -110,7 +110,7 @@ public class CRView implements ANSIICores{
      * @param i indice da opção
      * @param h handlers a registar
      */
-    public void setHandler(int i, Handler h) {
+    public void set_handler(int i, Handler h) {
         this.handlers.set(i-1, h);
     }
 
@@ -118,7 +118,7 @@ public class CRView implements ANSIICores{
     /**
      * Imprime as varias opcoes, verificando se as pre-condicoes estao a ser compridas
      */
-    private void simpleShow() {
+    private void simple_show() {
         System.out.println(YELLOW + this.title + RESET);
         for (int i=0; i<this.options.size(); i++) {
             System.out.print(i+1);
@@ -132,11 +132,11 @@ public class CRView implements ANSIICores{
      * Le uma opcao escolhida pelo user
      * @return opcao escolhida
      */
-    private int readOption() {
+    private int read_option() {
         int op;
         //Scanner is = new Scanner(System.in);
 
-        informationMessage("Option: ");
+        information_message("Option: ");
         try {
             String line = is.nextLine();
             op = Integer.parseInt(line);
@@ -158,7 +158,7 @@ public class CRView implements ANSIICores{
      * @param options opcoes disponiveis
      * @return input do utilizador
      */
-    public int readOptionBetween(int lower, int higher, String[] options) {
+    public int read_option_between(int lower, int higher, String[] options) {
         int op = -1;
         //Scanner is = new Scanner(System.in);
         int i = 0;
@@ -168,14 +168,12 @@ public class CRView implements ANSIICores{
                 i++;
             }
         }
-        informationMessage("Write a number between "+lower+" and "+higher+"\nOption: ");
+        information_message("Write a number between "+lower+" and "+higher+"\nOption: ");
         while(op == -1) {
             try {
                 String line = is.nextLine();
                 op = Integer.parseInt(line);
-            } catch (NumberFormatException e) { // Não foi inscrito um int
-                op = -1;
-            }
+            } catch (NumberFormatException ignored) {}
             if (op < lower || op > higher) {
                 System.out.println(RED + "Invalid Option" + RESET);
                 op = -1;
@@ -188,32 +186,24 @@ public class CRView implements ANSIICores{
      * Faz toString de um objeto dado
      * @param o objeto a imprimir no ecra
      */
-    public void showInfo(Object o){
+    public void show_info(Object o){
         System.out.println(o.toString());
-        informationMessage("Press any key to continue");
+        information_message("Press any key to continue");
         is.nextLine();
     }
 
     /**
      * Torna o booleano de controlo em falso, para encerrar o menu
      */
-    public void returnMenu(){
+    public void return_menu(){
         exit = true;
-    }
-
-    /**
-     * Imprime uma mensagem a amarelo
-     * @param message mensagem a imprimir
-     */
-    public void titleMessage(String message){
-        System.out.println(YELLOW +message+RESET);
     }
 
     /**
      * Imprime uma mensagem a verde
      * @param message mensagem a imprimir
      */
-    public void confirmationMessage(String message){
+    public void confirmation_message(String message){
         System.out.println(GREEN + message + RESET);
     }
 
@@ -221,41 +211,10 @@ public class CRView implements ANSIICores{
      * Imprime mensagens a roxo
      * @param message mensagem a imprimir
      */
-    public void informationMessage(String message){
+    public void information_message(String message){
         System.out.println(PURPLE + message + RESET);
     }
 
-
-
-    /**
-     * Imprime mensagem a vermelho
-     * @param error mensagem a imprimir
-     */
-
-
-    /**
-     * Metodo que limpa o terminal
-     */
-    public final static void clearConsole()
-    {
-        try
-        {
-            final String os = System.getProperty("os.name");
-
-            if (os.contains("Windows"))
-            {
-                Runtime.getRuntime().exec("cls");
-            }
-            else
-            {
-                Runtime.getRuntime().exec("clear");
-            }
-        }
-        catch (final Exception e)
-        {
-            //  Handle any exceptions.
-        }
-    }
 
 }
 

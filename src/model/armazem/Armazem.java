@@ -2,47 +2,43 @@ package model.armazem;
 
 import model.interfaces.IEquipamento;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 public class Armazem {
-    private Map<Integer, IEquipamento> paraOrcamento = new HashMap<>(); //0 //key -> num_reg
-    private Map<Integer, IEquipamento> paraReparacao = new HashMap<>(); //1 //key -> num_reg
-    private Map<Integer, IEquipamento> prontosAEntregar = new HashMap<>(); //2 //key -> num_reg
-    private int ultimoNumeroDeRegisto;
+    private Map<Integer, IEquipamento> para_orcamento = new HashMap<>(); //0 //key -> num_reg
+    private Map<Integer, IEquipamento> para_reparacao= new HashMap<>(); //1 //key -> num_reg
+    private Map<Integer, IEquipamento> prontos_a_entregar= new HashMap<>(); //2 //key -> num_reg
+    private int ultimo_numero_registado;
 
 
     public Armazem(){
-        this.ultimoNumeroDeRegisto = 0;
-        paraOrcamento = new HashMap<>();
-        paraReparacao = new HashMap<>();
-        prontosAEntregar = new HashMap<>();
+        this.ultimo_numero_registado = 0;
     }
 
     private void regista_para_orcamento(IEquipamento equipamento){
-        paraOrcamento.put(equipamento.getNumeroRegisto(),equipamento.clone());
-        regista_num_ref(equipamento.getNumeroRegisto());
+        para_orcamento.put(equipamento.get_numero_registo(),equipamento.clone());
+        regista_num_reg(equipamento.get_numero_registo());
     }
 
     private void regista_para_reparacao(IEquipamento equipamento){
-        paraReparacao.put(equipamento.getNumeroRegisto(),equipamento.clone());
-        regista_num_ref(equipamento.getNumeroRegisto());
+        para_reparacao.put(equipamento.get_numero_registo(),equipamento.clone());
+        regista_num_reg(equipamento.get_numero_registo());
     }
 
     private void regista_prontos_entregar(IEquipamento equipamento){
-        prontosAEntregar.put(equipamento.getNumeroRegisto(),equipamento.clone());
-        regista_num_ref(equipamento.getNumeroRegisto());
+        prontos_a_entregar.put(equipamento.get_numero_registo(),equipamento.clone());
+        regista_num_reg(equipamento.get_numero_registo());
     }
 
-    private void regista_num_ref(int num_ref){
-        if(this.ultimoNumeroDeRegisto < num_ref){
-            this.ultimoNumeroDeRegisto = num_ref;
+    private void regista_num_reg(int num_registo){
+        if(this.ultimo_numero_registado < num_registo){
+            this.ultimo_numero_registado = num_registo;
         }
     }
 
     public int get_ultimo_numero_de_registo_equipamento(){
-        return this.ultimoNumeroDeRegisto;
+        return this.ultimo_numero_registado;
     }
 
 
@@ -56,78 +52,78 @@ public class Armazem {
 
     public String salvar(){
         StringBuilder sb = new StringBuilder();
-        paraOrcamento.forEach((k,v)->sb.append(v.salvar()).append("@1\n"));
-        paraReparacao.forEach((k,v)->sb.append(v.salvar()).append("@2\n"));
-        prontosAEntregar.forEach((k,v)->sb.append(v.salvar()).append("@3\n"));
+        para_orcamento.forEach((k, v)->sb.append(v.salvar()).append("@1\n"));
+        para_reparacao.forEach((k, v)->sb.append(v.salvar()).append("@2\n"));
+        prontos_a_entregar.forEach((k, v)->sb.append(v.salvar()).append("@3\n"));
         return sb.toString();
     }
 
 
-    public void transferencia_seccao(int num_ref) {
-        if(paraOrcamento.containsKey(num_ref)){
-            IEquipamento e = getEquipamentoParaOrcamento(num_ref);
-            remove_seccao_1(num_ref);
-            paraReparacao.put(num_ref,e);
+    public void transferencia_seccao(int num_registo) {
+        if(para_orcamento.containsKey(num_registo)){
+            IEquipamento e = get_equipamento_para_orcamento(num_registo);
+            remove_seccao_1(num_registo);
+            para_reparacao.put(num_registo,e);
         }
-        else if(paraReparacao.containsKey(num_ref)){
-            IEquipamento e = getEquipamentoParaReparacao(num_ref);
-            remove_seccao_2(num_ref);
-            prontosAEntregar.put(num_ref,e);
+        else if(para_reparacao.containsKey(num_registo)){
+            IEquipamento e = get_equipamento_para_reparacao(num_registo);
+            remove_seccao_2(num_registo);
+            prontos_a_entregar.put(num_registo,e);
         }
         else {
-            remove_seccao_3(num_ref);
+            remove_seccao_3(num_registo);
         }
     }
 
-    private void remove_seccao_1(int num_ref){
-        paraOrcamento.remove(num_ref);
+    private void remove_seccao_1(int num_registo){
+        para_orcamento.remove(num_registo);
     }
 
-    private void remove_seccao_2(int num_ref){
-        paraReparacao.remove(num_ref);
+    private void remove_seccao_2(int num_registo){
+        para_reparacao.remove(num_registo);
     }
 
-    private void remove_seccao_3(int num_ref){
-        prontosAEntregar.remove(num_ref);
+    private void remove_seccao_3(int num_registo){
+        prontos_a_entregar.remove(num_registo);
     }
 
 
     //TODO: juntar contem
-    public boolean contem_equipamento_para_orcamento(int numeroRegisto){
-        return paraOrcamento.containsKey(numeroRegisto);
+    public boolean contem_equipamento_para_orcamento(int num_registo){
+        return para_orcamento.containsKey(num_registo);
     }
 
-    public boolean contem_equipamento_para_reparacao(int numeroRegisto){
-        return paraReparacao.containsKey(numeroRegisto);
+    public boolean contem_equipamento_para_reparacao(int num_registo){
+        return para_reparacao.containsKey(num_registo);
     }
 
-    public boolean contem_equipamento_pronto_a_entregar(int numeroRegisto){
-        return prontosAEntregar.containsKey(numeroRegisto);
+    public boolean contem_equipamento_pronto_a_entregar(int num_registo){
+        return prontos_a_entregar.containsKey(num_registo);
     }
 
-    public IEquipamento get_equipamento(int num_ref) {
-        IEquipamento e = null;
-        e = getEquipamentoParaOrcamento(num_ref);
-        if(e == null) e = getEquipamentoParaReparacao(num_ref);
-        if(e == null) e = getEquipamentoProntoAEntregar(num_ref);
+    public IEquipamento get_equipamento(int num_registo) {
+        IEquipamento e;
+        e = get_equipamento_para_orcamento(num_registo);
+        if(e == null) e = get_equipamento_para_reparacao(num_registo);
+        if(e == null) e = get_equipamento_pronto_a_entregar(num_registo);
         return e;
     }
 
-    private IEquipamento getEquipamentoParaOrcamento(int num_ref){
-        if(contem_equipamento_para_orcamento(num_ref))
-            return paraOrcamento.get(num_ref).clone();
+    private IEquipamento get_equipamento_para_orcamento(int num_registo){
+        if(contem_equipamento_para_orcamento(num_registo))
+            return para_orcamento.get(num_registo).clone();
         else return null;
     }
 
-    private IEquipamento getEquipamentoParaReparacao(int num_ref){
-        if(contem_equipamento_para_reparacao(num_ref))
-            return paraReparacao.get(num_ref).clone();
+    private IEquipamento get_equipamento_para_reparacao(int num_registo){
+        if(contem_equipamento_para_reparacao(num_registo))
+            return para_reparacao.get(num_registo).clone();
         else return null;
     }
 
-    private IEquipamento getEquipamentoProntoAEntregar(int num_ref){
-        if(contem_equipamento_pronto_a_entregar(num_ref))
-            return prontosAEntregar.get(num_ref).clone();
+    private IEquipamento get_equipamento_pronto_a_entregar(int num_registo){
+        if(contem_equipamento_pronto_a_entregar(num_registo))
+            return prontos_a_entregar.get(num_registo).clone();
         else return null;
     }
 }

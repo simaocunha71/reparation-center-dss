@@ -5,37 +5,37 @@ import model.interfaces.ICliente;
 public class Cliente implements ICliente {
     private String nif;
     private String nome;
-    private String numTelemovel;
+    private String numero_telemovel;
     private String email;
 
-    public Cliente(String nif,String nome,String numTelemovel,String email){
+    public Cliente(String nif, String nome, String numero_telemovel, String email){
         this.nif = nif;
         this.nome = nome;
-        this.numTelemovel = numTelemovel;
+        this.numero_telemovel = numero_telemovel;
         this.email = email;
     }
 
     public Cliente(){
         this.nif = "";
         this.nome = "";
-        this.numTelemovel = "";
+        this.numero_telemovel = "";
         this.email = "";
     }
 
-    public String getNif() {
+    public String get_nif() {
         return nif;
     }
 
-    public String getEmail() {
+    public String get_email() {
         return email;
     }
 
-    public String getNome() {
+    public String get_nome() {
         return nome;
     }
 
-    public String getNumTelemovel() {
-        return numTelemovel;
+    public String get_num_telemovel() {
+        return numero_telemovel;
     }
 
     public void carregar(String string){
@@ -43,7 +43,7 @@ public class Cliente implements ICliente {
         if(split.length == 4) {
             this.nif = split[0];
             this.nome = split[1];
-            this.numTelemovel = split[2];
+            this.numero_telemovel = split[2];
             this.email = split[3];
         }
     }
@@ -60,12 +60,12 @@ public class Cliente implements ICliente {
 
     private boolean valida_telemovel(){
         try{
-            Integer.parseInt(this.numTelemovel);
+            Integer.parseInt(this.numero_telemovel);
         }
         catch (NumberFormatException e){
             return false;
         }
-        return this.numTelemovel.length() == 9;
+        return this.numero_telemovel.length() == 9;
     }
 
     private boolean valida_email(){
@@ -88,12 +88,13 @@ public class Cliente implements ICliente {
     }
 
     public String salvar(){
-        StringBuilder sb = new StringBuilder();
-        sb.append(nif).append(";").append(nome).append(";").append(numTelemovel).append(";").append(email);
+        StringBuilder sb;
+        sb = new StringBuilder();
+        sb.append(nif).append(";").append(nome).append(";").append(numero_telemovel).append(";").append(email);
         return sb.toString();
     }
 
     public ICliente clone(){
-        return new Cliente(this.nif,this.nome,this.numTelemovel,this.email);
+        return new Cliente(this.nif,this.nome,this.numero_telemovel,this.email);
     }
 }

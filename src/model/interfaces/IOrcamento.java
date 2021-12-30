@@ -2,13 +2,13 @@ package model.interfaces;
 
 import java.time.LocalDateTime;
 
-public interface IOrcamento extends Planeavel {
+public interface IOrcamento extends Carregavel {
 
     IOrcamento clone();
 
-    boolean getConfirmado();
+    boolean get_confirmado();
 
-    LocalDateTime getDataConfirmacao();
+    LocalDateTime get_data_confirmacao();
 
     void confirma();
 
@@ -16,6 +16,8 @@ public interface IOrcamento extends Planeavel {
 
     void carregar(IOrcamento orcamento);
 
-    IPlanoDeTrabalho getPlanoDeTrabalho();
+    IPlanoDeTrabalho get_plano_de_trabalho();
+
+    int get_num_registo();
 
 }

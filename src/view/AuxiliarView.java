@@ -1,64 +1,56 @@
 package view;
 
 public class AuxiliarView implements ANSIICores {
-    public AuxiliarView(){};
+    public AuxiliarView(){}
 
 
-    public void errorMessage(String error){
+    public void mensagem_de_erro(String error){
 
         System.out.println(RED + error + RESET);
     }
 
-    public void perguntaNomeDeUtilizador(){
+    public void pergunta_nome(){
         System.out.println("Nome de Utilizador: ");
     }
 
-    public void perguntaPasseDeUtilizador(){
+    public void pergunta_password(){
         System.out.println("Password: ");
     }
 
 
-    public void perguntaId(){
+    public void pergunta_id(){
         System.out.println("Id : ");
     }
 
-    public void perguntaNomeCliente(){
+    public void pergunta_nome_cliente(){
         System.out.println("Nome do cliente: ");
     }
 
-    public void perguntaNIFCliente(){
+    public void pergunta_nif_do_cliente(){
         System.out.println("NIF do cliente: ");
     }
 
-    public void perguntaTelemovel(){
+    public void pergunta_numero_de_telemovel(){
         System.out.println("Número de telemóvel: ");
     }
 
-    public void perguntaEquipamento(){
-        System.out.println("Equipamento: ");
-    }
-
-    public void perguntaEmail(){
+    public void pergunta_email(){
         System.out.println("Email do cliente: ");
     }
 
-    public void apresentarPlano(String string){
+    public void apresentar_plano(String string){
         System.out.println(string);
     }
 
-    /**
-     * Imprime mensagens na cor natural do terminal
-     * @param message mensagem a imprimir
-     */
-    public void normalMessage(String message){
+    public void mensagem_normal(String message){
         System.out.println(message);
     }
 
-    public void apresentarPasso(String string) {
+    public void apresentar_passo(String string) {
         System.out.println(string);
     }
 
-    public void apresentarSubPasso(String string) {
+    public void apresentar_subpasso(String string) {
         System.out.println(string);
     }
 

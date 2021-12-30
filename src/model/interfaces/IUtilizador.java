@@ -2,11 +2,11 @@ package model.interfaces;
 
 public interface IUtilizador extends Carregavel {
 
-    String getName();
+    String get_nome();
 
-    String getId();
+    String get_id();
 
-    String getPassword();
+    String get_password();
 
     IUtilizador clone();
 

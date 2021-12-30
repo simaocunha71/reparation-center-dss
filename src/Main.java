@@ -1,19 +1,11 @@
 import controller.CRController;
-import model.excecoes.JaExistenteExcecao;
-
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
 
 public class Main {
 
-    public static void main(String[] args) throws IOException, ClassNotFoundException {
+    public static void main(String[] args) {
 
         CRController controller = new CRController();
         controller.run();
-
-
     }
 
 }

@@ -1,13 +1,11 @@
 package model.interfaces;
 
 public interface IEquipamento extends Carregavel{
-    String getNifCliente();
+    int get_numero_registo();
 
-    int getNumeroRegisto();
+    String get_modelo();
 
-    String getModelo();
-
-    String getDescricao();
+    String get_descricao();
 
     IEquipamento clone();
 }

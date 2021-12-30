@@ -7,34 +7,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PlanoDeTrabalho implements IPlanoDeTrabalho {
-    private IPedido pedidoAssociado;
+    private IPedido pedido_associado;
     private List<Passo> passos;
     private boolean realizado;
 
 
-    public PlanoDeTrabalho(IPedido pedidoAssociado){
-        this.pedidoAssociado = pedidoAssociado.clone();
+    public PlanoDeTrabalho(IPedido pedido_associado){
+        this.pedido_associado = pedido_associado.clone();
         this.passos = new ArrayList<>();
         this.realizado = false;
     }
 
-    public PlanoDeTrabalho(IPedido pedidoAssociado, boolean realizado,List<Passo> passos) {
-        this.pedidoAssociado = pedidoAssociado.clone();
+    public PlanoDeTrabalho(IPedido pedido_associado, boolean realizado, List<Passo> passos) {
+        this.pedido_associado = pedido_associado.clone();
         this.realizado = realizado;
         this.passos = new ArrayList<>();
         for(Passo p : passos){
             this.passos.add(p.clone());
         }
     }
-
-    public boolean getRealizado() {
-        return realizado;
-    }
-
-    public int get_num_ref(){
-        return pedidoAssociado.getNumeroRegistoEquipamento();
-    }
-
 
 
     //custoEstimado;custoReal;tempoEstimado;tempoReal;booleanoRealizado;numeroPassos@Passos
@@ -67,7 +58,7 @@ public class PlanoDeTrabalho implements IPlanoDeTrabalho {
     }
 
     public IPedido get_pedido(){
-        return pedidoAssociado.clone();
+        return pedido_associado.clone();
     }
 
     public boolean valida() {
@@ -80,16 +71,9 @@ public class PlanoDeTrabalho implements IPlanoDeTrabalho {
         return valido && passos.size() > 0;
     }
 
-    public void adicionar_passo(String descricao, float custoEstimado, float duracaoEstimada){
-        Passo p = new Passo(descricao,custoEstimado,duracaoEstimada);
-        passos.add(p);
-        int numeroSubPasso = passos.size()+1;
-        p.setNumero_passo(numeroSubPasso);
-    }
-
     public void adicionar_passo(Passo p){
         int numeroSubPasso = passos.size()+1;
-        p.setNumero_passo(numeroSubPasso);
+        p.set_numero_do_passo(numeroSubPasso);
         passos.add(p.clone());
     }
 
@@ -110,7 +94,7 @@ public class PlanoDeTrabalho implements IPlanoDeTrabalho {
     }
 
     public IPlanoDeTrabalho clone(){
-        return new PlanoDeTrabalho(this.pedidoAssociado,this.realizado,this.passos);
+        return new PlanoDeTrabalho(this.pedido_associado,this.realizado,this.passos);
     }
 
     public void recalcula_estimativas() {
@@ -127,10 +111,10 @@ public class PlanoDeTrabalho implements IPlanoDeTrabalho {
         return custo_gasto;
     }
 
-    public float calcula_gasto_estimado(){
+    public float calcula_custo_estimado(){
         float gasto_estimado = 0;
         for(Passo p : passos){
-            gasto_estimado += p.calcula_gasto_estimado();
+            gasto_estimado += p.calcula_custo_estimado();
         }
         return gasto_estimado;
     }
@@ -152,11 +136,11 @@ public class PlanoDeTrabalho implements IPlanoDeTrabalho {
     }
 
     public boolean ultrapassou_120porcento_orcamento(){
-        return calcula_gasto_estimado()*1.2 < calcula_custo_gasto();
+        return calcula_custo_estimado()*1.2 < calcula_custo_gasto();
     }
 
     public float orcamento_gasto(){
-        return calcula_custo_gasto()*100/calcula_gasto_estimado();
+        return calcula_custo_gasto()*100/ calcula_custo_estimado();
     }
 
     public Passo get_proximo_passo(){
@@ -207,12 +191,11 @@ public class PlanoDeTrabalho implements IPlanoDeTrabalho {
     public String toString(){
         StringBuilder sb = new StringBuilder();
 
-        sb.append(pedidoAssociado.toString() + "\n");
+        sb.append(pedido_associado.toString()).append("\n");
         if(passos.isEmpty())
-            sb.append("Não existem passos associados ao plano\n");
+            sb.append("Subpassos: não existem\n");
         else{
-            sb.append("Passos:\n");
-            sb.append(passos.toString()).append("\n");
+            sb.append("SubPassos: ").append(passos.size()).append("\n");
         }
         if(realizado)
             sb.append("Realizado: Sim");

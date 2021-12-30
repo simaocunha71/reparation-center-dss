@@ -4,11 +4,15 @@ import java.time.LocalDateTime;
 
 public interface IPedido extends Carregavel {
 
-    LocalDateTime getTempoRegisto();
-    int getNumeroRegistoEquipamento();
-    String getNifCliente();
-    IPedido clone();
-    void concluiPedido();
+    LocalDateTime get_tempo_registo();
 
-    LocalDateTime getDataConclusao();
+    int get_num_registo();
+
+    String get_nif_cliente();
+
+    IPedido clone();
+
+    void conclui_pedido();
+
+    LocalDateTime get_data_conclusao();
 }
