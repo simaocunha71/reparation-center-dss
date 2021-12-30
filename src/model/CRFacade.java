@@ -151,25 +151,25 @@ public class CRFacade implements ICentroReparacoes {
     }
 
     public void adicionar_orcamento(IOrcamento orcamento) {
-        int num_ref = orcamento.get_num_registo();
-        if(!orcamentos.containsKey(num_ref)){
-            orcamentos.put(num_ref,orcamento.clone());
-            gravar_orcamento(orcamentos.get(num_ref));
+        int num_reg = orcamento.get_num_registo();
+        if(!orcamentos.containsKey(num_reg)){
+            orcamentos.put(num_reg,orcamento.clone());
+            gravar_orcamento(orcamentos.get(num_reg));
         }else {
-            orcamentos.remove(num_ref);
-            orcamentos.put(num_ref,orcamento.clone());
+            orcamentos.remove(num_reg);
+            orcamentos.put(num_reg,orcamento.clone());
             gravar_todos_orcamentos();
         }
     }
 
 
     public void gerar_orcamento(IPlanoDeTrabalho plano) {
-        int num_referencia = plano.get_pedido().get_num_registo();
-        remove_pedido_orcamento(num_referencia);
-        transferencia_seccao(num_referencia);
-        if(!orcamentos.containsKey(num_referencia)){
+        int num_registo = plano.get_pedido().get_num_registo();
+        remove_pedido_orcamento(num_registo);
+        transferencia_seccao(num_registo);
+        if(!orcamentos.containsKey(num_registo)){
             IOrcamento orcamento = new Orcamento(plano);
-            orcamentos.put(num_referencia,orcamento);
+            orcamentos.put(num_registo,orcamento);
             gravar_orcamento(orcamento);
         }
     }
@@ -192,24 +192,24 @@ public class CRFacade implements ICentroReparacoes {
     }
 
 
-    public IOrcamento get_orcamento(int num_ref) {
+    public IOrcamento get_orcamento(int num_reg) {
         IOrcamento orcamento = null;
-        if(orcamentos.containsKey(num_ref)) orcamento= orcamentos.get(num_ref);
+        if(orcamentos.containsKey(num_reg)) orcamento= orcamentos.get(num_reg);
         if(orcamento != null )return orcamento.clone();
         else return null;
     }
 
-    private void transferencia_seccao(int num_referencia) {
-        armazem.transferencia_seccao(num_referencia);
+    private void transferencia_seccao(int num_reg) {
+        armazem.transferencia_seccao(num_reg);
         gravar_todos_equipamento();
     }
 
-    private void remove_pedido_orcamento(int num_referencia) {
+    private void remove_pedido_orcamento(int num_reg) {
         Iterator<IPedido> iterator = pedidos_pendentes.iterator();
         boolean encontrado = false;
         while(iterator.hasNext() && !encontrado){
             IPedido pedido = iterator.next();
-            if(pedido.get_num_registo() == num_referencia){
+            if(pedido.get_num_registo() == num_reg){
                 adicionar_pedido_ja_planeado(pedido);
                 iterator.remove();
                 encontrado = true;
@@ -218,21 +218,21 @@ public class CRFacade implements ICentroReparacoes {
         if(encontrado) gravar_todos_pedidos();
     }
 
-    private void remove_pedido_ja_planeado(int num_referencia) {
-        if(pedidos_ja_planeados.containsKey(num_referencia)) {
-            pedidos_ja_planeados.remove(num_referencia);
+    private void remove_pedido_ja_planeado(int num_reg) {
+        if(pedidos_ja_planeados.containsKey(num_reg)) {
+            pedidos_ja_planeados.remove(num_reg);
             gravar_todos_pedidos();
         }
     }
 
     public void concluir_reparacao(IOrcamento orcamento) {
-        int num_ref = orcamento.get_num_registo();
-        if(orcamentos.containsKey(num_ref)){
-            orcamentos.remove(num_ref);
-            orcamentos.put(num_ref,orcamento.clone());
-            transferencia_seccao(num_ref);
-            adicionar_pedido_completo(pedidos_ja_planeados.get(num_ref));
-            remove_pedido_ja_planeado(num_ref);
+        int num_reg = orcamento.get_num_registo();
+        if(orcamentos.containsKey(num_reg)){
+            orcamentos.remove(num_reg);
+            orcamentos.put(num_reg,orcamento.clone());
+            transferencia_seccao(num_reg);
+            adicionar_pedido_completo(pedidos_ja_planeados.get(num_reg));
+            remove_pedido_ja_planeado(num_reg);
             gravar_todos_orcamentos();
             gravar_todos_equipamento();
         }
@@ -256,10 +256,10 @@ public class CRFacade implements ICentroReparacoes {
         IUtilizador u = get_utilizador(user_id);
         if(u.getClass().equals(Tecnico.class)){
             if(logs_tecnicos.containsKey(user_id)){
-                logs_tecnicos.get(user_id).addIntervencao(log);
+                logs_tecnicos.get(user_id).add_intervencao(log);
             }else{
                 LogTecnico l = new LogTecnico(user_id);
-                l.addIntervencao(log);
+                l.add_intervencao(log);
                 logs_tecnicos.put(user_id,l);
             }
             gravar_todos_logs();
@@ -330,9 +330,9 @@ public class CRFacade implements ICentroReparacoes {
     }
 
     private void carregar_orcamento(IOrcamento orcamento) throws JaExistenteExcecao {
-        int num_referencia = orcamento.get_num_registo();
-        if (!orcamentos.containsKey(num_referencia)) {
-            orcamentos.put(num_referencia, orcamento);
+        int num_reg = orcamento.get_num_registo();
+        if (!orcamentos.containsKey(num_reg)) {
+            orcamentos.put(num_reg, orcamento);
             validade_orcamento(orcamento);
         } else throw new JaExistenteExcecao("Orcamento ja existe");
     }
@@ -340,7 +340,7 @@ public class CRFacade implements ICentroReparacoes {
     private void validade_orcamento(IOrcamento orcamento) {
         LocalDateTime thirtyDaysAgo = LocalDateTime.now().plusDays(-30);
         if(orcamento.get_confirmado() && !orcamento.get_data_confirmacao().isAfter(thirtyDaysAgo)) {
-            recusa_orcamento(orcamento.get_num_registo());
+            recusar_orcamento(orcamento.get_num_registo());
         }
     }
 
@@ -806,24 +806,25 @@ public class CRFacade implements ICentroReparacoes {
         }
     }
 
-    public void recusa_orcamento(int num_ref) {
-        if(orcamentos.containsKey(num_ref)){
-            IOrcamento orcamento = orcamentos.get(num_ref);
-            orcamentos.remove(num_ref);
+    public void recusar_orcamento(int num_reg) {
+        if(orcamentos.containsKey(num_reg)){
+            IOrcamento orcamento = orcamentos.get(num_reg);
+            orcamentos.remove(num_reg);
             IPedido pedido = orcamento.get_plano_de_trabalho().get_pedido();
-            pedidos_completos.put(num_ref,pedido);
-            pedidos_ja_planeados.remove(num_ref);
-            transferencia_seccao(num_ref);
+            pedidos_completos.put(num_reg,pedido);
+            pedidos_ja_planeados.remove(num_reg);
+            transferencia_seccao(num_reg);
             gravar_todos_orcamentos();
             gravar_todos_pedidos();
         }
     }
 
-    public void remover_orcamento(int num_ref) {
-        orcamentos.remove(num_ref);
-        pedidos_completos.remove(num_ref);
+    public void concluir_pedido(int num_reg) {
+        orcamentos.remove(num_reg);
+        pedidos_completos.remove(num_reg);
         String log = "1;"+LocalDateTime.now();
         adicionar_log(log,get_logged_id());
+        transferencia_seccao(num_reg);
         gravar_todos_orcamentos();
         gravar_todos_pedidos();
     }
@@ -843,8 +844,8 @@ public class CRFacade implements ICentroReparacoes {
         }
     }
 
-    public IEquipamento get_equipamento(int num_ref){
-        return armazem.get_equipamento(num_ref);
+    public IEquipamento get_equipamento(int num_reg){
+        return armazem.get_equipamento(num_reg);
     }
 
     public String get_logs_tecnicos_simples(){

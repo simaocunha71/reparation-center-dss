@@ -42,7 +42,7 @@ public class CRController {
             "Registar cliente",
             "Registar pedido",
             "Gerar orçamento/Criar plano",
-            "Confirmar orcamento",
+            "Confirmar/Recusar orcamento",
             "Realizar pedido expresso",
             "Processar reparação",
             "Concluir pedido/Entregar equipamento",
@@ -63,7 +63,7 @@ public class CRController {
     private final String[] menu_principal_funcionario = new String[]{
             "Registar cliente",
             "Registar pedido",
-            "Confirmar orcamento",
+            "Confirmar/Recusar orcamento",
             "Concluir pedido/Entregar equipamento",
             "Logout",
     };
@@ -294,7 +294,7 @@ public class CRController {
         for(; i.get() <= pedidos.size();i.incrementAndGet()){
             int posicao = i.get();
             menu.set_handler(i.get(),()->{
-                fazer_plano(pedidos.get(posicao));menu.return_menu();});
+                fazer_plano(pedidos.get(posicao-1));menu.return_menu();});
         }
         menu_run(menu);
     }
@@ -482,22 +482,21 @@ public class CRController {
         List<String> logsTemporarios = new ArrayList<>();
         CRView menu = new CRView("Processar Reparacao", menu_processar_reparacao);
         if(clone!=null) {
-            IPlanoDeTrabalho plano = clone.get_plano_de_trabalho();
-            menu.set_pre_condition(2,()->!plano.ultrapassou_120porcento_orcamento() && !plano.concluido() && plano.get_proximo_passo()!=null);
-            menu.set_pre_condition(3, plano::ultrapassou_120porcento_orcamento);
-            menu.set_pre_condition(4, ()-> plano.valida() && !plano.concluido());
-            menu.set_pre_condition(5, ()-> plano.concluido() && !plano.ultrapassou_120porcento_orcamento() );
-
+            menu.set_pre_condition(2,()->!clone.get_plano_de_trabalho().ultrapassou_120porcento_orcamento() && !clone.get_plano_de_trabalho().concluido() && clone.get_plano_de_trabalho().get_proximo_passo()!=null);
+            menu.set_pre_condition(3, ()->clone.get_plano_de_trabalho().ultrapassou_120porcento_orcamento());
+            menu.set_pre_condition(4, ()-> clone.get_plano_de_trabalho().valida() && !clone.get_plano_de_trabalho().concluido());
+            menu.set_pre_condition(5, ()-> clone.get_plano_de_trabalho().concluido() && !clone.get_plano_de_trabalho().ultrapassou_120porcento_orcamento());
 
             menu.set_handler(1, () -> {
+                IPlanoDeTrabalho plano_clone = clone.get_plano_de_trabalho();
                 StringBuilder sb = new StringBuilder();
                 sb.append("Equipamento [#").append(num_ref).append("]\n");
-                sb.append("Custo Estimado [").append(plano.calcula_custo_estimado()).append("]\n");
-                sb.append("Custo Real [").append(plano.calcula_custo_gasto()).append("]\n");
-                sb.append("Percentagem gasta [").append(plano.orcamento_gasto()).append("]\n");
-                sb.append("Tempo Estimado [").append(plano.calcula_duracao_estimada()).append("]\n");
-                sb.append("Tempo Real [").append(plano.calcula_tempo_gasto()).append("]\n");
-                sb.append("Orcamento excedido [").append(plano.ultrapassou_120porcento_orcamento()).append("]");
+                sb.append("Custo Estimado [").append(plano_clone.calcula_custo_estimado()).append("]\n");
+                sb.append("Custo Real [").append(plano_clone.calcula_custo_gasto()).append("]\n");
+                sb.append("Percentagem gasta [").append(plano_clone.orcamento_gasto()).append("]\n");
+                sb.append("Tempo Estimado [").append(plano_clone.calcula_duracao_estimada()).append("]\n");
+                sb.append("Tempo Real [").append(plano_clone.calcula_tempo_gasto()).append("]\n");
+                sb.append("Orcamento excedido [").append(plano_clone.orcamento_gasto() > 100).append("]");
                 menu.show_info(sb);
             });
             menu.set_handler(2,()-> logsTemporarios.addAll(executar_passo(clone)));
@@ -506,6 +505,7 @@ public class CRController {
                 clone.desconfirma();
                 centro.adicionar_orcamento(clone);
                 logs.addAll(logsTemporarios);
+                menu.return_menu();
             });
             menu.set_handler(4,()->{
                 orcamento.carregar(clone);
@@ -545,14 +545,11 @@ public class CRController {
             StringBuilder sb = new StringBuilder();
             sb.append("Descricao [#").append(clone.get_descricao()).append("]\n");
             sb.append("Custo Estimado [").append(clone.get_custo_estimado()).append("]\n");
-            sb.append("Custo Real [").append(clone.calcula_custo_gasto()).append("]\n");
             sb.append("Tempo Estimado [").append(clone.get_duracao_estimada()).append("]\n");
-            sb.append("Tempo Real [").append(clone.calcula_tempo_gasto()).append("]\n");
             sb.append("Realizado [").append(clone.concluido()).append("]\n");
-            sb.append("Percentagem gasta [").append(percentagem_gasta).append("]\n");
-
+            sb.append("Percentagem gasta de orcamento [").append(percentagem_gasta).append("]\n");
+            sb.append("*esta é a percentagem gasta até ao momento, nos outros passos, ou seja, não está a contar com este!*");
             menu.show_info(sb);
-
         });
         menu.set_handler(2,()->{
             clone.set_custo_real(scan_float("Custo Real:"));
@@ -577,6 +574,7 @@ public class CRController {
                 clone.concluir(centro.get_logged_id(),clone.get_custo_real(),clone.get_duracao_real());
                 passo.carrega(clone);
                 int num_ref = orcamento.get_num_registo();
+                orcamento.set_plano_de_trabalho(plano);
                 logs.add("1;" + num_ref + ";"
                         + centro.get_equipamento(num_ref).get_modelo() + ";"
                         + passo.get_descricao() + ";"
@@ -605,9 +603,7 @@ public class CRController {
             StringBuilder sb = new StringBuilder();
             sb.append("Descricao [#").append(clone.get_descricao()).append("]\n");
             sb.append("Custo Estimado [").append(clone.get_custo_estimado()).append("]\n");
-            sb.append("Custo Real [").append(clone.get_custo_real()).append("]\n");
             sb.append("Tempo Estimado [").append(clone.get_duracao_estimada()).append("]\n");
-            sb.append("Tempo Real [").append(clone.get_duracao_real()).append("]\n");
             sb.append("Realizado [").append(subPasso.concluido()).append("]\n");
             menu.show_info(sb);
         });
@@ -656,7 +652,7 @@ public class CRController {
         for(; i.get() <= pedidosString.length;i.incrementAndGet()){
             int posicao = i.get();
             int num_ref = pedidos.get(posicao-1).get_num_registo();
-            menu.set_handler(i.get(),()->{centro.remover_orcamento(num_ref);menu.return_menu();});
+            menu.set_handler(i.get(),()->{centro.concluir_pedido(num_ref);menu.return_menu();});
         }
         menu_run(menu);
     }
@@ -702,11 +698,11 @@ public class CRController {
         AtomicInteger i = new AtomicInteger(1);
         for(; i.get() <= orcamentos.size();i.incrementAndGet()){
             int posicao = i.get();
-            int num_ref = orcamentos.get(posicao-1).get_num_registo();
+            int num_registo = orcamentos.get(posicao-1).get_num_registo();
             menu.set_handler(i.get(),()->{
                 int opt = menu.read_option_between(1,2,new String[]{"Confirmar","Recusa"});
-                if(opt == 1) centro.confirmar_orcamento(num_ref);menu.return_menu();
-                if(opt == 2) centro.recusa_orcamento(num_ref);menu.return_menu();
+                if(opt == 1) centro.confirmar_orcamento(num_registo);menu.return_menu();
+                if(opt == 2) centro.recusar_orcamento(num_registo);menu.return_menu();
             });
         }
         menu_run(menu);

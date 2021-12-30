@@ -51,9 +51,9 @@ public interface ICentroReparacoes extends ISessao{
     IOrcamento get_orcamento(int num_registo);
 
 
-    void recusa_orcamento(int num_registo);
+    void recusar_orcamento(int num_registo);
 
-    void remover_orcamento(int num_registo);
+    void concluir_pedido(int num_registo);
 
     Map<String,IUtilizador> get_utilizadores();
 

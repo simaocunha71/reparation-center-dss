@@ -37,7 +37,7 @@ public class LogTecnico implements Carregavel {
         }
     }
 
-    public void addIntervencao(String intervencao){
+    public void add_intervencao(String intervencao){
         if(intervencao_valida(intervencao)) intervencoes.add(intervencao);
     }
 

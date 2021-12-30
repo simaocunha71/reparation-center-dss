@@ -195,7 +195,7 @@ public class PlanoDeTrabalho implements IPlanoDeTrabalho {
         if(passos.isEmpty())
             sb.append("Subpassos: não existem\n");
         else{
-            sb.append("SubPassos: ").append(passos.size()).append("\n");
+            sb.append("Passos: ").append(passos.size()).append("\n");
         }
         if(realizado)
             sb.append("Realizado: Sim");

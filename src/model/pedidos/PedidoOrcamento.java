@@ -97,4 +97,22 @@ public class PedidoOrcamento implements IPedido {
     public LocalDateTime get_data_conclusao() {
         return data_conclusao;
     }
+
+    //public class PedidoOrcamento implements IPedido {
+    //    private String nif_cliente;
+    //    private LocalDateTime data_registo;
+    //    private LocalDateTime data_conclusao;
+    //    private int numero_registo;
+    //    private String descricao_pedido;
+
+    public String toString(){
+        StringBuilder sb;
+        sb = new StringBuilder();
+        sb.append("Pedido de Orçamento:").append("\n");
+        sb.append(" > NIF do Cliente: ").append(nif_cliente).append("\n");
+        if(data_registo != null) sb.append(" > Data de registo: ").append(data_registo).append("\n");
+        sb.append(" > Equipamento: #").append(numero_registo).append("\n");
+        sb.append(" > Descricão do pedido: ").append(descricao_pedido).append("\n");
+        return sb.toString();
+    }
 }
