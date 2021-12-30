@@ -144,7 +144,6 @@ public class LogTecnico implements Carregavel {
 
     private boolean expresso_ou_completo_valido(String[] info) {
         boolean valido = false;
-        System.out.println("DEBUG LOG1");
         if(info.length == 5){
             try {
                 int numReg = Integer.parseInt(info[1]);

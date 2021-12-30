@@ -8,6 +8,7 @@ import java.time.format.DateTimeParseException;
 public class PedidoExpresso implements IPedido {
     private String nifCliente;
     private LocalDateTime dataRegisto;
+    private LocalDateTime dataConclusao;
     private int numeroRegistoEquipamento;
     private int tipo;
     private int custoFixo;
@@ -20,6 +21,7 @@ public class PedidoExpresso implements IPedido {
         this.custoFixo = 0;
         this.numeroRegistoEquipamento = -1;
         this.dataRegisto = null;
+        this.dataConclusao = null;
         this.descricaoPedido = "";
     }
 
@@ -30,7 +32,7 @@ public class PedidoExpresso implements IPedido {
         this.dataRegisto = LocalDateTime.now();
     }
 
-    public PedidoExpresso(String nifCliente, int numeroRegistoEquipamento, LocalDateTime dataRegisto, int tipo) {
+    public PedidoExpresso(String nifCliente, int numeroRegistoEquipamento, LocalDateTime dataRegisto, LocalDateTime dataConclusao, int tipo) {
         this.nifCliente = nifCliente;
         this.numeroRegistoEquipamento = numeroRegistoEquipamento;
         set_tipo(tipo);
@@ -42,7 +44,7 @@ public class PedidoExpresso implements IPedido {
     }
 
     public IPedido clone() {
-        return new PedidoExpresso(this.nifCliente,this.numeroRegistoEquipamento,this.dataRegisto,this.tipo);
+        return new PedidoExpresso(this.nifCliente,this.numeroRegistoEquipamento,this.dataRegisto,this.dataConclusao,this.tipo);
     }
 
     public boolean valida(){
@@ -53,15 +55,17 @@ public class PedidoExpresso implements IPedido {
     //idCliente;data;num_reg;tipo
     public void carregar(String string) {
         String[]split = string.split(";");
-        if(split.length == 4) {
+        if(split.length == 5) {
             this.nifCliente = split[0];
             try{
-                this.dataRegisto = LocalDateTime.parse(split[1]);
-                this.numeroRegistoEquipamento = Integer.parseInt(split[2]);
-                set_tipo(Integer.parseInt(split[3]));
+                if(!split[1].equals("null")) this.dataRegisto = LocalDateTime.parse(split[1]);
+                if(!split[2].equals("null")) this.dataConclusao = LocalDateTime.parse(split[2]);
+                this.numeroRegistoEquipamento = Integer.parseInt(split[3]);
+                set_tipo(Integer.parseInt(split[4]));
             }
             catch(DateTimeParseException e){
                 this.dataRegisto = null;
+                this.dataConclusao = null;
             }
             catch(NumberFormatException e){
                 this.numeroRegistoEquipamento = -1;
@@ -72,7 +76,11 @@ public class PedidoExpresso implements IPedido {
 
     public String salvar(){
         StringBuilder sb = new StringBuilder();
-        sb.append(nifCliente).append(";").append(dataRegisto.toString()).append(";");
+        sb.append(nifCliente).append(";");
+        if(dataRegisto != null) sb.append(dataRegisto.toString()).append(";");
+        else sb.append("null").append(";");
+        if(dataConclusao != null) sb.append(dataConclusao.toString()).append(";");
+        else sb.append("null").append(";");
         sb.append(numeroRegistoEquipamento).append(";").append(tipo);
         return sb.toString();
     }
@@ -109,4 +117,11 @@ public class PedidoExpresso implements IPedido {
         return this.numeroRegistoEquipamento;
     }
 
+    public void concluiPedido(){
+        this.dataConclusao = LocalDateTime.now();
+    }
+
+    public LocalDateTime getDataConclusao() {
+        return dataConclusao;
+    }
 }

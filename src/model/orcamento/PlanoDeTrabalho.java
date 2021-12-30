@@ -103,9 +103,9 @@ public class PlanoDeTrabalho implements IPlanoDeTrabalho {
         sb.append(passos.size()).append("@");
         int i = 0;
         for(; i < passos.size()-1; i++){
-            sb.append(passos.get(i).toString()).append("->");
+            sb.append(passos.get(i).salvar()).append("->");
         }
-        if(passos.size() != 0) sb.append(passos.get(passos.size()-1).toString());
+        if(passos.size() != 0) sb.append(passos.get(passos.size()-1).salvar());
         return sb.toString();
     }
 

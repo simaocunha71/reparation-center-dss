@@ -6,7 +6,9 @@ public interface IPedido extends Carregavel {
 
     LocalDateTime getTempoRegisto();
     int getNumeroRegistoEquipamento();
-    public String getNifCliente();
-    public IPedido clone();
+    String getNifCliente();
+    IPedido clone();
+    void concluiPedido();
 
+    LocalDateTime getDataConclusao();
 }

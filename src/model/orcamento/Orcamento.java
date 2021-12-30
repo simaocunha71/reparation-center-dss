@@ -97,7 +97,7 @@ public class Orcamento implements IOrcamento {
         if(confirmado) sb.append(1 + ";");
         else sb.append(0+";");
         if(dataConfirmacao != null) sb.append(dataConfirmacao);
-        sb.append("#").append(planoDeTrabalho.toString());
+        sb.append("#").append(planoDeTrabalho.salvar());
         return sb.toString();
     }
 

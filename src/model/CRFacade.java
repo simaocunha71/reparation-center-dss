@@ -185,16 +185,10 @@ public class CRFacade implements ICentroReparacoes {
         return set.stream().toList();
     }
 
-    public List<IPedido> get_orcamentos_completos() {
+    public List<IPedido> get_pedidos_completos() {
         List<IPedido> pedidos_completos = new ArrayList<>();
         pedidosCompletos.forEach((k,v)->{
-            System.out.println(v.getClass());
-            if(v.getClass().equals(PedidoExpresso.class)){
-                pedidos_completos.add(v);
-            }
-            else if(orcamentos.containsKey(k)){
-                if(orcamentos.get(k).getConfirmado())  pedidos_completos.add(v);
-            }
+            pedidos_completos.add(v.clone());
         });
         return pedidos_completos;
     }
@@ -261,7 +255,7 @@ public class CRFacade implements ICentroReparacoes {
     }
 
     private void adicionar_pedido_completo(IPedido pedido) {
-        System.out.println("DEBUG: "+  pedido.getClass());
+        pedido.concluiPedido();
         if(!pedidosCompletos.containsKey(pedido.getNumeroRegistoEquipamento())){
             pedidosCompletos.put(pedido.getNumeroRegistoEquipamento(),pedido);
         }
@@ -356,12 +350,31 @@ public class CRFacade implements ICentroReparacoes {
         }
     }
 
-    private void carregar_orcamento(IOrcamento orcamento) throws JaExistenteExcecao {
+    private void carregar_orcamento(IOrcamento orcamento) throws JaExistenteExcecao, IOException {
         int num_referencia = orcamento.get_num_ref();
-        if(!orcamentos.containsKey(num_referencia)){
-            orcamentos.put(num_referencia,orcamento);
-        }else throw new JaExistenteExcecao("Orcamento ja existe");
+        if (!orcamentos.containsKey(num_referencia)) {
+            orcamentos.put(num_referencia, orcamento);
+            validade_orcamento(orcamento);
+        } else throw new JaExistenteExcecao("Orcamento ja existe");
     }
+
+    private void validade_orcamento(IOrcamento orcamento) throws IOException {
+        LocalDateTime thirtyDaysAgo = LocalDateTime.now().plusDays(-30);
+        if(orcamento.getConfirmado() && !orcamento.getDataConfirmacao().isAfter(thirtyDaysAgo)) {
+            recusa_orcamento(orcamento.get_num_ref());
+        }
+    }
+
+    private boolean validade_pedido(IPedido pedido) throws IOException {
+        boolean validade = true;
+        LocalDateTime ninetyDaysAgo = LocalDateTime.now().plusDays(-90);
+        if(pedido.getDataConclusao() != null && !pedido.getDataConclusao().isAfter(ninetyDaysAgo)) {
+            transferencia_seccao(pedido.getNumeroRegistoEquipamento());
+            validade = false;
+        }
+        return validade;
+    }
+
 
     /**
      * Carrega clientes para o estado do sistema
@@ -405,33 +418,33 @@ public class CRFacade implements ICentroReparacoes {
             if(split.length == 2){
                 try{
                     int tipo = Integer.parseInt(split[0]);
-                    System.out.println("DEBUG TIPO: "+tipo);
                     IPedido pedido = null;
                     switch (tipo){
                         case 1, 3,4 -> pedido = new PedidoOrcamento();
                         case 2, 5 -> pedido = new PedidoExpresso();
                     }
                     if(pedido != null) {
-                        System.out.println("DEBUG CARREGANDO");
                         pedido.carregar(split[1]);
                     }
                     if(pedido != null && pedido.valida() && valida_pedido(pedido,tipo)){
-                        System.out.println("DEBUG CARREGAR PEDIDO");
                         carregar_pedido(pedido,tipo);
                     }
                 }
                 catch (NumberFormatException ignored){}
             }
         }
+        gravar_todos_pedidos();
 
         br.close();
     }
 
-    private void carregar_pedido(IPedido pedido, int tipo) {
-        switch (tipo){
-            case 1,2-> pedidosPendentes.add(pedido);
-            case 3-> adicionar_pedido_ja_planeado(pedido);
-            case 4,5 -> adicionar_pedido_completo(pedido);
+    private void carregar_pedido(IPedido pedido, int tipo) throws IOException {
+        if(validade_pedido(pedido)) {
+            switch (tipo) {
+                case 1, 2 -> pedidosPendentes.add(pedido);
+                case 3 -> adicionar_pedido_ja_planeado(pedido);
+                case 4, 5 -> adicionar_pedido_completo(pedido);
+            }
         }
     }
 
@@ -509,8 +522,6 @@ public class CRFacade implements ICentroReparacoes {
     }
 
 
-
-
     private boolean valida_pedido(IPedido pedido, int tipo) {
         switch (tipo){
             case 1 -> {
@@ -524,10 +535,7 @@ public class CRFacade implements ICentroReparacoes {
                 return false;
             }
         }
-
-
     }
-
 
     public void carregar_cp() throws IOException, JaExistenteExcecao {
         carregar_utilizadores();
@@ -537,7 +545,6 @@ public class CRFacade implements ICentroReparacoes {
         carregar_orcamentos();
         carregar_logs();
     }
-
 
     public void adicionar_pedido_orcamento(String nifCliente, String modelo, String descricaoEquipamento, String descricaoPedido) throws IOException {
         if(clientes.containsKey(nifCliente)){
@@ -567,10 +574,8 @@ public class CRFacade implements ICentroReparacoes {
 
     public IPedido get_pedido_expresso() {
         if(pedidosPendentes.size() > 0){
-            System.out.println("DEBUGZAO");
             IPedido p = pedidosPendentes.stream().findFirst().get();
             if(p.getClass().equals(PedidoExpresso.class)){
-                System.out.println("DEBUGZAO MASTER");
                 return p.clone();
             }
         }
@@ -784,6 +789,19 @@ public class CRFacade implements ICentroReparacoes {
         if(orcamentos.containsKey(num_ref)){
             orcamentos.get(num_ref).confirma();
             gravar_todos_orcamentos();
+        }
+    }
+
+    public void recusa_orcamento(int num_ref) throws IOException {
+        if(orcamentos.containsKey(num_ref)){
+            IOrcamento orcamento = orcamentos.get(num_ref);
+            orcamentos.remove(num_ref);
+            IPedido pedido = orcamento.get_pedido();
+            pedidosCompletos.put(num_ref,pedido);
+            pedidosJaPlaneados.remove(num_ref);
+            transferencia_seccao(num_ref);
+            gravar_todos_orcamentos();
+            gravar_todos_pedidos();
         }
     }
 

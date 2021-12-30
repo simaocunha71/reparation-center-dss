@@ -256,9 +256,9 @@ public class Passo implements Carregavel {
         sb.append(idTecnicoRealizou).append(";").append(subpassos.size()).append("%");
         int i = 0;
         for(; i < subpassos.size()-1; i++){
-            sb.append(subpassos.get(i).toString()).append("/");
+            sb.append(subpassos.get(i).salvar()).append("/");
         }
-        if(subpassos.size() != 0)sb.append(subpassos.get(subpassos.size()-1).toString());
+        if(subpassos.size() != 0)sb.append(subpassos.get(subpassos.size()-1).salvar());
         return sb.toString();
     }
 

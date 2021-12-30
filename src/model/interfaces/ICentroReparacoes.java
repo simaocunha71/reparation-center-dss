@@ -47,7 +47,7 @@ public interface ICentroReparacoes {
 
     List<String> get_pedidos_orcamento();
 
-    List<IPedido> get_orcamentos_completos();
+    List<IPedido> get_pedidos_completos();
 
     IPedido get_pedido_orcamento(int posicao);
 
@@ -64,6 +64,8 @@ public interface ICentroReparacoes {
     IOrcamento get_orcamento(int num_ref);
 
     IEquipamento getEquipamento(int num_ref);
+
+    void recusa_orcamento(int num_ref) throws IOException;
 
     void remover_orcamento(int num_ref) throws IOException;
 

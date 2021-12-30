@@ -1,7 +1,6 @@
 package controller;
 
 import model.*;
-import model.excecoes.JaExistenteExcecao;
 import model.interfaces.*;
 import model.orcamento.Passo;
 import model.orcamento.PlanoDeTrabalho;
@@ -46,7 +45,7 @@ public class CRController {
             "Confirmar orcamento",
             "Realizar pedido expresso",
             "Processar reparação",
-            "Concluir pedido",
+            "Concluir pedido/Entregar equipamento",
             "Lista de funcionários",
             "Lista de técnicos",
             "Registar utilizador",
@@ -65,7 +64,7 @@ public class CRController {
             "Registar cliente",
             "Registar pedido",
             "Confirmar orcamento",
-            "Concluir pedido",
+            "Concluir pedido/Entregar equipamento",
             "Logout",
     };
 
@@ -101,6 +100,13 @@ public class CRController {
             "NIF de cliente",
             "Equipamento",
             "Descrição",
+            "Guardar e sair",
+    };
+
+    private final String[] menuPedidoExpresso = new String[]{
+            "NIF de cliente",
+            "Equipamento",
+            "Tipo",
             "Guardar e sair",
     };
 
@@ -631,23 +637,23 @@ public class CRController {
     }
 
     private void concluir_pedido() throws IOException, ClassNotFoundException {
-        List<IPedido> orcamentos = centro.get_orcamentos_completos();
-        String[] orcamentosString = new String[orcamentos.size()];
-        for(int i =0; i < orcamentos.size() && i < 10 ;i++){
-            IPedido pedido = orcamentos.get(i);
+        List<IPedido> pedidos = centro.get_pedidos_completos();
+        String[] pedidosString = new String[pedidos.size()];
+        for(int i =0; i < pedidos.size() && i < 10 ;i++){
+            IPedido pedido = pedidos.get(i);
             ICliente cliente = centro.get_cliente(pedido.getNifCliente());
             String sb = "Equipamento [#" + pedido.getNumeroRegistoEquipamento() + "]|" +
                     "Cliente [" + cliente.getNome() + "]" +
                     "Nif [" + cliente.getNif() + "]" +
                     "Email [" + cliente.getEmail() + "]" +
                     "Telemovel [" + cliente.getNumTelemovel() + "]";
-            orcamentosString[i] = sb;
+            pedidosString[i] = sb;
         }
-        CRView menu = new CRView("Lista de pedidos completos",orcamentosString);
+        CRView menu = new CRView("Registo de entrega de equipamento ao cliente",pedidosString);
         AtomicInteger i = new AtomicInteger(1);
-        for(; i.get() <= orcamentosString.length;i.incrementAndGet()){
+        for(; i.get() <= pedidosString.length;i.incrementAndGet()){
             int posicao = i.get();
-            int num_ref = orcamentos.get(posicao-1).getNumeroRegistoEquipamento();
+            int num_ref = pedidos.get(posicao-1).getNumeroRegistoEquipamento();
             menu.setHandler(i.get(),()->{centro.remover_orcamento(num_ref);menu.returnMenu();});
         }
         menu.simpleRun();
@@ -692,7 +698,11 @@ public class CRController {
         for(; i.get() <= orcamentos.size();i.incrementAndGet()){
             int posicao = i.get();
             int num_ref = orcamentos.get(posicao-1).get_num_ref();
-            menu.setHandler(i.get(),()->{centro.confirmar_orcamento(num_ref);menu.returnMenu();});
+            menu.setHandler(i.get(),()->{
+                int opt = menu.readOptionBetween(1,2,new String[]{"Confirmar","Recusa"});
+                if(opt == 1) centro.confirmar_orcamento(num_ref);menu.returnMenu();
+                if(opt == 2) centro.recusa_orcamento(num_ref);menu.returnMenu();
+            });
         }
         menu.simpleRun();
 
@@ -880,7 +890,7 @@ public class CRController {
     }
 
     private void pedidoExpress() throws IOException, ClassNotFoundException {
-        CRView menu = new CRView("Pedido Expresso", menuPedido);
+        CRView menu = new CRView("Pedido Expresso", menuPedidoExpresso);
         AtomicReference<String> nif = new AtomicReference<>();
         AtomicInteger tipo = new AtomicInteger(0);
         AtomicReference<String> modelo = new AtomicReference<>();
