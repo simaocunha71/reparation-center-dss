@@ -38,7 +38,6 @@ public class LogFuncionario implements Carregavel {
 
     public void addOperacao(String operacao){
         if(operacao_valida(operacao)) operacoes.add(operacao);
-        System.out.println(operacao + " "+operacao_valida(operacao));
     }
 
     public String getUserId() {

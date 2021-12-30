@@ -513,8 +513,6 @@ public class CRController {
                 menu.returnMenu();
             });
             menu.simpleRun();
-            System.out.println(logsTemporarios.size());
-            System.out.println(logs.size());
             logs.forEach(v-> {
                 try {
                     centro.adicionar_log(v, centro.get_logged_id());

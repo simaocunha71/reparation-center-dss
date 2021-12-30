@@ -83,7 +83,7 @@ public class Orcamento implements IOrcamento {
 
     public void carregar(String string) {
         planoDeTrabalho.carregar(string);
-        System.out.println("DEBUG CARREGAR"+valida());
+
     }
 
 

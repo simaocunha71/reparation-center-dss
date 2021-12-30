@@ -439,12 +439,10 @@ public class CRFacade implements ICentroReparacoes {
     }
 
     private void carregar_pedido(IPedido pedido, int tipo) throws IOException {
-        if(validade_pedido(pedido)) {
-            switch (tipo) {
-                case 1, 2 -> pedidosPendentes.add(pedido);
-                case 3 -> adicionar_pedido_ja_planeado(pedido);
-                case 4, 5 -> adicionar_pedido_completo(pedido);
-            }
+        switch (tipo) {
+            case 1, 2 -> pedidosPendentes.add(pedido);
+            case 3 -> adicionar_pedido_ja_planeado(pedido);
+            case 4, 5 -> {if(validade_pedido(pedido)) adicionar_pedido_completo(pedido);}
         }
     }
 
@@ -488,6 +486,7 @@ public class CRFacade implements ICentroReparacoes {
                 }
             }
         }
+        gravar_todos_orcamentos();
         br.close();
     }
 

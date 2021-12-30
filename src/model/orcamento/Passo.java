@@ -156,7 +156,6 @@ public class Passo implements Carregavel {
                 int nSP = 0;
                 try {
                     this.descricao = infos[0];
-                    System.out.println("DEBUG: "+descricao);
                     this.custoEstimado = Float.parseFloat(infos[1]);
                     this.custoReal = Float.parseFloat(infos[2]);
                     this.duracaoEstimada = Float.parseFloat(infos[3]);
