@@ -1,13 +1,14 @@
 package model;
 
 import model.interfaces.Carregavel;
+import model.interfaces.Validavel;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LogFuncionario implements Carregavel {
+public class LogFuncionario implements Carregavel, Validavel {
     private String userId;
     private List<String> operacoes;
 
@@ -69,9 +70,6 @@ public class LogFuncionario implements Carregavel {
     }
 
 
-
-
-    @Override
     public boolean valida() {
         return userId != null;
     }

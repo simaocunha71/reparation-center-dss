@@ -2,7 +2,7 @@ package model.interfaces;
 
 import model.orcamento.Passo;
 
-public interface IPlanoDeTrabalho extends Carregavel{
+public interface IPlanoDeTrabalho extends Carregavel,Validavel{
 
     IPlanoDeTrabalho clone();
 

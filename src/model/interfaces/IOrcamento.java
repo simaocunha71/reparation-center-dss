@@ -2,7 +2,7 @@ package model.interfaces;
 
 import java.time.LocalDateTime;
 
-public interface IOrcamento extends Carregavel {
+public interface IOrcamento extends Carregavel,Validavel {
 
     IOrcamento clone();
 

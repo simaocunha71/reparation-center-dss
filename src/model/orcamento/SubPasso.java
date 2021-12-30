@@ -1,8 +1,9 @@
 package model.orcamento;
 
 import model.interfaces.Carregavel;
+import model.interfaces.Validavel;
 
-public class SubPasso implements Carregavel {
+public class SubPasso implements Carregavel, Validavel {
     private String descricao;
     private float custo_estimado;
     private float custo_real;

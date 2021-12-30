@@ -1,13 +1,14 @@
 package model.orcamento;
 
 import model.interfaces.Carregavel;
+import model.interfaces.Validavel;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class Passo implements Carregavel {
+public class Passo implements Carregavel, Validavel {
     private List<SubPasso> subpassos;
     private String descricao;
     private float custo_estimado;

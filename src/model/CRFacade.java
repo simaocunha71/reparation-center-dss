@@ -1,7 +1,10 @@
 package model;
 
-import model.armazem.Armazem;
 import model.armazem.Equipamento;
+import model.interfaces.IGestEquipamentos;
+import model.armazem.SSEquipamentos;
+import model.interfaces.IGestClientes;
+import model.clientes.SSClientes;
 import model.comparators.IOrcamentoComparator;
 import model.comparators.IPedidoComparator;
 import model.excecoes.JaExistenteExcecao;
@@ -9,9 +12,7 @@ import model.interfaces.*;
 import model.orcamento.Orcamento;
 import model.pedidos.PedidoExpresso;
 import model.pedidos.PedidoOrcamento;
-import model.utilizadores.Funcionario;
-import model.utilizadores.Gestor;
-import model.utilizadores.Tecnico;
+import model.utilizadores.*;
 import model.clientes.Cliente;
 
 import java.io.*;
@@ -22,16 +23,15 @@ import java.util.stream.Collectors;
 
 public class CRFacade implements ICentroReparacoes {
 
-    private Map<String, IUtilizador> utilizadores; //map com utilizadores do sistema
-    private Map<String, ICliente> clientes;//map com clientes do sistema
+    private IGestUtilizadores utilizadores; //map com utilizadores do sistema
+    private IGestClientes clientes;//map com clientes do sistema
     private Set<IPedido> pedidos_pendentes;
     private Map<Integer, IPedido> pedidos_ja_planeados;
     private Map<Integer, IPedido> pedidos_completos;
     private Map<Integer, IOrcamento> orcamentos; //numero de registo do equipamento é a key
-    private Armazem armazem;
+    private IGestEquipamentos armazem;
     private IUtilizador logado;
-    private Map<String,LogTecnico> logs_tecnicos;
-    private Map<String,LogFuncionario> logs_funcionarios;
+    private IGestLogs logs;
 
     private final String utilizadores_FN;
     private final String clientes_FN;
@@ -43,15 +43,14 @@ public class CRFacade implements ICentroReparacoes {
 
 
     public CRFacade(String utilizadores_FN, String clientes_FN, String armazem_FN, String pedidos_FN, String orcamentos_FN, String logs_FN) {
-        this.utilizadores = new HashMap<>();
-        this.clientes = new HashMap<>();
+        this.utilizadores = new SSUtilizadores();
+        this.clientes = new SSClientes();
         this.pedidos_pendentes = new TreeSet<>(new IPedidoComparator());
-        this.armazem = new Armazem();
+        this.armazem = new SSEquipamentos();
         this.orcamentos = new HashMap<>();
         this.pedidos_ja_planeados = new HashMap<>();
         this.pedidos_completos = new HashMap<>();
-        this.logs_tecnicos = new HashMap<>();
-        this.logs_funcionarios = new HashMap<>();
+        this.logs = new SSLogs();
 
         this.utilizadores_FN = utilizadores_FN;
         this.clientes_FN = clientes_FN;
@@ -74,41 +73,24 @@ public class CRFacade implements ICentroReparacoes {
      * @return  IUtilizador
      */
     public IUtilizador get_utilizador(String id){
-        return utilizadores.get(id);
+        return utilizadores.get_utilizador(id);
     }
 
     public String get_logged_id(){
         return logado.get_id();
     }
 
-    public void adicionar_utilizador(String id,String nome,String password,int permissao) throws JaExistenteExcecao {
-        IUtilizador utilizador = null;
-        switch (permissao) {
-            case 1 -> utilizador = new Gestor(id,nome,password);
-            case 2 -> utilizador = new Funcionario(id,nome,password);
-            case 3 -> utilizador = new Tecnico(id,nome,password);
+    public void adicionar_utilizador(String id,String nome,String password,int permissao) {
+        try{
+            utilizadores.adicionar_utilizador(id,nome,password,permissao);
+            IUtilizador utilizador = get_utilizador(id);
+            if(utilizador != null) gravar_utilizador(utilizador);
         }
-        if (utilizador != null && utilizador.valida()) {
-            if (!utilizadores.containsKey(id)) {
-                utilizadores.put(id, utilizador);
-                gravar_utilizador(utilizador);
-            } else {
-                if (!(nome.equals(utilizador.get_nome()) && password.equals(utilizador.get_password()))) {
-                    utilizadores.remove(id);
-                    utilizadores.put(id,utilizador);
-                    gravar_todos_utilizadores();
-                }
-                throw new JaExistenteExcecao("Utilizador já existe no sistema");
-            }
+        catch(JaExistenteExcecao e){
+            gravar_todos_utilizadores();
         }
     }
 
-
-    private void carregar_cliente(ICliente cliente) throws JaExistenteExcecao {
-        if(!clientes.containsKey(cliente.get_nif())){
-            clientes.put(cliente.get_nif(),cliente.clone());
-        }else{throw  new JaExistenteExcecao("Cliente já existe no sistema");}
-    }
 
     public boolean disponibilidade_pedido_expresso(){
         return pedidos_pendentes.size() == 0 || pedidos_pendentes.stream().findFirst().get().getClass().equals(PedidoOrcamento.class);
@@ -132,21 +114,16 @@ public class CRFacade implements ICentroReparacoes {
      * @param nome nome do cliente
      * @param numero_telemovel número de telemóvel
      * @param email email
-     * @throws JaExistenteExcecao exceção
      */
 
-    public void adicionar_cliente(String nif, String nome, String numero_telemovel, String email) throws JaExistenteExcecao {
-        if(!clientes.containsKey(nif)){
-            clientes.put(nif,new Cliente(nif,nome, numero_telemovel,email));
-            gravar_cliente(clientes.get(nif));
-        }else {
-            ICliente cliente = clientes.get(nif);
-            if(!(nome.equals(cliente.get_nome()) && numero_telemovel.equals(cliente.get_num_telemovel()) && email.equals(cliente.get_email()))){
-                clientes.remove(nif);
-                clientes.put(nif, new Cliente(nif, nome, numero_telemovel, email));
-                gravar_todos_clientes();
-            }
-            throw new JaExistenteExcecao("Cliente já existe no sistema, dados foram overwrited!");
+    public void adicionar_cliente(String nif, String nome, String numero_telemovel, String email) {
+        try{
+            clientes.adicionar_cliente(nif,nome,numero_telemovel,email);
+            ICliente cliente = clientes.get_cliente(nif);
+            if(cliente!=null)gravar_cliente(cliente);
+        }
+        catch(JaExistenteExcecao e){
+            gravar_todos_clientes();
         }
     }
 
@@ -254,80 +231,22 @@ public class CRFacade implements ICentroReparacoes {
 
     public void adicionar_log(String log, String user_id) {
         IUtilizador u = get_utilizador(user_id);
-        if(u.getClass().equals(Tecnico.class)){
-            if(logs_tecnicos.containsKey(user_id)){
-                logs_tecnicos.get(user_id).add_intervencao(log);
-            }else{
-                LogTecnico l = new LogTecnico(user_id);
-                l.add_intervencao(log);
-                logs_tecnicos.put(user_id,l);
-            }
-            gravar_todos_logs();
-        }else if(u.getClass().equals(Funcionario.class)){
-            if(logs_funcionarios.containsKey(user_id)){
-                logs_funcionarios.get(user_id).addOperacao(log);
-            }else{
-                LogFuncionario l = new LogFuncionario(user_id);
-                l.addOperacao(log);
-                logs_funcionarios.put(user_id,l);
-            }
+        logs.adicionar_log(log,u);
+        if(u.getClass().equals(Tecnico.class) || u.getClass().equals(Funcionario.class)){
             gravar_todos_logs();
         }
     }
 
-
-    /**
-     * Carrega utilizadores para o estado do sistema
-     * @throws FileNotFoundException execão
-     */
 
     private void carregar_utilizadores() throws IOException {
         BufferedReader br = new BufferedReader(new FileReader(this.utilizadores_FN));
         String linha;
-        String[] split;
         while((linha = br.readLine()) != null){
-            split = linha.split("@");
-            if(split.length == 2){
-                try {
-                    int permissao = Integer.parseInt(split[0]);
-                    switch (permissao){
-                        case 1 -> carregar_gestor(split[1]);
-                        case 2 -> carregar_funcionario(split[1]);
-                        case 3 -> carregar_tecnico(split[1]);
-                    }
-
-                }catch (NumberFormatException ignored){}
-            }
+            utilizadores.carregar(linha);
         }
         br.close();
     }
 
-    private void carregar_funcionario(String s) {
-        IUtilizador utilizador = new Funcionario();
-        utilizador.carregar(s);
-        if (utilizador.valida()) {
-            utilizadores.remove(utilizador.get_id());
-            utilizadores.put(utilizador.get_id(),utilizador);
-        }
-    }
-
-    private void carregar_gestor(String s) {
-        IUtilizador utilizador = new Gestor();
-        utilizador.carregar(s);
-        if (utilizador.valida()) {
-            utilizadores.remove(utilizador.get_id());
-            utilizadores.put(utilizador.get_id(),utilizador);
-        }
-    }
-
-    private void carregar_tecnico(String s) {
-        IUtilizador utilizador = new Tecnico();
-        utilizador.carregar(s);
-        if (utilizador.valida()) {
-            utilizadores.remove(utilizador.get_id());
-            utilizadores.put(utilizador.get_id(), utilizador);
-        }
-    }
 
     private void carregar_orcamento(IOrcamento orcamento) throws JaExistenteExcecao {
         int num_reg = orcamento.get_num_registo();
@@ -359,13 +278,13 @@ public class CRFacade implements ICentroReparacoes {
      * Carrega clientes para o estado do sistema
      * @throws FileNotFoundException  execão
      */
-    private void carregar_clientes() throws IOException, JaExistenteExcecao {
+    private void carregar_clientes() throws IOException {
         BufferedReader br = new BufferedReader(new FileReader(this.clientes_FN));
         String linha;
         while((linha = br.readLine()) != null){
             ICliente cliente = new Cliente();
             cliente.carregar(linha);
-            if(cliente.valida()) carregar_cliente(cliente);
+            if(cliente.valida()) clientes.carregar_cliente(cliente);
         }
         br.close();
     }
@@ -472,27 +391,8 @@ public class CRFacade implements ICentroReparacoes {
     private void carregar_logs() throws IOException {
         BufferedReader br = new BufferedReader(new FileReader(logs_FN));
         String linha;
-        String[] split;
         while((linha = br.readLine()) != null){
-            split = linha.split("@");
-            if(split.length == 2) {
-                try {
-                    int permissao = Integer.parseInt(split[0]);
-                    if (permissao == 2) {
-                        LogFuncionario log = new LogFuncionario();
-                        log.carregar(split[1]);
-                        if(log.valida()) {
-                            logs_funcionarios.put(log.getUserId(),log);
-                        }
-                    } else if (permissao == 3) {
-                        LogTecnico log = new LogTecnico();
-                        log.carregar(split[1]);
-                        if(log.valida()) {
-                            logs_tecnicos.put(log.get_user_id(),log);
-                        }
-                    }
-                } catch (NumberFormatException ignored) {}
-            }
+            logs.carregar(linha);
         }
         br.close();
     }
@@ -501,11 +401,11 @@ public class CRFacade implements ICentroReparacoes {
     private boolean valida_pedido(IPedido pedido, int tipo) {
         switch (tipo){
             case 1 -> {
-                return clientes.containsKey(pedido.get_nif_cliente()) && armazem.contem_equipamento_para_orcamento(pedido.get_num_registo());}
+                return clientes.existe_cliente(pedido.get_nif_cliente()) && armazem.contem_equipamento(pedido.get_num_registo(),1);}
             case 2,3 -> {
-                return clientes.containsKey(pedido.get_nif_cliente()) && armazem.contem_equipamento_para_reparacao(pedido.get_num_registo());}
+                return clientes.existe_cliente(pedido.get_nif_cliente()) && armazem.contem_equipamento(pedido.get_num_registo(),2);}
             case 4,5 -> {
-                return clientes.containsKey(pedido.get_nif_cliente()) && armazem.contem_equipamento_pronto_a_entregar(pedido.get_num_registo());
+                return clientes.existe_cliente(pedido.get_nif_cliente()) && armazem.contem_equipamento(pedido.get_num_registo(),3);
             }
             default -> {
                 return false;
@@ -523,7 +423,7 @@ public class CRFacade implements ICentroReparacoes {
     }
 
     public void adicionar_pedido_orcamento(String cliente_nif, String modelo, String descricao_equipamento, String descricao_pedido) {
-        if(clientes.containsKey(cliente_nif)){
+        if(clientes.existe_cliente(cliente_nif)){
             IEquipamento e = new Equipamento(cliente_nif, armazem.get_ultimo_numero_de_registo_equipamento()+1,modelo, descricao_equipamento);
             armazem.regista_equipamento(e,1);
             IPedido pedido = new PedidoOrcamento(cliente_nif, e.get_numero_registo(), descricao_pedido);
@@ -536,7 +436,7 @@ public class CRFacade implements ICentroReparacoes {
     }
 
     public void adicionar_pedido_expresso(String nifCliente, String modelo, String descricaoEquipamento, int tipo) {
-        if(clientes.containsKey(nifCliente)){
+        if(clientes.existe_cliente(nifCliente)){
             IEquipamento e = new Equipamento(nifCliente, armazem.get_ultimo_numero_de_registo_equipamento()+1,modelo,descricaoEquipamento );
             armazem.regista_equipamento(e,2);
             IPedido pedido = new PedidoExpresso(nifCliente, e.get_numero_registo(), tipo);
@@ -560,9 +460,9 @@ public class CRFacade implements ICentroReparacoes {
 
 
     public boolean login(String nomeDeUtilizador, String password) {
-        if (utilizadores.containsKey(nomeDeUtilizador)){
-            if(utilizadores.get(nomeDeUtilizador).get_password().equals(password)) {
-                this.logado = utilizadores.get(nomeDeUtilizador);
+        if (utilizadores.existe_utilizador(nomeDeUtilizador)){
+            if(utilizadores.get_utilizador(nomeDeUtilizador).get_password().equals(password)) {
+                this.logado = utilizadores.get_utilizador(nomeDeUtilizador);
                 return true;
             }
         }
@@ -586,11 +486,11 @@ public class CRFacade implements ICentroReparacoes {
     }
 
     public boolean existe_utilizador(String id){
-        return utilizadores.containsKey(id);
+        return utilizadores.existe_utilizador(id);
     }
 
     public boolean existe_cliente(String nif){
-        return clientes.containsKey(nif);
+        return clientes.existe_cliente(nif);
     }
 
     public int get_ultimo_numero_de_registo_equipamento() {
@@ -611,13 +511,7 @@ public class CRFacade implements ICentroReparacoes {
     private void gravar_todos_clientes (){
         try {
             FileWriter w = new FileWriter(this.clientes_FN);
-            clientes.forEach((k, v) -> {
-                try {
-                    w.write(v.salvar() + "\n");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
+            w.write(clientes.salvar());
             w.close();
         }
         catch(IOException e){
@@ -636,16 +530,10 @@ public class CRFacade implements ICentroReparacoes {
         }
     }
 
-    private void gravar_todos_utilizadores () {
+    private void gravar_todos_utilizadores (){
         try {
-            FileWriter w = new FileWriter(this.utilizadores_FN);
-            utilizadores.forEach((k, v) -> {
-                try {
-                    w.write(v.salvar() + "\n");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
+            FileWriter w = new FileWriter(this.clientes_FN);
+            w.write(utilizadores.salvar());
             w.close();
         }
         catch(IOException e){
@@ -728,9 +616,9 @@ public class CRFacade implements ICentroReparacoes {
 
     private void gravar_todos_equipamento() {
         try{
-        FileWriter w = new FileWriter(this.armazem_FN);
-        w.write(armazem.salvar());
-        w.close();}
+            FileWriter w = new FileWriter(this.armazem_FN);
+            w.write(armazem.salvar());
+            w.close();}
         catch(IOException e){
             e.printStackTrace();
         }
@@ -758,20 +646,7 @@ public class CRFacade implements ICentroReparacoes {
     private void gravar_todos_logs() {
         try {
             FileWriter w = new FileWriter(this.logs_FN);
-            logs_tecnicos.forEach((k, v) -> {
-                try {
-                    w.write(v.salvar() + "\n");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
-            logs_funcionarios.forEach((k, v) -> {
-                try {
-                    w.write(v.salvar() + "\n");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
+            w.write(logs.salvar());
             w.close();
         }
         catch (IOException e){
@@ -795,7 +670,7 @@ public class CRFacade implements ICentroReparacoes {
 
     public ICliente get_cliente(String nif){
         ICliente cliente = null;
-        if(clientes.containsKey(nif)) cliente = clientes.get(nif).clone();
+        if(clientes.existe_cliente(nif)) cliente = clientes.get_cliente(nif).clone();
         return cliente;
     }
 
@@ -830,16 +705,16 @@ public class CRFacade implements ICentroReparacoes {
     }
 
     public Map<String,IUtilizador> get_utilizadores(){
-        Map<String,IUtilizador> users = new HashMap<>();
+        Map<String,IUtilizador> users = null;
         if(logged_gestor()){
-            utilizadores.forEach((k,v)-> users.put(k,v.clone()));
+            users = utilizadores.get_utilizadores();
         }
         return users;
     }
 
     public void remover_utilizador(String id) {
         if(logged_gestor()){
-            utilizadores.remove(id);
+            utilizadores.remover_utilizador(id);
             gravar_todos_utilizadores();
         }
     }
@@ -849,28 +724,18 @@ public class CRFacade implements ICentroReparacoes {
     }
 
     public String get_logs_tecnicos_simples(){
-        StringBuilder sb = new StringBuilder();
-        logs_tecnicos.forEach((k, v)-> sb.append(v.get_user_id()).append("-> Passos [").append(v.get_numero_passos_completos()).append("] ")
-                .append("Pedidos Expresso [").append(v.get_numero_reparacoes_expresso()).append("] ")
-                .append("Duracao Media [").append(v.get_media_duracao_real()).append("] ")
-                .append("Desvio Duracao Media [").append(v.get_media_duracao_esperada()-v.get_media_duracao_real()).append("]\n"));
-        return sb.toString();
+
+        return logs.get_logs_tecnicos_simples();
     }
 
 
     public String get_logs_funcionarios(){
-        StringBuilder sb = new StringBuilder();
-        logs_funcionarios.forEach((k, v)-> sb.append(v.getUserId()).append("-> Rececoes [").append(v.get_numero_rececoes()).append("] ")
-                .append("Entregas [").append(v.get_numero_entregas()).append("]\n"));
-        return sb.toString();
+
+        return logs.get_logs_funcionarios();
     }
 
     public List<LogTecnico> get_logs_tecnicos_extensivos(){
-        List<LogTecnico> tecnicos = new ArrayList<>();
-        logs_tecnicos.forEach((k, v)->{
-            if(existe_utilizador(v.get_user_id())) tecnicos.add(v);
-        });
-        return tecnicos;
+        return logs.get_logs_tecnicos_extensivos();
     }
 
 }

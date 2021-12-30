@@ -1,6 +1,6 @@
 package model.interfaces;
 
-public interface IUtilizador extends Carregavel {
+public interface IUtilizador extends Carregavel,Validavel {
 
     String get_nome();
 

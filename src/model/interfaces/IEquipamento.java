@@ -1,6 +1,6 @@
 package model.interfaces;
 
-public interface IEquipamento extends Carregavel{
+public interface IEquipamento extends Carregavel,Validavel{
     int get_numero_registo();
 
     String get_modelo();

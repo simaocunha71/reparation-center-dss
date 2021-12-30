@@ -1,6 +1,6 @@
 package model.interfaces;
 
-public interface ICliente extends Carregavel {
+public interface ICliente extends Carregavel,Validavel {
 
 
     String get_nif();

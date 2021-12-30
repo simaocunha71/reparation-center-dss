@@ -1,18 +1,19 @@
 package model.armazem;
 
 import model.interfaces.IEquipamento;
+import model.interfaces.IGestEquipamentos;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class Armazem {
+public class SSEquipamentos implements IGestEquipamentos {
     private Map<Integer, IEquipamento> para_orcamento = new HashMap<>(); //0 //key -> num_reg
     private Map<Integer, IEquipamento> para_reparacao= new HashMap<>(); //1 //key -> num_reg
     private Map<Integer, IEquipamento> prontos_a_entregar= new HashMap<>(); //2 //key -> num_reg
     private int ultimo_numero_registado;
 
 
-    public Armazem(){
+    public SSEquipamentos(){
         this.ultimo_numero_registado = 0;
     }
 
@@ -48,6 +49,18 @@ public class Armazem {
             case 2 -> regista_para_reparacao(e);
             case 3 -> regista_prontos_entregar(e);
         }
+    }
+
+    public void carregar(String linha) {
+        String [] split = linha.split("@");
+            if(split.length == 2){
+                IEquipamento equipamento = new Equipamento();
+                equipamento.carregar(split[0]);
+                try {
+                    int local = Integer.parseInt(split[1]);
+                    if (equipamento.valida()) regista_equipamento(equipamento,local);
+                }catch (NumberFormatException ignored){}
+            }
     }
 
     public String salvar(){
@@ -88,17 +101,33 @@ public class Armazem {
     }
 
 
-    //TODO: juntar contem
-    public boolean contem_equipamento_para_orcamento(int num_registo){
+    private boolean contem_equipamento_para_orcamento(int num_registo){
         return para_orcamento.containsKey(num_registo);
     }
 
-    public boolean contem_equipamento_para_reparacao(int num_registo){
+    private boolean contem_equipamento_para_reparacao(int num_registo){
         return para_reparacao.containsKey(num_registo);
     }
 
-    public boolean contem_equipamento_pronto_a_entregar(int num_registo){
+    private boolean contem_equipamento_pronto_a_entregar(int num_registo){
         return prontos_a_entregar.containsKey(num_registo);
+    }
+
+    public boolean contem_equipamento(int num_registo, int seccao){
+        switch (seccao){
+            case 1 -> {
+                return contem_equipamento_para_orcamento(num_registo);
+            }
+            case 2 -> {
+                return contem_equipamento_para_reparacao(num_registo);
+            }
+            case 3 -> {
+                return contem_equipamento_pronto_a_entregar(num_registo);
+            }
+            default -> {
+                return false;
+            }
+        }
     }
 
     public IEquipamento get_equipamento(int num_registo) {
