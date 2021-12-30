@@ -1112,7 +1112,7 @@ public class CRController {
         List<LogTecnico> tecnicosLogs = centro.get_logs_tecnicos_extensivos();
         String[] tecnicos = new String[tecnicosLogs.size()];
         for(int i =0; i < tecnicosLogs.size() && i < 10 ;i++){
-            String sb = "Tecnico [" + tecnicosLogs.get(i).getUserId() + "]";
+            String sb = "Tecnico [" + tecnicosLogs.get(i).get_user_id() + "]";
             tecnicos[i] = sb;
         }
         CRView menu = new CRView("Lista de Tecnicosr",tecnicos);

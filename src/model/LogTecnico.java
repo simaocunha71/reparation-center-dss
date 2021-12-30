@@ -22,7 +22,6 @@ public class LogTecnico implements Carregavel {
         this.intervencoes = new ArrayList<>();
     }
 
-    @Override
     public void carregar(String string) {
         String []split = string.split("%");
         if(split.length == 2){
@@ -42,7 +41,7 @@ public class LogTecnico implements Carregavel {
         if(intervencao_valida(intervencao)) intervencoes.add(intervencao);
     }
 
-    public String getUserId() {
+    public String get_user_id() {
         return userId;
     }
 
@@ -86,10 +85,6 @@ public class LogTecnico implements Carregavel {
         return real/conta;
     }
 
-    public List<String> get_lista_intervencoes(){
-        return intervencoes;
-    }
-
     private float tempo_real_passo(String i) {
         try{
             return  Float.parseFloat(i.split(";")[6]);
@@ -116,12 +111,6 @@ public class LogTecnico implements Carregavel {
         }
     }
 
-    private boolean intervencao_completa_normal(String i) {
-        return i.split(";")[0].equals("3");
-    }
-
-
-    @Override
     public boolean valida() {
         return userId != null;
     }
@@ -145,7 +134,7 @@ public class LogTecnico implements Carregavel {
         boolean valido = false;
         if(info.length == 5){
             try {
-                int numReg = Integer.parseInt(info[1]);
+                Integer.parseInt(info[1]);
                 String modelo = info[2];
                 String descricao = info[3];
                 LocalDateTime data = LocalDateTime.parse(info[4]);
@@ -162,13 +151,13 @@ public class LogTecnico implements Carregavel {
         boolean valido = false;
         if(info.length == 7){
             try {
-                int numReg = Integer.parseInt(info[1]);
+                Integer.parseInt(info[1]);
                 String modelo = info[2];
                 String descricao = info[3];
                 LocalDateTime data = LocalDateTime.parse(info[4]);
                 LocalDateTime thirtyDaysAgo = LocalDateTime.now().plusDays(-30);
-                float tempo_esperado = Float.parseFloat(info[5]);
-                float tempo_real = Float.parseFloat(info[6]);
+                Float.parseFloat(info[5]);
+                Float.parseFloat(info[6]);
                 if(modelo.length() > 0 && descricao.length() > 0 && !data.isBefore(thirtyDaysAgo))
                     valido = true;
             }catch (NumberFormatException | DateTimeParseException ignored){}
@@ -185,9 +174,7 @@ public class LogTecnico implements Carregavel {
 
     public String estatisticas_extensivas(){
         StringBuilder sb = new StringBuilder();
-        intervencoes.forEach(k->{
-            sb.append(intervencaoToString(k));
-        });
+        intervencoes.forEach(k-> sb.append(intervencaoToString(k)));
         return sb.toString();
     }
 
@@ -204,10 +191,10 @@ public class LogTecnico implements Carregavel {
                     String modelo = info[2];
                     String descricao = info[3];
                     LocalDateTime data = LocalDateTime.parse(info[4]);
-                    intervencao.append("[# " + numReg + "]")
-                            .append(" Modelo [" + modelo + "]")
-                            .append(" Descricao [" + descricao + "]")
-                            .append(" Data [" + data + "]");
+                    intervencao.append("[# ").append(numReg).append("]").
+                            append(" Modelo [").append(modelo).append("]").
+                            append(" Descricao [").append(descricao).append("]").
+                            append(" Data [").append(data).append("]");
                 }
 
                 case 1, 2 -> {
@@ -219,12 +206,12 @@ public class LogTecnico implements Carregavel {
                     LocalDateTime data = LocalDateTime.parse(info[4]);
                     float tempo_esperado = Float.parseFloat(info[5]);
                     float tempo_real = Float.parseFloat(info[6]);
-                    intervencao.append("[# " + numReg + "]")
-                            .append(" Modelo [" + modelo + "]")
-                            .append(" Descricao [" + descricao + "]")
-                            .append(" Tempo_Esperado [" + tempo_esperado + "]")
-                            .append(" Tempo_Real [" + tempo_real + "]")
-                            .append(" Data [" + data + "]");
+                    intervencao.append("[# ").append(numReg).append("]").
+                            append(" Modelo [").append(modelo).append("]").
+                            append(" Descricao [").append(descricao).append("]").
+                            append(" Tempo_Esperado [").append(tempo_esperado).append("]").
+                            append(" Tempo_Real [").append(tempo_real).append("]").
+                            append(" Data [").append(data).append("]");
                 }
             }
         }
